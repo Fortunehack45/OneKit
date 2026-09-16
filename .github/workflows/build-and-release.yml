@@ -1,0 +1,172 @@
+﻿name: Android CI/CD - Build & Release (APK + AAB)
+
+on:
+  push:
+    branches: [ main, master ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      publish_release:
+        description: 'Create a GitHub Release with APK and AAB assets'
+        required: false
+        type: boolean
+        default: true
+      release_tag:
+        description: 'Release tag (e.g. v1.0.0)'
+        required: false
+        type: string
+        default: 'v1.0.0'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build & Test (APK + Play Store AAB)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Grant Execute Permission for Gradlew
+        run: chmod +x gradlew
+
+      - name: Run Unit Tests
+        run: ./gradlew testDebugUnitTest --stacktrace
+
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Build Release APK
+        run: ./gradlew assembleRelease --stacktrace
+
+      - name: Build Google Play App Bundle (AAB)
+        run: ./gradlew bundleRelease --stacktrace
+
+      - name: Sign Release APK & AAB
+        id: sign_artifacts
+        run: |
+          mkdir -p build/signed
+          
+          # Check if custom release signing secrets exist
+          if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ] && [ -n "${{ secrets.KEY_ALIAS }}" ]; then
+            echo "Signing with repository secrets..."
+            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > release.keystore
+            KEYSTORE_PATH="release.keystore"
+            ALIAS="${{ secrets.KEY_ALIAS }}"
+            KEY_PASS="${{ secrets.KEY_PASSWORD }}"
+            STORE_PASS="${{ secrets.KEYSTORE_PASSWORD }}"
+          else
+            echo "No custom keystore secret found. Generating CI upload keystore..."
+            keytool -genkeypair -v \
+              -keystore ci_upload.keystore \
+              -alias one_upload_key \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -storepass android \
+              -keypass android \
+              -dname "CN=ONE Utility, OU=Mobile, O=ONE, L=Global, S=Global, C=US"
+            KEYSTORE_PATH="ci_upload.keystore"
+            ALIAS="one_upload_key"
+            KEY_PASS="android"
+            STORE_PASS="android"
+          fi
+
+          # Sign Release APK
+          RELEASE_APK=$(find app/build/outputs/apk/release -name "*.apk" | head -n 1)
+          if [ -n "$RELEASE_APK" ]; then
+            echo "Signing Release APK: $RELEASE_APK"
+            cp "$RELEASE_APK" build/signed/ONE-release.apk
+            jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
+              -keystore "$KEYSTORE_PATH" \
+              -storepass "$STORE_PASS" \
+              -keypass "$KEY_PASS" \
+              build/signed/ONE-release.apk "$ALIAS"
+          fi
+
+          # Sign Release AAB (Google Play Store Bundle)
+          RELEASE_AAB=$(find app/build/outputs/bundle/release -name "*.aab" | head -n 1)
+          if [ -n "$RELEASE_AAB" ]; then
+            echo "Signing Release AAB: $RELEASE_AAB"
+            cp "$RELEASE_AAB" build/signed/ONE-release.aab
+            jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
+              -keystore "$KEYSTORE_PATH" \
+              -storepass "$STORE_PASS" \
+              -keypass "$KEY_PASS" \
+              build/signed/ONE-release.aab "$ALIAS"
+          fi
+
+          # Copy Debug APK for quick testing
+          DEBUG_APK=$(find app/build/outputs/apk/debug -name "*.apk" | head -n 1)
+          if [ -n "$DEBUG_APK" ]; then
+            cp "$DEBUG_APK" build/signed/ONE-debug.apk
+          fi
+
+      - name: Upload Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ONE-release-apk
+          path: build/signed/ONE-release.apk
+          if-no-files-found: warn
+
+      - name: Upload Play Store AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: ONE-playstore-aab
+          path: build/signed/ONE-release.aab
+          if-no-files-found: warn
+
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ONE-debug-apk
+          path: build/signed/ONE-debug.apk
+          if-no-files-found: warn
+
+      - name: Upload Unit Test Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-reports
+          path: app/build/reports/tests/
+          if-no-files-found: ignore
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.publish_release) || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || (inputs.release_tag || 'v1.0.0') }}
+          name: "ONE Release ${{ github.ref_type == 'tag' && github.ref_name || (inputs.release_tag || 'v1.0.0') }}"
+          body: |
+            ## 🎉 ONE — All-in-One Offline Utility App
+            
+            ### 📦 Release Assets
+            - **Google Play App Bundle**: `ONE-release.aab` (Ready for Google Play Console upload)
+            - **Signed Release APK**: `ONE-release.apk` (Direct install on Android devices)
+            - **Debug APK**: `ONE-debug.apk` (Development & inspection)
+            
+            ### ✨ Features Included
+            - 100% On-Device & Offline-First (Zero cloud tracking, zero external databases).
+            - Android 13+ Material You Themed Icon Support (Adaptive `<monochrome>` layer).
+            - 20 Built-In Tools: Image-to-PDF, Background Removal, Compression, Universal & Everyday Calculators, Document Scanner, Text Tools, Developer Tools, Offline Currency & Time, Storage Analyzer, Batch Renamer, and Chained Workflows.
+            - Pastel Bento-Grid UI matching reference specifications.
+          files: |
+            build/signed/ONE-release.apk
+            build/signed/ONE-release.aab
+            build/signed/ONE-debug.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
