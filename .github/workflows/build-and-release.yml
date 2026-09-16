@@ -15,10 +15,10 @@ on:
         type: boolean
         default: true
       release_tag:
-        description: 'Release tag (e.g. v1.0.0)'
+        description: 'Release tag (e.g. v1.0.1)'
         required: false
         type: string
-        default: 'v1.0.0'
+        default: 'v1.0.1'
 
 permissions:
   contents: write
@@ -41,38 +41,26 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Grant Execute Permission for Gradlew
         run: chmod +x gradlew
 
-      - name: Run Unit Tests
-        run: ./gradlew testDebugUnitTest --stacktrace
-
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace
-
-      - name: Build Release APK
-        run: ./gradlew assembleRelease --stacktrace
-
-      - name: Build Google Play App Bundle (AAB)
-        run: ./gradlew bundleRelease --stacktrace
-
-      - name: Sign Release APK & AAB
-        id: sign_artifacts
+      - name: Prepare Keystore for Release Signing
+        id: setup_keystore
         run: |
-          mkdir -p build/signed
-          
-          # Check if custom release signing secrets exist
           if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ] && [ -n "${{ secrets.KEY_ALIAS }}" ]; then
-            echo "Signing with repository secrets..."
+            echo "Using custom release signing secrets from repository..."
             echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > release.keystore
-            KEYSTORE_PATH="release.keystore"
-            ALIAS="${{ secrets.KEY_ALIAS }}"
-            KEY_PASS="${{ secrets.KEY_PASSWORD }}"
-            STORE_PASS="${{ secrets.KEYSTORE_PASSWORD }}"
+            echo "KEYSTORE_PATH=release.keystore" >> $GITHUB_ENV
+            echo "KEY_ALIAS=${{ secrets.KEY_ALIAS }}" >> $GITHUB_ENV
+            echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" >> $GITHUB_ENV
+            echo "KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
           else
             echo "No custom keystore secret found. Generating CI upload keystore..."
             keytool -genkeypair -v \
-              -keystore ci_upload.keystore \
+              -keystore release.keystore \
               -alias one_upload_key \
               -keyalg RSA \
               -keysize 2048 \
@@ -80,61 +68,60 @@ jobs:
               -storepass android \
               -keypass android \
               -dname "CN=ONE Utility, OU=Mobile, O=ONE, L=Global, S=Global, C=US"
-            KEYSTORE_PATH="ci_upload.keystore"
-            ALIAS="one_upload_key"
-            KEY_PASS="android"
-            STORE_PASS="android"
+            echo "KEYSTORE_PATH=release.keystore" >> $GITHUB_ENV
+            echo "KEY_ALIAS=one_upload_key" >> $GITHUB_ENV
+            echo "KEY_PASSWORD=android" >> $GITHUB_ENV
+            echo "KEYSTORE_PASSWORD=android" >> $GITHUB_ENV
           fi
 
-          # Sign Release APK
+      - name: Run Unit Tests
+        run: ./gradlew testDebugUnitTest --stacktrace
+
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Build Signed Release APK
+        run: ./gradlew assembleRelease --stacktrace
+
+      - name: Build Signed Google Play App Bundle (AAB)
+        run: ./gradlew bundleRelease --stacktrace
+
+      - name: Verify APK Signature (v1, v2 & v3 schemes)
+        run: |
+          mkdir -p build/dist
           RELEASE_APK=$(find app/build/outputs/apk/release -name "*.apk" | head -n 1)
-          if [ -n "$RELEASE_APK" ]; then
-            echo "Signing Release APK: $RELEASE_APK"
-            cp "$RELEASE_APK" build/signed/ONE-release.apk
-            jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
-              -keystore "$KEYSTORE_PATH" \
-              -storepass "$STORE_PASS" \
-              -keypass "$KEY_PASS" \
-              build/signed/ONE-release.apk "$ALIAS"
-          fi
+          echo "Verifying signature on: $RELEASE_APK"
+          $ANDROID_HOME/build-tools/34.0.0/apksigner verify --verbose "$RELEASE_APK"
+          cp "$RELEASE_APK" build/dist/ONE-release.apk
 
-          # Sign Release AAB (Google Play Store Bundle)
           RELEASE_AAB=$(find app/build/outputs/bundle/release -name "*.aab" | head -n 1)
-          if [ -n "$RELEASE_AAB" ]; then
-            echo "Signing Release AAB: $RELEASE_AAB"
-            cp "$RELEASE_AAB" build/signed/ONE-release.aab
-            jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
-              -keystore "$KEYSTORE_PATH" \
-              -storepass "$STORE_PASS" \
-              -keypass "$KEY_PASS" \
-              build/signed/ONE-release.aab "$ALIAS"
-          fi
+          echo "Copying Play Store AAB: $RELEASE_AAB"
+          cp "$RELEASE_AAB" build/dist/ONE-release.aab
 
-          # Copy Debug APK for quick testing
           DEBUG_APK=$(find app/build/outputs/apk/debug -name "*.apk" | head -n 1)
           if [ -n "$DEBUG_APK" ]; then
-            cp "$DEBUG_APK" build/signed/ONE-debug.apk
+            cp "$DEBUG_APK" build/dist/ONE-debug.apk
           fi
 
-      - name: Upload Release APK
+      - name: Upload Release APK (Direct Install)
         uses: actions/upload-artifact@v4
         with:
           name: ONE-release-apk
-          path: build/signed/ONE-release.apk
-          if-no-files-found: warn
+          path: build/dist/ONE-release.apk
+          if-no-files-found: error
 
-      - name: Upload Play Store AAB
+      - name: Upload Play Store AAB (Console Upload)
         uses: actions/upload-artifact@v4
         with:
           name: ONE-playstore-aab
-          path: build/signed/ONE-release.aab
-          if-no-files-found: warn
+          path: build/dist/ONE-release.aab
+          if-no-files-found: error
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
           name: ONE-debug-apk
-          path: build/signed/ONE-debug.apk
+          path: build/dist/ONE-debug.apk
           if-no-files-found: warn
 
       - name: Upload Unit Test Reports
@@ -149,24 +136,28 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.publish_release) || (github.event_name == 'push' && github.ref == 'refs/heads/main')
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || (inputs.release_tag || 'v1.0.0') }}
-          name: "ONE Release ${{ github.ref_type == 'tag' && github.ref_name || (inputs.release_tag || 'v1.0.0') }}"
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || (inputs.release_tag || 'v1.0.1') }}
+          name: "ONE Release ${{ github.ref_type == 'tag' && github.ref_name || (inputs.release_tag || 'v1.0.1') }}"
           body: |
             ## 🎉 ONE — All-in-One Offline Utility App
-            
+
+            ### 📱 Compatibility
+            - **Android Support**: Android 7.0+ (API 24 through Android 15 & 16+).
+            - **Signing**: Signed with official Android APK Signature Scheme v2 + v3 for direct installation without errors.
+
             ### 📦 Release Assets
-            - **Google Play App Bundle**: `ONE-release.aab` (Ready for Google Play Console upload)
             - **Signed Release APK**: `ONE-release.apk` (Direct install on Android devices)
-            - **Debug APK**: `ONE-debug.apk` (Development & inspection)
-            
+            - **Google Play App Bundle**: `ONE-release.aab` (Upload to Google Play Console)
+            - **Debug APK**: `ONE-debug.apk` (Development & testing)
+
             ### ✨ Features Included
             - 100% On-Device & Offline-First (Zero cloud tracking, zero external databases).
             - Android 13+ Material You Themed Icon Support (Adaptive `<monochrome>` layer).
             - 20 Built-In Tools: Image-to-PDF, Background Removal, Compression, Universal & Everyday Calculators, Document Scanner, Text Tools, Developer Tools, Offline Currency & Time, Storage Analyzer, Batch Renamer, and Chained Workflows.
             - Pastel Bento-Grid UI matching reference specifications.
           files: |
-            build/signed/ONE-release.apk
-            build/signed/ONE-release.aab
-            build/signed/ONE-debug.apk
+            build/dist/ONE-release.apk
+            build/dist/ONE-release.aab
+            build/dist/ONE-debug.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
