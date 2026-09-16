@@ -14,6 +14,7 @@ sealed class ToolIntent {
     object TextTools : ToolIntent()
     object DeveloperTools : ToolIntent()
     object PasswordGenerator : ToolIntent()
+    object CoolFonts : ToolIntent()
 
     // Deterministic Math & Calculations
     data class MathCalculation(val expression: String) : ToolIntent()

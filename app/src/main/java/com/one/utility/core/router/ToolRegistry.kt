@@ -99,6 +99,15 @@ object ToolRegistry {
             keywords = listOf("word count", "character count", "uppercase", "lowercase", "text cleaner")
         ),
         ToolDefinition(
+            id = "cool_fonts",
+            title = "Cool Fonts & Bio Styler",
+            description = "25+ aesthetic Unicode fonts, Gothic, Cursive, Small Caps & Kaomoji",
+            category = ToolCategory.TEXT,
+            route = "cool_fonts",
+            keywords = listOf("font", "cool fonts", "fancy text", "bio fonts", "gothic", "cursive", "name font", "styler"),
+            badge = "POPULAR"
+        ),
+        ToolDefinition(
             id = "dev_tools",
             title = "Developer Tools",
             description = "JSON formatter, Base64 encode/decode, JWT, SHA hashes, Unix time",

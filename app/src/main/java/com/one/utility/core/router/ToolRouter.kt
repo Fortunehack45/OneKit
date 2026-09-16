@@ -67,6 +67,7 @@ class ToolRouter {
             containsAny(lower, "json", "json format", "base64", "jwt", "hash generator", "sha-256", "developer tools", "unix timestamp") -> ToolIntent.DeveloperTools
 
             containsAny(lower, "password generator", "generate password", "secure password", "create password") -> ToolIntent.PasswordGenerator
+            containsAny(lower, "font", "cool fonts", "fancy text", "text styler", "bio font", "gothic", "cursive", "small caps", "name font") -> ToolIntent.CoolFonts
 
             else -> ToolIntent.Unknown
         }

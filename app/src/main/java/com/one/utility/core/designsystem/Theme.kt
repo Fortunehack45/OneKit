@@ -5,7 +5,64 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+
+data class AppColors(
+    val isDark: Boolean,
+    val canvasBackground: Color,
+    val cardSurface: Color,
+    val surfaceElevated: Color,
+    val surfaceVariant: Color,
+    val borderSubtle: Color,
+    val textPrimary: Color,
+    val textSecondary: Color,
+    val textMuted: Color,
+    val dockBackground: Color,
+    val primaryButton: Color,
+    val onPrimaryButton: Color
+)
+
+private val LightAppColors = AppColors(
+    isDark = false,
+    canvasBackground = CanvasBackground,
+    cardSurface = CanvasSurface,
+    surfaceElevated = SurfaceElevated,
+    surfaceVariant = Color(0xFFF1F0F7),
+    borderSubtle = BorderSubtle,
+    textPrimary = TextPrimary,
+    textSecondary = TextSecondary,
+    textMuted = TextMuted,
+    dockBackground = FrostedGlassLight,
+    primaryButton = DockObsidian,
+    onPrimaryButton = Color.White
+)
+
+private val DarkAppColors = AppColors(
+    isDark = true,
+    canvasBackground = DarkCanvasBackground,
+    cardSurface = DarkCanvasSurface,
+    surfaceElevated = DarkSurfaceElevated,
+    surfaceVariant = DarkSurfaceVariant,
+    borderSubtle = DarkBorderSubtle,
+    textPrimary = DarkTextPrimary,
+    textSecondary = DarkTextSecondary,
+    textMuted = DarkTextMuted,
+    dockBackground = FrostedGlassDark,
+    primaryButton = Color.White,
+    onPrimaryButton = DockObsidian
+)
+
+val LocalAppColors = staticCompositionLocalOf { LightAppColors }
+
+object AppTheme {
+    val colors: AppColors
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalAppColors.current
+}
 
 private val LightColorScheme = lightColorScheme(
     primary = DockObsidian,
@@ -19,34 +76,47 @@ private val LightColorScheme = lightColorScheme(
     surface = CanvasSurface,
     onSurface = TextPrimary,
     surfaceVariant = Color.White,
-    onSurfaceVariant = TextSecondary
+    onSurfaceVariant = TextSecondary,
+    outline = BorderSubtle
 )
 
+// Matte Slate Grey Palette (Refined charcoal/slate, NOT pitch black)
 private val DarkColorScheme = darkColorScheme(
     primary = Color.White,
     onPrimary = DockObsidian,
-    primaryContainer = Color(0xFF28243D),
+    primaryContainer = Color(0xFF2E313D),
     onPrimaryContainer = Color.White,
     secondary = BentoHoney,
     onSecondary = TextPrimary,
-    background = Color(0xFF121217),
-    onBackground = Color.White,
-    surface = Color(0xFF1A1A22),
-    onSurface = Color.White,
-    surfaceVariant = Color(0xFF23232E),
-    onSurfaceVariant = Color(0xFFB0AFC0)
+    background = DarkCanvasBackground,
+    onBackground = DarkTextPrimary,
+    surface = DarkCanvasSurface,
+    onSurface = DarkTextPrimary,
+    surfaceVariant = DarkSurfaceVariant,
+    onSurfaceVariant = DarkTextSecondary,
+    outline = DarkBorderSubtle
 )
 
 @Composable
 fun ONETheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    themeMode: String = "SYSTEM",
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+    val systemDark = isSystemInDarkTheme()
+    val isDark = when (themeMode.uppercase()) {
+        "DARK" -> true
+        "LIGHT" -> false
+        else -> systemDark
+    }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+    val colorScheme = if (isDark) DarkColorScheme else LightColorScheme
+    val appColors = if (isDark) DarkAppColors else LightAppColors
+
+    CompositionLocalProvider(LocalAppColors provides appColors) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = Typography,
+            content = content
+        )
+    }
 }

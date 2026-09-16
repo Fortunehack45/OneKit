@@ -15,10 +15,10 @@ on:
         type: boolean
         default: true
       release_tag:
-        description: 'Release tag (e.g. v1.0.2)'
+        description: 'Release tag (e.g. v1.0.3)'
         required: false
         type: string
-        default: 'v1.0.2'
+        default: 'v1.0.3'
 
 permissions:
   contents: write
@@ -144,8 +144,8 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.publish_release) || (github.event_name == 'push' && github.ref == 'refs/heads/main')
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || (inputs.release_tag || 'v1.0.2') }}
-          name: "ONE Release ${{ github.ref_type == 'tag' && github.ref_name || (inputs.release_tag || 'v1.0.2') }}"
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || (inputs.release_tag || 'v1.0.3') }}
+          name: "ONE Release ${{ github.ref_type == 'tag' && github.ref_name || (inputs.release_tag || 'v1.0.3') }}"
           body: |
             ## 🎉 ONE — All-in-One Offline Utility App
 

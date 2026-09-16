@@ -15,7 +15,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -30,16 +29,16 @@ fun ToolsListScreen(
     onNavigateBack: () -> Unit
 ) {
     Scaffold(
-        containerColor = CanvasBackground,
+        containerColor = AppTheme.colors.canvasBackground,
         topBar = {
             TopAppBar(
-                title = { Text("All Tools", fontWeight = FontWeight.Bold, color = TextPrimary) },
+                title = { Text("All Tools", fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = TextPrimary)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = AppTheme.colors.textPrimary)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = CanvasBackground)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = AppTheme.colors.canvasBackground)
             )
         }
     ) { padding ->
@@ -48,7 +47,8 @@ fun ToolsListScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+            contentPadding = PaddingValues(bottom = 110.dp)
         ) {
             ToolCategory.values().forEach { category ->
                 val categoryTools = ToolRegistry.findByCategory(category)
@@ -58,7 +58,7 @@ fun ToolsListScreen(
                             text = category.title,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            color = TextPrimary,
+                            color = AppTheme.colors.textPrimary,
                             modifier = Modifier.padding(top = 10.dp, bottom = 4.dp)
                         )
                     }
@@ -66,10 +66,10 @@ fun ToolsListScreen(
                     items(categoryTools) { tool ->
                         Surface(
                             shape = RoundedCornerShape(20.dp),
-                            color = Color.White,
+                            color = AppTheme.colors.cardSurface,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .border(1.dp, BorderSubtle, RoundedCornerShape(20.dp))
+                                .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(20.dp))
                                 .clickable { onNavigateToTool(tool.route) }
                         ) {
                             Row(
@@ -82,7 +82,7 @@ fun ToolsListScreen(
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
-                                        Text(tool.title, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                                        Text(tool.title, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
                                         tool.badge?.let { badgeText ->
                                             Box(
                                                 modifier = Modifier
@@ -94,9 +94,9 @@ fun ToolsListScreen(
                                             }
                                         }
                                     }
-                                    Text(tool.description, fontSize = 12.sp, color = TextSecondary, modifier = Modifier.padding(top = 4.dp))
+                                    Text(tool.description, fontSize = 12.sp, color = AppTheme.colors.textSecondary, modifier = Modifier.padding(top = 4.dp))
                                 }
-                                Icon(Icons.Default.ArrowForward, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(18.dp))
+                                Icon(Icons.Default.ArrowForward, contentDescription = null, tint = AppTheme.colors.textSecondary, modifier = Modifier.size(18.dp))
                             }
                         }
                     }

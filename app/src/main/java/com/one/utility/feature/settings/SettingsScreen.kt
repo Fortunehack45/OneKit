@@ -28,7 +28,8 @@ import com.one.utility.core.designsystem.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onThemeChanged: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
     val prefs = remember { PreferencesManager(context) }
@@ -41,16 +42,16 @@ fun SettingsScreen(
     var feedbackMessage by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
-        containerColor = CanvasBackground,
+        containerColor = AppTheme.colors.canvasBackground,
         topBar = {
             TopAppBar(
-                title = { Text("Settings & Privacy", fontWeight = FontWeight.Bold, color = TextPrimary) },
+                title = { Text("Settings & Privacy", fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = TextPrimary)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = AppTheme.colors.textPrimary)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = CanvasBackground)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = AppTheme.colors.canvasBackground)
             )
         }
     ) { padding ->
@@ -59,7 +60,8 @@ fun SettingsScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(bottom = 110.dp)
         ) {
             // 1. Privacy Banner Card
             item {
@@ -76,35 +78,53 @@ fun SettingsScreen(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Icon(Icons.Outlined.Shield, contentDescription = null, tint = DockObsidian)
-                            Text("100% On-Device Privacy", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                            Text("100% On-Device Privacy", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = DockObsidian)
                         }
                         Text(
-                            text = "“ONE processes your files on your device whenever possible.”",
-                            fontSize = 15.sp,
+                            text = "“ONE processes all tasks on your device offline without remote tracking.”",
+                            fontSize = 14.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = TextPrimary
+                            color = DockObsidian
                         )
                         Text(
                             text = "• Zero account creation required\n• Zero remote databases\n• Files, photos, and PDFs never leave your phone\n• Completely offline by design",
-                            fontSize = 13.sp,
-                            lineHeight = 20.sp,
-                            color = TextPrimary.copy(alpha = 0.85f)
+                            fontSize = 12.sp,
+                            lineHeight = 18.sp,
+                            color = DockObsidian.copy(alpha = 0.85f)
                         )
                     }
                 }
             }
 
-            // 2. Privacy & History Preferences
+            // 2. Feedback snackbar banner if triggered
+            feedbackMessage?.let { msg ->
+                item {
+                    Surface(
+                        shape = RoundedCornerShape(14.dp),
+                        color = BentoMintLight,
+                        modifier = Modifier.fillMaxWidth().border(1.dp, BentoMint, RoundedCornerShape(14.dp))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(msg, color = Color(0xFF0F5132), fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                        }
+                    }
+                }
+            }
+
+            // 3. Privacy & History Preferences
             item {
                 Surface(
                     shape = RoundedCornerShape(24.dp),
-                    color = Color.White,
-                    modifier = Modifier.fillMaxWidth().border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                    color = AppTheme.colors.cardSurface,
+                    modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(24.dp))
                 ) {
                     Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Icon(Icons.Outlined.History, contentDescription = null, tint = DockObsidian)
-                            Text("History & Recent Items", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                            Icon(Icons.Outlined.History, contentDescription = null, tint = BentoHoney)
+                            Text("History & Recent Items", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
                         }
 
                         Row(
@@ -113,8 +133,8 @@ fun SettingsScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text("Store Recent Tools Locally", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
-                                Text("Stored in on-device private preferences only", fontSize = 12.sp, color = TextSecondary)
+                                Text("Store Recent Tools Locally", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = AppTheme.colors.textPrimary)
+                                Text("Stored in on-device private preferences only", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
                             }
                             Switch(
                                 checked = isHistoryEnabled,
@@ -131,48 +151,66 @@ fun SettingsScreen(
                                 prefs.clearRecentTools()
                                 feedbackMessage = "Cleared recent tools history."
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = DockObsidian),
-                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = AppTheme.colors.surfaceVariant,
+                                contentColor = AppTheme.colors.textPrimary
+                            ),
+                            shape = RoundedCornerShape(14.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("Clear Recent Tools History")
+                            Text("Clear Recent Tools History", fontWeight = FontWeight.SemiBold)
                         }
                     }
                 }
             }
 
-            // 3. Behavior & Appearance
+            // 4. Appearance & Behavior
             item {
                 Surface(
                     shape = RoundedCornerShape(24.dp),
-                    color = Color.White,
-                    modifier = Modifier.fillMaxWidth().border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                    color = AppTheme.colors.cardSurface,
+                    modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(24.dp))
                 ) {
                     Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Icon(Icons.Outlined.Tune, contentDescription = null, tint = DockObsidian)
-                            Text("Preferences & Behavior", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                            Icon(Icons.Outlined.Tune, contentDescription = null, tint = HeroLavenderDark)
+                            Text("Appearance & Theme", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
                         }
 
-                        // Appearance row
-                        Text("Appearance", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
+                        Text("Theme (Matte Slate Grey in Dark)", fontSize = 13.sp, fontWeight = FontWeight.Medium, color = AppTheme.colors.textSecondary)
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             listOf("SYSTEM", "LIGHT", "DARK").forEach { mode ->
-                                val isSelected = currentTheme == mode
-                                FilterChip(
-                                    selected = isSelected,
-                                    onClick = {
-                                        currentTheme = mode
-                                        prefs.themeMode = mode
-                                    },
-                                    label = { Text(mode) },
-                                    colors = FilterChipDefaults.filterChipColors(
-                                        selectedContainerColor = DockObsidian,
-                                        selectedLabelColor = Color.White
+                                val isSelected = currentTheme.equals(mode, ignoreCase = true)
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clip(RoundedCornerShape(14.dp))
+                                        .background(if (isSelected) AppTheme.colors.primaryButton else AppTheme.colors.surfaceVariant)
+                                        .border(
+                                            1.dp,
+                                            if (isSelected) Color.Transparent else AppTheme.colors.borderSubtle,
+                                            RoundedCornerShape(14.dp)
+                                        )
+                                        .clickable {
+                                            currentTheme = mode
+                                            prefs.themeMode = mode
+                                            onThemeChanged(mode)
+                                            feedbackMessage = "Theme set to $mode"
+                                        }
+                                        .padding(vertical = 10.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = mode,
+                                        fontSize = 12.sp,
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                        color = if (isSelected) AppTheme.colors.onPrimaryButton else AppTheme.colors.textSecondary
                                     )
-                                )
+                                }
                             }
                         }
+
+                        HorizontalDivider(color = AppTheme.colors.borderSubtle, modifier = Modifier.padding(vertical = 4.dp))
 
                         // Haptic feedback
                         Row(
@@ -180,7 +218,7 @@ fun SettingsScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Haptic Feedback", fontSize = 14.sp, color = TextPrimary)
+                            Text("Haptic Feedback", fontSize = 14.sp, color = AppTheme.colors.textPrimary)
                             Switch(
                                 checked = isHapticsEnabled,
                                 onCheckedChange = {
@@ -196,7 +234,7 @@ fun SettingsScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Auto-Save Generated Outputs", fontSize = 14.sp, color = TextPrimary)
+                            Text("Auto-Save Outputs to Gallery", fontSize = 14.sp, color = AppTheme.colors.textPrimary)
                             Switch(
                                 checked = isAutosaveEnabled,
                                 onCheckedChange = {
@@ -209,59 +247,47 @@ fun SettingsScreen(
                 }
             }
 
-            // 4. Temporary Cache Management
+            // 5. Temporary Cache Management
             item {
                 Surface(
                     shape = RoundedCornerShape(24.dp),
-                    color = Color.White,
-                    modifier = Modifier.fillMaxWidth().border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                    color = AppTheme.colors.cardSurface,
+                    modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(24.dp))
                 ) {
                     Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Icon(Icons.Outlined.CleaningServices, contentDescription = null, tint = DockObsidian)
-                            Text("Storage & Cache", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                            Icon(Icons.Outlined.CleaningServices, contentDescription = null, tint = BentoSky)
+                            Text("Temporary App Cache", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
                         }
+
                         Text(
-                            "Intermediate PDF and compressed image cache files are automatically deleted after 24 hours.",
-                            fontSize = 13.sp,
-                            color = TextSecondary
+                            text = "Clear generated preview cache from conversions, PDFs, and background removal without affecting your original gallery photos.",
+                            fontSize = 12.sp,
+                            lineHeight = 18.sp,
+                            color = AppTheme.colors.textSecondary
                         )
 
                         Button(
                             onClick = {
-                                val files = context.cacheDir.listFiles()
-                                val count = files?.size ?: 0
-                                files?.forEach { it.delete() }
-                                feedbackMessage = "Cleared $count temporary files."
+                                try {
+                                    context.cacheDir.deleteRecursively()
+                                    context.cacheDir.mkdirs()
+                                    feedbackMessage = "Cache cleared successfully."
+                                } catch (e: Exception) {
+                                    feedbackMessage = "Error clearing cache."
+                                }
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = DockObsidian),
-                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = BentoSky,
+                                contentColor = TextPrimary
+                            ),
+                            shape = RoundedCornerShape(14.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("Clear Temporary Cache Now")
-                        }
-
-                        feedbackMessage?.let { msg ->
-                            Text(msg, fontSize = 12.sp, color = HeroLavenderDark, fontWeight = FontWeight.Bold)
+                            Text("Clear App Cache", fontWeight = FontWeight.Bold)
                         }
                     }
                 }
-            }
-
-            // 5. About Box
-            item {
-                Surface(
-                    shape = RoundedCornerShape(24.dp),
-                    color = Color.White,
-                    modifier = Modifier.fillMaxWidth().border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
-                ) {
-                    Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text("ONE Utility App", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = TextPrimary)
-                        Text("Version 1.0.0 • Production Offline Release", fontSize = 13.sp, color = TextSecondary)
-                        Text("Open-Source Architecture • Built with Jetpack Compose", fontSize = 12.sp, color = TextMuted)
-                    }
-                }
-                Spacer(Modifier.height(16.dp))
             }
         }
     }

@@ -29,10 +29,7 @@ import androidx.compose.ui.unit.sp
 import com.one.utility.core.designsystem.*
 import com.one.utility.core.designsystem.components.BentoBadge
 import com.one.utility.core.designsystem.components.BentoCard
-import com.one.utility.core.designsystem.components.FloatingDock
-import com.one.utility.core.designsystem.components.NavigationTab
 import com.one.utility.core.router.ToolIntent
-import com.one.utility.core.router.ToolRegistry
 import com.one.utility.core.router.ToolRouter
 
 @Composable
@@ -43,7 +40,6 @@ fun HomeScreen(
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf("All") }
-    var currentTab by remember { mutableStateOf(NavigationTab.HOME) }
 
     val toolRouter = remember { ToolRouter() }
     val intentResult = remember(searchQuery) { toolRouter.resolve(searchQuery) }
@@ -58,89 +54,82 @@ fun HomeScreen(
         onNavigateToTool(route)
     }
 
-    val categories = listOf("All", "Images", "PDFs", "Calculators", "QR & Scan", "Tech")
+    val categories = listOf("All", "Images", "PDFs", "Calculators", "QR & Scan", "Fonts & Text", "Tech")
 
     Scaffold(
-        containerColor = CanvasBackground,
-        bottomBar = {
-            FloatingDock(
-                selectedTab = currentTab,
-                onTabSelected = { tab ->
-                    currentTab = tab
-                    when (tab) {
-                        NavigationTab.TOOLS -> onNavigateToTool("tools_list")
-                        NavigationTab.CALCULATOR -> onNavigateToTool("calculator")
-                        NavigationTab.SETTINGS -> onNavigateToTool("settings")
-                        NavigationTab.HOME -> { /* Already on Home */ }
-                    }
-                }
-            )
-        }
+        containerColor = AppTheme.colors.canvasBackground
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(bottom = 120.dp)
         ) {
-            // 1. Top Bar: App Identity & Quick Search Icon
+            // 1. Top Bar: Clean ONE Brand Identity (No avatar profile circle!)
             item {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 12.dp),
+                        .padding(top = 12.dp, bottom = 4.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(44.dp)
+                                .size(10.dp)
                                 .clip(CircleShape)
-                                .background(HeroLavender),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "1",
-                                fontWeight = FontWeight.Black,
-                                fontSize = 20.sp,
-                                color = DockObsidian
-                            )
-                        }
+                                .background(BentoHoney)
+                        )
                         Column {
                             Text(
                                 text = "ONE",
                                 fontWeight = FontWeight.Black,
-                                fontSize = 18.sp,
-                                color = TextPrimary
+                                fontSize = 22.sp,
+                                color = AppTheme.colors.textPrimary,
+                                letterSpacing = 1.sp
                             )
                             Text(
                                 text = "All-In-One Offline Utility",
-                                fontSize = 12.sp,
-                                color = TextSecondary
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = AppTheme.colors.textSecondary
                             )
                         }
                     }
 
+                    // 100% Offline Badge
                     Box(
                         modifier = Modifier
-                            .size(44.dp)
-                            .clip(CircleShape)
-                            .background(Color.White)
-                            .border(1.dp, BorderSubtle, CircleShape)
-                            .clickable { },
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(AppTheme.colors.surfaceVariant)
+                            .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(20.dp))
+                            .padding(horizontal = 12.dp, vertical = 6.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = "Search",
-                            tint = TextPrimary,
-                            modifier = Modifier.size(20.dp)
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Icon(
+                                Icons.Outlined.Shield,
+                                contentDescription = null,
+                                tint = HeroLavenderDark,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Text(
+                                text = "100% OFFLINE",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = AppTheme.colors.textPrimary,
+                                letterSpacing = 0.5.sp
+                            )
+                        }
                     }
                 }
             }
@@ -150,51 +139,38 @@ fun HomeScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(32.dp))
+                        .clip(RoundedCornerShape(28.dp))
                         .background(HeroLavender)
-                        .padding(22.dp)
+                        .padding(20.dp)
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.Top
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = "ONE Hub",
-                                    fontSize = 26.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = TextPrimary,
-                                    lineHeight = 30.sp
-                                )
-                                Text(
-                                    text = "Whatever you need to do, do it in ONE.",
-                                    fontSize = 13.sp,
-                                    color = TextPrimary.copy(alpha = 0.8f),
-                                    modifier = Modifier.padding(top = 2.dp)
-                                )
-                            }
-                            Box(
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .background(Color.White.copy(alpha = 0.6f))
-                                    .padding(horizontal = 10.dp, vertical = 5.dp)
-                            ) {
-                                Text(
-                                    text = "100% OFFLINE",
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = DockObsidian
-                                )
-                            }
+                            Text(
+                                text = "ONE Hub",
+                                fontSize = 26.sp,
+                                fontWeight = FontWeight.Black,
+                                color = DockObsidian
+                            )
+
+                            BentoBadge("PRIVATE", backgroundColor = HeroBadgeBackground)
                         }
 
-                        // Search Input Bar inside the Hero Card
+                        Text(
+                            text = "Whatever you need to do, do it in ONE.",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = DockObsidian.copy(alpha = 0.85f)
+                        )
+
+                        // Smart Search Bar
                         Surface(
-                            modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(20.dp),
-                            color = Color.White
+                            color = Color.White,
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             Row(
                                 modifier = Modifier
@@ -263,6 +239,7 @@ fun HomeScreen(
                                             is ToolIntent.ImageCompressor -> onNavigateToTool("compressor")
                                             is ToolIntent.ImageResizer -> onNavigateToTool("resizer")
                                             is ToolIntent.QrGenerator -> onNavigateToTool("qr")
+                                            is ToolIntent.CoolFonts -> onNavigateToTool("cool_fonts")
                                             is ToolIntent.PdfMerger -> onNavigateToTool("pdf_toolbox")
                                             is ToolIntent.PdfSplitter -> onNavigateToTool("pdf_toolbox")
                                             is ToolIntent.TextTools -> onNavigateToTool("text_tools")
@@ -290,6 +267,7 @@ fun HomeScreen(
                                                 is ToolIntent.ImageToPdf -> "Action: Convert Images to PDF"
                                                 is ToolIntent.BackgroundRemover -> "Action: Remove Background"
                                                 is ToolIntent.ImageCompressor -> "Action: Compress Images"
+                                                is ToolIntent.CoolFonts -> "Action: Cool Fonts & Bio Styler"
                                                 is ToolIntent.PdfMerger -> "Action: Open PDF Toolbox"
                                                 is ToolIntent.TextTools -> "Action: Text Analyzer & Tools"
                                                 is ToolIntent.DeveloperTools -> "Action: Developer Tools"
@@ -320,7 +298,7 @@ fun HomeScreen(
                 }
             }
 
-            // 3. Category Filter Pills (Active is Solid Obsidian, Inactive is White)
+            // 3. Category Filter Pills
             item {
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     items(categories) { cat ->
@@ -328,15 +306,26 @@ fun HomeScreen(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(20.dp))
-                                .background(if (isSelected) PillActiveBackground else PillInactiveBackground)
-                                .border(1.dp, if (isSelected) Color.Transparent else BorderSubtle, RoundedCornerShape(20.dp))
-                                .clickable { selectedCategory = cat }
+                                .background(if (isSelected) AppTheme.colors.primaryButton else AppTheme.colors.cardSurface)
+                                .border(
+                                    1.dp,
+                                    if (isSelected) Color.Transparent else AppTheme.colors.borderSubtle,
+                                    RoundedCornerShape(20.dp)
+                                )
+                                .clickable {
+                                    selectedCategory = cat
+                                    when (cat) {
+                                        "Calculators" -> onNavigateToTool("calculator")
+                                        "Fonts & Text" -> onNavigateToTool("cool_fonts")
+                                        "QR & Scan" -> onNavigateToTool("qr")
+                                    }
+                                }
                                 .padding(horizontal = 18.dp, vertical = 10.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = cat,
-                                color = if (isSelected) PillActiveText else PillInactiveText,
+                                color = if (isSelected) AppTheme.colors.onPrimaryButton else AppTheme.colors.textSecondary,
                                 fontSize = 13.sp,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                             )
@@ -345,7 +334,7 @@ fun HomeScreen(
                 }
             }
 
-            // 3.5. Recent Tools (when enabled and populated)
+            // 3.5. Recent Tools
             if (recentTools.isNotEmpty()) {
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -353,15 +342,15 @@ fun HomeScreen(
                             text = "Recent",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            color = TextPrimary
+                            color = AppTheme.colors.textPrimary
                         )
                         LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                             items(recentTools) { tool ->
                                 Surface(
                                     shape = RoundedCornerShape(16.dp),
-                                    color = Color.White,
+                                    color = AppTheme.colors.cardSurface,
                                     modifier = Modifier
-                                        .border(1.dp, BorderSubtle, RoundedCornerShape(16.dp))
+                                        .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(16.dp))
                                         .clickable { launchTool(tool.toolId, tool.title, tool.route) }
                                 ) {
                                     Row(
@@ -379,7 +368,7 @@ fun HomeScreen(
                                             text = tool.title,
                                             fontSize = 13.sp,
                                             fontWeight = FontWeight.SemiBold,
-                                            color = TextPrimary
+                                            color = AppTheme.colors.textPrimary
                                         )
                                     }
                                 }
@@ -395,12 +384,12 @@ fun HomeScreen(
                     text = "Quick Actions",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = TextPrimary,
+                    color = AppTheme.colors.textPrimary,
                     modifier = Modifier.padding(top = 4.dp)
                 )
             }
 
-            // 5. Asymmetric Bento Grid (Matches reference image visual layout)
+            // 5. Asymmetric Bento Grid
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -465,12 +454,14 @@ fun HomeScreen(
                         }
                     }
 
-                    // Right Column: Two Stacked Bento Cards (Sky Blue Top, Bubblegum Pink Bottom)
+                    // Right Column: Stacked Bento Cards (Compress & QR)
                     Column(
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(265.dp),
                         verticalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
-                        // Sky Blue: Compress & Optimize
+                        // Sky Blue: Compress Image
                         BentoCard(
                             backgroundColor = BentoSky,
                             onClick = { onNavigateToTool("compressor") },
@@ -488,7 +479,7 @@ fun HomeScreen(
                                 ) {
                                     Text(
                                         text = "Compress",
-                                        fontSize = 17.sp,
+                                        fontSize = 18.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = TextPrimary
                                     )
@@ -550,18 +541,16 @@ fun HomeScreen(
             // 6. Secondary Bento Row: Background Remover & Calculator
             item {
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 12.dp),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
-                    // White Surface Card: Cutout / Background Removal
+                    // Card: Cutout / Background Removal
                     Surface(
                         shape = RoundedCornerShape(24.dp),
-                        color = Color.White,
+                        color = AppTheme.colors.cardSurface,
                         modifier = Modifier
                             .weight(1f)
-                            .border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                            .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(24.dp))
                             .clickable { onNavigateToTool("background_remover") }
                     ) {
                         Column(
@@ -578,23 +567,23 @@ fun HomeScreen(
                                 text = "Remove BG",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = TextPrimary
+                                color = AppTheme.colors.textPrimary
                             )
                             Text(
                                 text = "Local cutout engine",
                                 fontSize = 11.sp,
-                                color = TextSecondary
+                                color = AppTheme.colors.textSecondary
                             )
                         }
                     }
 
-                    // White Surface Card: Calculator & Units
+                    // Card: Calculator & Units
                     Surface(
                         shape = RoundedCornerShape(24.dp),
-                        color = Color.White,
+                        color = AppTheme.colors.cardSurface,
                         modifier = Modifier
                             .weight(1f)
-                            .border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                            .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(24.dp))
                             .clickable { onNavigateToTool("calculator") }
                     ) {
                         Column(
@@ -611,12 +600,66 @@ fun HomeScreen(
                                 text = "Calculators",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = TextPrimary
+                                color = AppTheme.colors.textPrimary
                             )
                             Text(
                                 text = "% of, tips & units",
                                 fontSize = 11.sp,
-                                color = TextSecondary
+                                color = AppTheme.colors.textSecondary
+                            )
+                        }
+                    }
+                }
+            }
+
+            // 7. NEW: Cool Fonts & Bio Styler Feature Card
+            item {
+                BentoCard(
+                    backgroundColor = BentoMint,
+                    onClick = { onNavigateToTool("cool_fonts") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(115.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = "Cool Fonts & Bio Styler",
+                                    fontSize = 17.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF0C3822)
+                                )
+                                BentoBadge("NEW", backgroundColor = Color(0xFFC7F2DE))
+                            }
+                            Text(
+                                text = "25+ Aesthetic fonts: Gothic, Cursive, Small Caps & Kaomoji",
+                                fontSize = 12.sp,
+                                color = Color(0xFF1B5938)
+                            )
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .size(38.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFF0C3822)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Outlined.TextFields,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp)
                             )
                         }
                     }
