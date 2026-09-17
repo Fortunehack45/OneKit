@@ -7,19 +7,30 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Calculate
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.SwapVert
+import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.one.utility.core.designsystem.*
+import com.one.utility.core.processing.ComprehensiveUnitsEngine
 import com.one.utility.core.processing.UniversalCalculatorEngine
 
 enum class CalculatorMode(val title: String) {
@@ -34,9 +45,11 @@ enum class CalculatorMode(val title: String) {
 fun CalculatorScreen(
     initialExpression: String? = null,
     initialMode: CalculatorMode = CalculatorMode.NATURAL,
+    onNavigateToUnitConverter: (() -> Unit)? = null,
     onNavigateBack: () -> Unit
 ) {
     val engine = remember { UniversalCalculatorEngine() }
+    val unitsEngine = remember { ComprehensiveUnitsEngine() }
     var selectedMode by remember { mutableStateOf(initialMode) }
 
     // Natural Math State
@@ -54,9 +67,12 @@ fun CalculatorScreen(
     var peopleCountInput by remember { mutableStateOf("3") }
 
     // Unit Converter State
+    var selectedCategory by remember { mutableStateOf(unitsEngine.categories.first()) }
+    var fromUnit by remember { mutableStateOf(selectedCategory.units[0]) }
+    var toUnit by remember { mutableStateOf(selectedCategory.units.getOrElse(1) { selectedCategory.units[0] }) }
     var unitValueInput by remember { mutableStateOf("25") }
-    var fromUnit by remember { mutableStateOf("miles") }
-    var toUnit by remember { mutableStateOf("km") }
+    var unitPickerTarget by remember { mutableStateOf<String?>(null) } // "FROM" or "TO"
+    var unitSearchQuery by remember { mutableStateOf("") }
 
     // Auto-calculate on initial load if expression is passed
     LaunchedEffect(initialExpression) {
@@ -101,32 +117,33 @@ fun CalculatorScreen(
                 .padding(padding)
                 .padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(bottom = 90.dp)
+            contentPadding = PaddingValues(bottom = 140.dp)
         ) {
-            // 1. Horizontally Scrollable Mode Selector Chips (Eliminates awkward wrapping)
+            // 1. Horizontally Scrollable Calculator Mode Selector Chips
             item {
                 LazyRow(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(vertical = 4.dp)
                 ) {
                     items(CalculatorMode.values()) { mode ->
                         val isSelected = selectedMode == mode
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(16.dp))
-                                .background(if (isSelected) AppTheme.colors.primaryButton else AppTheme.colors.cardSurface)
+                                .background(if (isSelected) MaterialTheme.colorScheme.primary else AppTheme.colors.cardSurface)
                                 .border(
                                     1.dp,
                                     if (isSelected) Color.Transparent else AppTheme.colors.borderSubtle,
                                     RoundedCornerShape(16.dp)
                                 )
                                 .clickable { selectedMode = mode }
-                                .padding(horizontal = 18.dp, vertical = 11.dp),
+                                .padding(horizontal = 16.dp, vertical = 9.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = mode.title,
-                                color = if (isSelected) AppTheme.colors.onPrimaryButton else AppTheme.colors.textSecondary,
+                                color = if (isSelected) MaterialTheme.colorScheme.onPrimary else AppTheme.colors.textSecondary,
                                 fontSize = 13.sp,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                             )
@@ -154,7 +171,7 @@ fun CalculatorScreen(
                                     shape = RoundedCornerShape(16.dp),
                                     singleLine = true,
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = BentoHoney,
+                                        focusedBorderColor = MaterialTheme.colorScheme.primary,
                                         unfocusedBorderColor = AppTheme.colors.borderSubtle,
                                         focusedTextColor = AppTheme.colors.textPrimary,
                                         unfocusedTextColor = AppTheme.colors.textPrimary
@@ -173,11 +190,23 @@ fun CalculatorScreen(
                                     modifier = Modifier.fillMaxWidth().height(52.dp),
                                     shape = RoundedCornerShape(16.dp),
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = AppTheme.colors.primaryButton,
-                                        contentColor = AppTheme.colors.onPrimaryButton
+                                        containerColor = MaterialTheme.colorScheme.primary,
+                                        contentColor = MaterialTheme.colorScheme.onPrimary
                                     )
                                 ) {
-                                    Text("Calculate", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                                    Icon(
+                                        Icons.Default.Calculate,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onPrimary,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Spacer(Modifier.width(8.dp))
+                                    Text(
+                                        "Calculate",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 15.sp,
+                                        color = MaterialTheme.colorScheme.onPrimary
+                                    )
                                 }
 
                                 mathResult?.let { res ->
@@ -185,12 +214,13 @@ fun CalculatorScreen(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .clip(RoundedCornerShape(16.dp))
-                                            .background(BentoHoneyLight)
+                                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
+                                            .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f), RoundedCornerShape(16.dp))
                                             .padding(18.dp)
                                     ) {
                                         Column {
-                                            Text("Result", fontSize = 12.sp, color = Color(0xFF6B4E1B))
-                                            Text(res, fontWeight = FontWeight.Bold, fontSize = 24.sp, color = Color(0xFF2E1C00))
+                                            Text("Result", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
+                                            Text(res, fontWeight = FontWeight.Bold, fontSize = 24.sp, color = AppTheme.colors.textPrimary)
                                         }
                                     }
                                 }
@@ -217,7 +247,7 @@ fun CalculatorScreen(
                                         modifier = Modifier.weight(1f),
                                         shape = RoundedCornerShape(14.dp),
                                         colors = OutlinedTextFieldDefaults.colors(
-                                            focusedBorderColor = BentoHoney,
+                                            focusedBorderColor = MaterialTheme.colorScheme.primary,
                                             unfocusedBorderColor = AppTheme.colors.borderSubtle,
                                             focusedTextColor = AppTheme.colors.textPrimary,
                                             unfocusedTextColor = AppTheme.colors.textPrimary
@@ -230,7 +260,7 @@ fun CalculatorScreen(
                                         modifier = Modifier.weight(1f),
                                         shape = RoundedCornerShape(14.dp),
                                         colors = OutlinedTextFieldDefaults.colors(
-                                            focusedBorderColor = BentoHoney,
+                                            focusedBorderColor = MaterialTheme.colorScheme.primary,
                                             unfocusedBorderColor = AppTheme.colors.borderSubtle,
                                             focusedTextColor = AppTheme.colors.textPrimary,
                                             unfocusedTextColor = AppTheme.colors.textPrimary
@@ -248,11 +278,16 @@ fun CalculatorScreen(
                                     modifier = Modifier.fillMaxWidth().height(52.dp),
                                     shape = RoundedCornerShape(16.dp),
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = AppTheme.colors.primaryButton,
-                                        contentColor = AppTheme.colors.onPrimaryButton
+                                        containerColor = MaterialTheme.colorScheme.primary,
+                                        contentColor = MaterialTheme.colorScheme.onPrimary
                                     )
                                 ) {
-                                    Text("Calculate Percentage", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                                    Text(
+                                        "Calculate Percentage",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 15.sp,
+                                        color = MaterialTheme.colorScheme.onPrimary
+                                    )
                                 }
 
                                 percentResult?.let { res ->
@@ -260,12 +295,13 @@ fun CalculatorScreen(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .clip(RoundedCornerShape(16.dp))
-                                            .background(BentoHoneyLight)
+                                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
+                                            .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f), RoundedCornerShape(16.dp))
                                             .padding(18.dp)
                                     ) {
                                         Column {
-                                            Text("$percentInput% of $totalInput is:", fontSize = 12.sp, color = Color(0xFF6B4E1B))
-                                            Text(res, fontWeight = FontWeight.Bold, fontSize = 26.sp, color = Color(0xFF2E1C00))
+                                            Text("${percentInput}% of ${totalInput} is:", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
+                                            Text(res, fontWeight = FontWeight.Bold, fontSize = 24.sp, color = AppTheme.colors.textPrimary)
                                         }
                                     }
                                 }
@@ -282,7 +318,7 @@ fun CalculatorScreen(
                             modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(24.dp))
                         ) {
                             Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                                Text("Tip & Split Bill", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
+                                Text("Tip & Bill Splitter", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
 
                                 OutlinedTextField(
                                     value = billAmountInput,
@@ -291,7 +327,7 @@ fun CalculatorScreen(
                                     modifier = Modifier.fillMaxWidth(),
                                     shape = RoundedCornerShape(14.dp),
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = BentoSky,
+                                        focusedBorderColor = MaterialTheme.colorScheme.primary,
                                         unfocusedBorderColor = AppTheme.colors.borderSubtle,
                                         focusedTextColor = AppTheme.colors.textPrimary,
                                         unfocusedTextColor = AppTheme.colors.textPrimary
@@ -302,11 +338,11 @@ fun CalculatorScreen(
                                     OutlinedTextField(
                                         value = tipPercentInput,
                                         onValueChange = { tipPercentInput = it },
-                                        label = { Text("Tip (%)") },
+                                        label = { Text("Tip %") },
                                         modifier = Modifier.weight(1f),
                                         shape = RoundedCornerShape(14.dp),
                                         colors = OutlinedTextFieldDefaults.colors(
-                                            focusedBorderColor = BentoSky,
+                                            focusedBorderColor = MaterialTheme.colorScheme.primary,
                                             unfocusedBorderColor = AppTheme.colors.borderSubtle,
                                             focusedTextColor = AppTheme.colors.textPrimary,
                                             unfocusedTextColor = AppTheme.colors.textPrimary
@@ -319,7 +355,7 @@ fun CalculatorScreen(
                                         modifier = Modifier.weight(1f),
                                         shape = RoundedCornerShape(14.dp),
                                         colors = OutlinedTextFieldDefaults.colors(
-                                            focusedBorderColor = BentoSky,
+                                            focusedBorderColor = MaterialTheme.colorScheme.primary,
                                             unfocusedBorderColor = AppTheme.colors.borderSubtle,
                                             focusedTextColor = AppTheme.colors.textPrimary,
                                             unfocusedTextColor = AppTheme.colors.textPrimary
@@ -336,15 +372,16 @@ fun CalculatorScreen(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clip(RoundedCornerShape(16.dp))
-                                        .background(BentoSkyLight)
+                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
+                                        .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f), RoundedCornerShape(16.dp))
                                         .padding(18.dp)
-                                    ) {
+                                ) {
                                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                        Text("Total Tip: \$${"%.2f".format(splitRes.totalTip)}", fontSize = 13.sp, color = Color(0xFF1A4968))
-                                        Text("Grand Total: \$${"%.2f".format(splitRes.grandTotal)}", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF0C2B40))
-                                        HorizontalDivider(color = Color(0x33000000), modifier = Modifier.padding(vertical = 4.dp))
-                                        Text("Per Person Pays:", fontSize = 12.sp, color = Color(0xFF1A4968))
-                                        Text("\$${"%.2f".format(splitRes.perPersonAmount)}", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0C2B40))
+                                        Text("Total Tip: \$${"%.2f".format(splitRes.totalTip)}", fontSize = 13.sp, color = AppTheme.colors.textSecondary)
+                                        Text("Grand Total: \$${"%.2f".format(splitRes.grandTotal)}", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = AppTheme.colors.textPrimary)
+                                        HorizontalDivider(color = AppTheme.colors.borderSubtle, modifier = Modifier.padding(vertical = 4.dp))
+                                        Text("Per Person Pays:", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
+                                        Text("\$${"%.2f".format(splitRes.perPersonAmount)}", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                                     }
                                 }
                             }
@@ -360,68 +397,146 @@ fun CalculatorScreen(
                             modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(24.dp))
                         ) {
                             Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                                Text("Universal Unit Converter", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column {
+                                        Text("Scientific Unit Converter", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
+                                        Text("200+ Units (Physics, Astronomy, CS)", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
+                                    }
+                                    if (onNavigateToUnitConverter != null) {
+                                        IconButton(onClick = onNavigateToUnitConverter) {
+                                            Icon(Icons.AutoMirrored.Outlined.OpenInNew, contentDescription = "Full Screen", tint = MaterialTheme.colorScheme.primary)
+                                        }
+                                    }
+                                }
 
+                                // Category Selection Pills
+                                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    items(unitsEngine.categories) { cat ->
+                                        val isSel = cat.id == selectedCategory.id
+                                        FilterChip(
+                                            selected = isSel,
+                                            onClick = {
+                                                selectedCategory = cat
+                                                fromUnit = cat.units[0]
+                                                toUnit = cat.units.getOrElse(1) { cat.units[0] }
+                                            },
+                                            label = { Text(cat.name, fontSize = 12.sp) },
+                                            colors = FilterChipDefaults.filterChipColors(
+                                                selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                                selectedLabelColor = MaterialTheme.colorScheme.onPrimary
+                                            )
+                                        )
+                                    }
+                                }
+
+                                // Numeric Value Input
                                 OutlinedTextField(
                                     value = unitValueInput,
                                     onValueChange = { unitValueInput = it },
-                                    label = { Text("Value") },
+                                    label = { Text("Input Value") },
                                     modifier = Modifier.fillMaxWidth(),
                                     shape = RoundedCornerShape(14.dp),
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = BentoPink,
+                                        focusedBorderColor = MaterialTheme.colorScheme.primary,
                                         unfocusedBorderColor = AppTheme.colors.borderSubtle,
                                         focusedTextColor = AppTheme.colors.textPrimary,
                                         unfocusedTextColor = AppTheme.colors.textPrimary
                                     )
                                 )
 
-                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                    OutlinedTextField(
-                                        value = fromUnit,
-                                        onValueChange = { fromUnit = it },
-                                        label = { Text("From (miles, kg, c, gb)") },
-                                        modifier = Modifier.weight(1f),
+                                // From & To Dropdown Selectors
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    // FROM Selector Button
+                                    Surface(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clip(RoundedCornerShape(14.dp))
+                                            .clickable {
+                                                unitSearchQuery = ""
+                                                unitPickerTarget = "FROM"
+                                            },
                                         shape = RoundedCornerShape(14.dp),
-                                        colors = OutlinedTextFieldDefaults.colors(
-                                            focusedBorderColor = BentoPink,
-                                            unfocusedBorderColor = AppTheme.colors.borderSubtle,
-                                            focusedTextColor = AppTheme.colors.textPrimary,
-                                            unfocusedTextColor = AppTheme.colors.textPrimary
-                                        )
-                                    )
-                                    OutlinedTextField(
-                                        value = toUnit,
-                                        onValueChange = { toUnit = it },
-                                        label = { Text("To (km, lbs, f, mb)") },
-                                        modifier = Modifier.weight(1f),
+                                        color = AppTheme.colors.canvasBackground,
+                                        border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle)
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Column(modifier = Modifier.weight(1f)) {
+                                                Text("FROM", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = AppTheme.colors.textTertiary)
+                                                Text(fromUnit.name, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = AppTheme.colors.textPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                            }
+                                            Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = AppTheme.colors.textSecondary)
+                                        }
+                                    }
+
+                                    IconButton(
+                                        onClick = {
+                                            val temp = fromUnit
+                                            fromUnit = toUnit
+                                            toUnit = temp
+                                        },
+                                        modifier = Modifier.size(36.dp).background(MaterialTheme.colorScheme.primary, CircleShape)
+                                    ) {
+                                        Icon(Icons.Default.SwapVert, contentDescription = "Swap", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(18.dp))
+                                    }
+
+                                    // TO Selector Button
+                                    Surface(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clip(RoundedCornerShape(14.dp))
+                                            .clickable {
+                                                unitSearchQuery = ""
+                                                unitPickerTarget = "TO"
+                                            },
                                         shape = RoundedCornerShape(14.dp),
-                                        colors = OutlinedTextFieldDefaults.colors(
-                                            focusedBorderColor = BentoPink,
-                                            unfocusedBorderColor = AppTheme.colors.borderSubtle,
-                                            focusedTextColor = AppTheme.colors.textPrimary,
-                                            unfocusedTextColor = AppTheme.colors.textPrimary
-                                        )
-                                    )
+                                        color = AppTheme.colors.canvasBackground,
+                                        border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle)
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Column(modifier = Modifier.weight(1f)) {
+                                                Text("TO", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = AppTheme.colors.textTertiary)
+                                                Text(toUnit.name, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = AppTheme.colors.textPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                            }
+                                            Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = AppTheme.colors.textSecondary)
+                                        }
+                                    }
                                 }
 
                                 val v = unitValueInput.toDoubleOrNull() ?: 0.0
-                                val converted = engine.convertUnits(v, fromUnit, toUnit)
+                                val converted = unitsEngine.convert(v, fromUnit.id, toUnit.id, selectedCategory.id)
 
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clip(RoundedCornerShape(16.dp))
-                                        .background(BentoPinkLight)
+                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
+                                        .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f), RoundedCornerShape(16.dp))
                                         .padding(18.dp)
                                 ) {
                                     Column {
-                                        Text("$v $fromUnit equals:", fontSize = 12.sp, color = Color(0xFF6B1B4A))
+                                        Text("$v ${fromUnit.symbol} equals:", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
                                         Text(
-                                            "${"%,.4f".format(converted)} $toUnit",
+                                            "${"%,.6f".format(converted).trimEnd('0').trimEnd('.')} ${toUnit.symbol}",
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 24.sp,
-                                            color = Color(0xFF3B0024)
+                                            fontFamily = FontFamily.Monospace,
+                                            color = MaterialTheme.colorScheme.primary
                                         )
                                     }
                                 }
@@ -431,5 +546,71 @@ fun CalculatorScreen(
                 }
             }
         }
+    }
+
+    // Modal Unit Selector Dialog
+    if (unitPickerTarget != null) {
+        val filtered = remember(unitSearchQuery, selectedCategory) {
+            if (unitSearchQuery.isBlank()) selectedCategory.units
+            else selectedCategory.units.filter { it.name.contains(unitSearchQuery, ignoreCase = true) || it.symbol.contains(unitSearchQuery, ignoreCase = true) }
+        }
+
+        AlertDialog(
+            onDismissRequest = { unitPickerTarget = null },
+            title = { Text("Select ${if (unitPickerTarget == "FROM") "Source" else "Target"} Unit", fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary) },
+            text = {
+                Column(modifier = Modifier.fillMaxWidth().heightIn(max = 380.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(
+                        value = unitSearchQuery,
+                        onValueChange = { unitSearchQuery = it },
+                        placeholder = { Text("Search unit...") },
+                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                        trailingIcon = {
+                            if (unitSearchQuery.isNotEmpty()) {
+                                IconButton(onClick = { unitSearchQuery = "" }) { Icon(Icons.Default.Close, contentDescription = null) }
+                            }
+                        },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+
+                    LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        items(filtered) { u ->
+                            val isSel = if (unitPickerTarget == "FROM") fromUnit.id == u.id else toUnit.id == u.id
+                            Surface(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .clickable {
+                                        if (unitPickerTarget == "FROM") fromUnit = u else toUnit = u
+                                        unitPickerTarget = null
+                                    },
+                                color = if (isSel) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else Color.Transparent
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column {
+                                        Text(u.name, fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal, color = AppTheme.colors.textPrimary)
+                                        Text("Symbol: ${u.symbol}", fontSize = 11.sp, color = AppTheme.colors.textSecondary)
+                                    }
+                                    if (isSel) {
+                                        Icon(Icons.Default.Check, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { unitPickerTarget = null }) {
+                    Text("Close", color = MaterialTheme.colorScheme.primary)
+                }
+            }
+        )
     }
 }
