@@ -5,6 +5,9 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -26,13 +29,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -45,22 +48,37 @@ import java.text.DecimalFormat
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UnitConverterScreen(
+    initialCategoryId: String? = null,
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
     val engine = remember { ComprehensiveUnitsEngine() }
 
-    var selectedCategory by remember { mutableStateOf(engine.categories.first()) }
-    var fromUnit by remember { mutableStateOf(selectedCategory.units[0]) }
-    var toUnit by remember { mutableStateOf(selectedCategory.units.getOrElse(1) { selectedCategory.units[0] }) }
+    // Resolve initial category if requested
+    val initialCategory = remember(initialCategoryId) {
+        if (!initialCategoryId.isNullOrBlank()) {
+            engine.categories.find { cat ->
+                cat.id.equals(initialCategoryId, ignoreCase = true) ||
+                        cat.id.contains(initialCategoryId, ignoreCase = true) ||
+                        cat.name.contains(initialCategoryId, ignoreCase = true)
+            } ?: engine.categories.first()
+        } else {
+            engine.categories.first()
+        }
+    }
+
+    var selectedCategory by remember(initialCategory) { mutableStateOf(initialCategory) }
+    var fromUnit by remember(selectedCategory) { mutableStateOf(selectedCategory.units[0]) }
+    var toUnit by remember(selectedCategory) { mutableStateOf(selectedCategory.units.getOrElse(1) { selectedCategory.units[0] }) }
     var inputValue by remember { mutableStateOf("1") }
+    var isSwapped by remember { mutableStateOf(false) }
 
     // Dialog picker state
     var pickerTarget by remember { mutableStateOf<String?>(null) } // "FROM" or "TO" or null
     var pickerSearchQuery by remember { mutableStateOf("") }
 
-    // When category changes, reset units
+    // When category changes, update selection and reset units
     fun selectCategory(category: UnitCategory) {
         selectedCategory = category
         fromUnit = category.units[0]
@@ -77,6 +95,12 @@ fun UnitConverterScreen(
             categoryId = selectedCategory.id
         )
     }
+
+    val swapRotation by animateFloatAsState(
+        targetValue = if (isSwapped) 180f else 0f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+        label = "swapRotation"
+    )
 
     fun formatNumber(value: Double): String {
         return if (value == 0.0) {
@@ -104,13 +128,13 @@ fun UnitConverterScreen(
                 title = {
                     Column {
                         Text(
-                            text = "Scientific Unit Converter",
+                            text = "Unit Converter",
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp,
                             color = AppTheme.colors.textPrimary
                         )
                         Text(
-                            text = "${engine.categories.sumOf { it.units.size }}+ Units (Astronomy, Physics, CS)",
+                            text = "200+ Units • Length, Weight, Temp, Volume & More",
                             fontSize = 12.sp,
                             color = AppTheme.colors.textSecondary
                         )
@@ -137,7 +161,7 @@ fun UnitConverterScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(bottom = 140.dp)
         ) {
-            // Category Selector Chips
+            // Category Selector Chips (Unified horizontal scrollbar)
             item {
                 Text(
                     text = "CATEGORY",
@@ -159,7 +183,7 @@ fun UnitConverterScreen(
                                 Text(
                                     cat.name,
                                     fontSize = 13.sp,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                                 )
                             },
                             colors = FilterChipDefaults.filterChipColors(
@@ -173,20 +197,20 @@ fun UnitConverterScreen(
                                 selected = isSelected,
                                 borderColor = if (isSelected) Color.Transparent else AppTheme.colors.borderSubtle
                             ),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(14.dp)
                         )
                     }
                 }
             }
 
-            // Converter Card
+            // All-in-One Converter Card
             item {
-                Card(
+                Surface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(20.dp)),
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = AppTheme.colors.surfaceCard)
+                        .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(22.dp)),
+                    shape = RoundedCornerShape(22.dp),
+                    color = AppTheme.colors.surfaceCard
                 ) {
                     Column(
                         modifier = Modifier
@@ -195,7 +219,7 @@ fun UnitConverterScreen(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         // FROM SECTION
-                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -209,7 +233,7 @@ fun UnitConverterScreen(
                                     letterSpacing = 1.sp
                                 )
                                 Text(
-                                    text = "${selectedCategory.units.size} options",
+                                    text = "${selectedCategory.units.size} units in ${selectedCategory.name}",
                                     fontSize = 11.sp,
                                     color = AppTheme.colors.textTertiary
                                 )
@@ -262,7 +286,7 @@ fun UnitConverterScreen(
                             OutlinedTextField(
                                 value = inputValue,
                                 onValueChange = { inputValue = it },
-                                label = { Text("Input Value") },
+                                label = { Text("Input Value (${fromUnit.symbol})") },
                                 singleLine = true,
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Number,
@@ -299,10 +323,10 @@ fun UnitConverterScreen(
                                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                                 modifier = Modifier.padding(top = 2.dp)
                             ) {
-                                listOf("1", "10", "100", "1000").forEach { preset ->
+                                listOf("1", "5", "10", "50", "100", "1000").forEach { preset ->
                                     SuggestionChip(
                                         onClick = { inputValue = preset },
-                                        label = { Text(preset, fontSize = 11.sp) },
+                                        label = { Text(preset, fontSize = 11.sp, fontWeight = FontWeight.Medium) },
                                         shape = RoundedCornerShape(8.dp),
                                         colors = SuggestionChipDefaults.suggestionChipColors(
                                             containerColor = AppTheme.colors.canvasBackground,
@@ -312,7 +336,7 @@ fun UnitConverterScreen(
                                             enabled = true,
                                             borderColor = AppTheme.colors.borderSubtle
                                         ),
-                                        modifier = Modifier.height(28.dp)
+                                        modifier = Modifier.height(28.dp).pressFeedback()
                                     )
                                 }
                             }
@@ -330,24 +354,26 @@ fun UnitConverterScreen(
                                     val temp = fromUnit
                                     fromUnit = toUnit
                                     toUnit = temp
+                                    isSwapped = !isSwapped
                                 },
                                 modifier = Modifier
                                     .padding(horizontal = 12.dp)
                                     .background(MaterialTheme.colorScheme.primary, CircleShape)
-                                    .size(38.dp)
+                                    .size(42.dp)
+                                    .pressFeedback()
                             ) {
                                 Icon(
                                     Icons.Default.SwapVert,
                                     contentDescription = "Swap Units",
                                     tint = MaterialTheme.colorScheme.onPrimary,
-                                    modifier = Modifier.size(20.dp)
+                                    modifier = Modifier.size(22.dp).graphicsLayer(rotationZ = swapRotation)
                                 )
                             }
                             HorizontalDivider(modifier = Modifier.weight(1f), color = AppTheme.colors.borderSubtle)
                         }
 
                         // TO SECTION
-                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text(
                                 text = "TO",
                                 fontSize = 11.sp,
@@ -402,56 +428,57 @@ fun UnitConverterScreen(
                             // Result Display Box
                             Surface(
                                 modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(14.dp),
-                                color = AppTheme.colors.canvasBackground,
-                                border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle)
+                                shape = RoundedCornerShape(16.dp),
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
+                                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f))
                             ) {
                                 Column(
                                     modifier = Modifier.padding(16.dp),
-                                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                                    verticalArrangement = Arrangement.spacedBy(6.dp)
                                 ) {
-                                    Text(
-                                        text = "RESULT",
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = AppTheme.colors.textTertiary,
-                                        letterSpacing = 1.sp
-                                    )
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        val formatted = formatNumber(convertedResult)
                                         Text(
-                                            text = "$formatted ${toUnit.symbol}",
-                                            fontSize = 22.sp,
+                                            text = "CONVERTED RESULT",
+                                            fontSize = 10.sp,
                                             fontWeight = FontWeight.Bold,
-                                            fontFamily = FontFamily.Monospace,
                                             color = MaterialTheme.colorScheme.primary,
-                                            modifier = Modifier.weight(1f),
-                                            maxLines = 2,
-                                            overflow = TextOverflow.Ellipsis
+                                            letterSpacing = 1.sp
                                         )
                                         IconButton(
                                             onClick = {
                                                 copyToClipboard(
-                                                    "$formatted ${toUnit.symbol}",
+                                                    "${formatNumber(convertedResult)} ${toUnit.symbol}",
                                                     "Converted Result"
                                                 )
-                                            }
+                                            },
+                                            modifier = Modifier.size(28.dp).pressFeedback()
                                         ) {
                                             Icon(
                                                 Icons.Outlined.ContentCopy,
                                                 contentDescription = "Copy Result",
-                                                tint = AppTheme.colors.textSecondary
+                                                tint = MaterialTheme.colorScheme.primary,
+                                                modifier = Modifier.size(16.dp)
                                             )
                                         }
                                     }
+                                    val formatted = formatNumber(convertedResult)
+                                    Text(
+                                        text = "$formatted ${toUnit.symbol}",
+                                        fontSize = 24.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        fontFamily = FontFamily.Monospace,
+                                        color = AppTheme.colors.textPrimary,
+                                        maxLines = 2,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
                                     Text(
                                         text = "1 ${fromUnit.symbol} = ${formatNumber(engine.convert(1.0, fromUnit.id, toUnit.id, selectedCategory.id))} ${toUnit.symbol}",
-                                        fontSize = 11.sp,
-                                        color = AppTheme.colors.textTertiary
+                                        fontSize = 11.5.sp,
+                                        color = AppTheme.colors.textSecondary
                                     )
                                 }
                             }
@@ -462,13 +489,24 @@ fun UnitConverterScreen(
 
             // Multi-Unit Equivalent Breakdown Card
             item {
-                Text(
-                    text = "ALL EQUIVALENTS (${selectedCategory.name.uppercase()})",
-                    style = AppTheme.typography.labelSmall,
-                    color = AppTheme.colors.textTertiary,
-                    letterSpacing = 1.sp,
-                    modifier = Modifier.padding(top = 8.dp)
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "ALL EQUIVALENTS (${selectedCategory.name.uppercase()})",
+                        style = AppTheme.typography.labelSmall,
+                        color = AppTheme.colors.textTertiary,
+                        letterSpacing = 1.sp,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                    Text(
+                        text = "Tap any to set as target",
+                        fontSize = 11.sp,
+                        color = AppTheme.colors.textTertiary
+                    )
+                }
             }
 
             items(selectedCategory.units) { unitDef ->
@@ -484,10 +522,10 @@ fun UnitConverterScreen(
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
+                        .clip(RoundedCornerShape(14.dp))
                         .clickable { toUnit = unitDef },
-                    shape = RoundedCornerShape(12.dp),
-                    color = if (isCurrentTarget) AppTheme.colors.surfaceCard.copy(alpha = 0.9f) else AppTheme.colors.surfaceCard,
+                    shape = RoundedCornerShape(14.dp),
+                    color = if (isCurrentTarget) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else AppTheme.colors.surfaceCard,
                     border = androidx.compose.foundation.BorderStroke(
                         1.dp,
                         if (isCurrentTarget) MaterialTheme.colorScheme.primary else AppTheme.colors.borderSubtle
@@ -496,7 +534,7 @@ fun UnitConverterScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 14.dp, vertical = 10.dp),
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -516,17 +554,17 @@ fun UnitConverterScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
                                 text = formatNumber(eqVal),
-                                fontSize = 14.sp,
+                                fontSize = 15.sp,
                                 fontFamily = FontFamily.Monospace,
                                 fontWeight = FontWeight.SemiBold,
                                 color = AppTheme.colors.textPrimary
                             )
-                            Spacer(Modifier.width(6.dp))
+                            Spacer(Modifier.width(8.dp))
                             IconButton(
                                 onClick = {
                                     copyToClipboard("${formatNumber(eqVal)} ${unitDef.symbol}")
                                 },
-                                modifier = Modifier.size(32.dp)
+                                modifier = Modifier.size(32.dp).pressFeedback()
                             ) {
                                 Icon(
                                     Icons.Outlined.ContentCopy,
@@ -542,7 +580,7 @@ fun UnitConverterScreen(
         }
     }
 
-    // Modal Unit Selector Dialog
+    // Modal Unit Selector Dialog with Instant Search
     if (pickerTarget != null) {
         val filteredUnits = remember(pickerSearchQuery, selectedCategory) {
             if (pickerSearchQuery.isBlank()) {
@@ -599,18 +637,11 @@ fun UnitConverterScreen(
                         )
                     )
 
-                    Text(
-                        text = "${filteredUnits.size} matching units",
-                        fontSize = 11.sp,
-                        color = AppTheme.colors.textTertiary
-                    )
-
                     LazyColumn(
                         modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         items(filteredUnits) { unitDef ->
-                            val isSelected = if (pickerTarget == "FROM") fromUnit.id == unitDef.id else toUnit.id == unitDef.id
                             Surface(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -624,40 +655,34 @@ fun UnitConverterScreen(
                                         pickerTarget = null
                                     },
                                 shape = RoundedCornerShape(10.dp),
-                                color = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else AppTheme.colors.canvasBackground,
-                                border = androidx.compose.foundation.BorderStroke(
-                                    1.dp,
-                                    if (isSelected) MaterialTheme.colorScheme.primary else AppTheme.colors.borderSubtle
-                                )
+                                color = Color.Transparent
                             ) {
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(horizontal = 14.dp, vertical = 10.dp),
+                                        .padding(horizontal = 12.dp, vertical = 10.dp),
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Column(modifier = Modifier.weight(1f)) {
+                                    Column {
                                         Text(
                                             text = unitDef.name,
-                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                            fontWeight = FontWeight.SemiBold,
                                             fontSize = 14.sp,
                                             color = AppTheme.colors.textPrimary
                                         )
                                         Text(
                                             text = "Symbol: ${unitDef.symbol}",
-                                            fontSize = 12.sp,
+                                            fontSize = 11.sp,
                                             color = AppTheme.colors.textSecondary
                                         )
                                     }
-                                    if (isSelected) {
-                                        Icon(
-                                            Icons.Default.Check,
-                                            contentDescription = "Selected",
-                                            tint = MaterialTheme.colorScheme.primary,
-                                            modifier = Modifier.size(18.dp)
-                                        )
-                                    }
+                                    Text(
+                                        text = unitDef.symbol,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 13.sp,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
                                 }
                             }
                         }
@@ -666,7 +691,7 @@ fun UnitConverterScreen(
             },
             confirmButton = {
                 TextButton(onClick = { pickerTarget = null }) {
-                    Text("Close", color = MaterialTheme.colorScheme.primary)
+                    Text("Close", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                 }
             }
         )

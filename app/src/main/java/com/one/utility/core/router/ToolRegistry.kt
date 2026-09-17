@@ -48,6 +48,28 @@ class ToolDefinition(
         id == "storage_analyzer" -> "storage_cleaner"
         id == "batch_file_renamer" -> "batch_rename"
         id == "qr_generator_tool" -> "qr"
+        id == "conv_currency" -> "currency_time"
+        id == "unit_converter_main" -> "unit_converter"
+        category == ToolCategory.CONVERTER || id.startsWith("conv_") -> {
+            val catParam = when {
+                id.contains("length") || id.contains("distance") -> "length_astronomy"
+                id.contains("weight") || id.contains("mass") -> "mass_chemistry"
+                id.contains("temp") -> "temperature"
+                id.contains("volume") -> "volume"
+                id.contains("area") -> "area"
+                id.contains("speed") -> "speed"
+                id.contains("time") -> "time"
+                id.contains("data") -> "data_storage"
+                id.contains("energy") -> "energy"
+                id.contains("power") -> "power"
+                id.contains("pressure") -> "pressure"
+                id.contains("frequency") -> "frequency"
+                id.contains("angle") -> "angle"
+                id.contains("fuel") -> "fuel_economy"
+                else -> "length_astronomy"
+            }
+            "unit_converter?cat=$catParam"
+        }
         else -> "tool/$id"
     }
 
@@ -913,8 +935,17 @@ object ToolRegistry {
         ),
 
         // ==========================================
-        // 🔄 Category 6: CONVERTERS (17 Tools)
+        // 🔄 Category 6: CONVERTERS (18 Tools)
         // ==========================================
+        ToolDefinition(
+            id = "unit_converter_main",
+            title = "Unit Converter",
+            description = "All-in-one scientific & everyday converter: 200+ units across Length, Weight, Temp, Volume & more",
+            category = ToolCategory.CONVERTER,
+            route = "unit_converter",
+            keywords = listOf("unit converter", "convert units", "metric to imperial", "all units", "measurement"),
+            badge = "200+ Units"
+        ),
         ToolDefinition(
             id = "conv_length",
             title = "Length",
@@ -2028,7 +2059,7 @@ object ToolRegistry {
             title = "Converters",
             icon = Icons.Outlined.SwapHoriz,
             toolIds = listOf(
-                "conv_length", "conv_distance", "conv_area", "conv_volume", "conv_weight",
+                "unit_converter_main", "conv_length", "conv_distance", "conv_area", "conv_volume", "conv_weight",
                 "conv_mass", "conv_temp", "conv_speed", "conv_time", "conv_data_storage",
                 "conv_energy", "conv_power", "conv_pressure", "conv_frequency", "conv_angle",
                 "conv_fuel_economy", "conv_currency"

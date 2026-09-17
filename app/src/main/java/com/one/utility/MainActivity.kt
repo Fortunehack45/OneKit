@@ -158,6 +158,21 @@ fun OneAppNavigation(
                 )
             }
 
+            composable(
+                route = "unit_converter?cat={cat}",
+                arguments = listOf(navArgument("cat") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                })
+            ) { backStackEntry ->
+                val cat = backStackEntry.arguments?.getString("cat")
+                UnitConverterScreen(
+                    initialCategoryId = cat,
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
             composable("unit_converter") {
                 UnitConverterScreen(
                     onNavigateBack = { navController.popBackStack() }

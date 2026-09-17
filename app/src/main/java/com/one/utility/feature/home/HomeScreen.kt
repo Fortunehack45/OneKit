@@ -157,26 +157,26 @@ fun HomeScreen(
     }
 
     fun getIconForTool(route: String): ImageVector {
-        return when (route) {
-            "image_to_pdf" -> Icons.Outlined.PictureAsPdf
-            "background_remover" -> Icons.Outlined.AutoFixHigh
-            "compressor" -> Icons.Outlined.Compress
-            "resizer" -> Icons.Outlined.AspectRatio
-            "image_cropper" -> Icons.Outlined.Crop
-            "image_converter" -> Icons.Outlined.Transform
-            "calculator" -> Icons.Outlined.Calculate
-            "unit_converter" -> Icons.Outlined.SyncAlt
-            "everyday_calculators" -> Icons.Outlined.AttachMoney
-            "currency_time" -> Icons.Outlined.Schedule
-            "qr" -> Icons.Outlined.QrCode
-            "document_scanner" -> Icons.Outlined.DocumentScanner
-            "pdf_toolbox" -> Icons.Outlined.FolderZip
-            "text_tools" -> Icons.AutoMirrored.Outlined.Segment
-            "cool_fonts" -> Icons.Outlined.TextFields
-            "password_generator" -> Icons.Outlined.Lock
-            "storage_cleaner" -> Icons.Outlined.CleaningServices
-            "batch_rename" -> Icons.Outlined.DriveFileRenameOutline
-            "dev_tools" -> Icons.Outlined.Code
+        return when {
+            route.startsWith("unit_converter") -> Icons.Outlined.SyncAlt
+            route == "image_to_pdf" -> Icons.Outlined.PictureAsPdf
+            route == "background_remover" -> Icons.Outlined.AutoFixHigh
+            route == "compressor" -> Icons.Outlined.Compress
+            route == "resizer" -> Icons.Outlined.AspectRatio
+            route == "image_cropper" -> Icons.Outlined.Crop
+            route == "image_converter" -> Icons.Outlined.Transform
+            route.startsWith("calculator") -> Icons.Outlined.Calculate
+            route == "everyday_calculators" -> Icons.Outlined.AttachMoney
+            route == "currency_time" -> Icons.Outlined.Schedule
+            route == "qr" -> Icons.Outlined.QrCode
+            route == "document_scanner" -> Icons.Outlined.DocumentScanner
+            route == "pdf_toolbox" -> Icons.Outlined.FolderZip
+            route == "text_tools" -> Icons.AutoMirrored.Outlined.Segment
+            route == "cool_fonts" -> Icons.Outlined.TextFields
+            route == "password_generator" -> Icons.Outlined.Lock
+            route == "storage_cleaner" -> Icons.Outlined.CleaningServices
+            route == "batch_rename" -> Icons.Outlined.DriveFileRenameOutline
+            route == "dev_tools" -> Icons.Outlined.Code
             else -> Icons.Outlined.Build
         }
     }

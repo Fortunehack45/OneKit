@@ -42,6 +42,7 @@ import com.one.utility.core.designsystem.*
 import com.one.utility.core.processing.*
 import com.one.utility.core.router.ToolDefinition
 import com.one.utility.core.router.ToolRegistry
+import com.one.utility.feature.calculator.UnitConverterScreen
 import kotlinx.coroutines.launch
 import java.io.File
 import java.time.LocalDate
@@ -65,6 +66,31 @@ fun DedicatedToolScreen(
             route = "tool/$toolId",
             keywords = emptyList()
         )
+    }
+
+    if (tool.category == com.one.utility.core.router.ToolCategory.CONVERTER || toolId.startsWith("conv_") || toolId == "unit_converter_main") {
+        val catId = when {
+            toolId.contains("length") || toolId.contains("distance") -> "length_astronomy"
+            toolId.contains("weight") || toolId.contains("mass") -> "mass_chemistry"
+            toolId.contains("temp") -> "temperature"
+            toolId.contains("volume") -> "volume"
+            toolId.contains("area") -> "area"
+            toolId.contains("speed") -> "speed"
+            toolId.contains("time") -> "time"
+            toolId.contains("data") -> "data_storage"
+            toolId.contains("energy") -> "energy"
+            toolId.contains("power") -> "power"
+            toolId.contains("pressure") -> "pressure"
+            toolId.contains("frequency") -> "frequency"
+            toolId.contains("angle") -> "angle"
+            toolId.contains("fuel") -> "fuel_economy"
+            else -> null
+        }
+        UnitConverterScreen(
+            initialCategoryId = catId,
+            onNavigateBack = onNavigateBack
+        )
+        return
     }
 
     Scaffold(
@@ -1359,7 +1385,7 @@ fun DedicatedToolBody(
                     }
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text("Application Version:", fontSize = 13.sp, color = AppTheme.colors.textSecondary)
-                        Text("ONE Utility OS v1.1.4", fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary)
+                        Text("ONE Utility OS v1.1.5", fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary)
                     }
                     if (batteryLevel >= 0) {
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -1372,161 +1398,19 @@ fun DedicatedToolBody(
         }
 
         // =========================================================================
-        // 🔄 CONVERTERS (ALL 17 CONVERTERS)
+        // 🔄 FALLBACK
         // =========================================================================
         else -> {
-            if (toolId.startsWith("conv_") || tool.category == com.one.utility.core.router.ToolCategory.CONVERTER) {
-                var inputValue by remember { mutableStateOf("10") }
-                val matchingCategory = remember(toolId) {
-                    when {
-                        toolId.contains("length") || toolId.contains("distance") -> unitsEngine.categories.find { it.id == "length_astronomy" }
-                        toolId.contains("weight") || toolId.contains("mass") -> unitsEngine.categories.find { it.id == "mass_chemistry" }
-                        toolId.contains("data") || toolId.contains("storage") -> unitsEngine.categories.find { it.id == "data_storage" }
-                        toolId.contains("time") -> unitsEngine.categories.find { it.id == "time" }
-                        toolId.contains("speed") -> unitsEngine.categories.find { it.id == "speed" }
-                        toolId.contains("temp") -> unitsEngine.categories.find { it.id == "temperature" }
-                        toolId.contains("energy") -> unitsEngine.categories.find { it.id == "energy" }
-                        toolId.contains("power") -> unitsEngine.categories.find { it.id == "power" }
-                        toolId.contains("pressure") -> unitsEngine.categories.find { it.id == "pressure" }
-                        toolId.contains("angle") -> unitsEngine.categories.find { it.id == "angle" }
-                        toolId.contains("fuel") -> unitsEngine.categories.find { it.id == "fuel_economy" }
-                        else -> unitsEngine.categories.firstOrNull()
-                    } ?: unitsEngine.categories.first()
-                }
-                val units = matchingCategory.units
-                var fromUnitIndex by remember { mutableIntStateOf(0) }
-                var toUnitIndex by remember { mutableIntStateOf(if (units.size > 1) 1 else 0) }
-
-                val fromUnit = units.getOrNull(fromUnitIndex) ?: units.first()
-                val toUnit = units.getOrNull(toUnitIndex) ?: units.first()
-                val inVal = inputValue.toDoubleOrNull() ?: 0.0
-
-                val convertedValue = if (fromUnit.id == toUnit.id) {
-                    inVal
-                } else if (matchingCategory.id == "temperature") {
-                    when (fromUnit.id) {
-                        "c" -> when (toUnit.id) {
-                            "f" -> (inVal * 9.0 / 5.0) + 32.0
-                            "k" -> inVal + 273.15
-                            else -> inVal
-                        }
-                        "f" -> when (toUnit.id) {
-                            "c" -> (inVal - 32.0) * 5.0 / 9.0
-                            "k" -> (inVal - 32.0) * 5.0 / 9.0 + 273.15
-                            else -> inVal
-                        }
-                        "k" -> when (toUnit.id) {
-                            "c" -> inVal - 273.15
-                            "f" -> (inVal - 273.15) * 9.0 / 5.0 + 32.0
-                            else -> inVal
-                        }
-                        else -> inVal
-                    }
-                } else {
-                    val base = inVal * fromUnit.factorToBase
-                    base / toUnit.factorToBase
-                }
-
-                Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                    OutlinedTextField(
-                        value = inputValue,
-                        onValueChange = { inputValue = it },
-                        label = { Text("Enter Value (${fromUnit.symbol})") },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(14.dp)
-                    )
-
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                        var fromExpanded by remember { mutableStateOf(false) }
-                        Box(modifier = Modifier.weight(1f)) {
-                            OutlinedButton(
-                                onClick = { fromExpanded = true },
-                                modifier = Modifier.fillMaxWidth().height(48.dp),
-                                shape = RoundedCornerShape(12.dp)
-                            ) {
-                                Text("${fromUnit.symbol} - ${fromUnit.name}", maxLines = 1, color = AppTheme.colors.textPrimary, fontSize = 12.sp)
-                            }
-                            DropdownMenu(expanded = fromExpanded, onDismissRequest = { fromExpanded = false }) {
-                                units.forEachIndexed { idx, u ->
-                                    DropdownMenuItem(
-                                        text = { Text("${u.name} (${u.symbol})") },
-                                        onClick = {
-                                            fromUnitIndex = idx
-                                            fromExpanded = false
-                                        }
-                                    )
-                                }
-                            }
-                        }
-
-                        IconButton(
-                            onClick = {
-                                val temp = fromUnitIndex
-                                fromUnitIndex = toUnitIndex
-                                toUnitIndex = temp
-                            }
-                        ) {
-                            Icon(Icons.Default.SwapHoriz, contentDescription = "Swap", tint = MaterialTheme.colorScheme.primary)
-                        }
-
-                        var toExpanded by remember { mutableStateOf(false) }
-                        Box(modifier = Modifier.weight(1f)) {
-                            OutlinedButton(
-                                onClick = { toExpanded = true },
-                                modifier = Modifier.fillMaxWidth().height(48.dp),
-                                shape = RoundedCornerShape(12.dp)
-                            ) {
-                                Text("${toUnit.symbol} - ${toUnit.name}", maxLines = 1, color = AppTheme.colors.textPrimary, fontSize = 12.sp)
-                            }
-                            DropdownMenu(expanded = toExpanded, onDismissRequest = { toExpanded = false }) {
-                                units.forEachIndexed { idx, u ->
-                                    DropdownMenuItem(
-                                        text = { Text("${u.name} (${u.symbol})") },
-                                        onClick = {
-                                            toUnitIndex = idx
-                                            toExpanded = false
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    Surface(
-                        shape = RoundedCornerShape(18.dp),
-                        color = AppTheme.colors.cardSurface,
-                        modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(18.dp))
-                    ) {
-                        Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                            Text("Converted Result:", fontSize = 13.sp, color = AppTheme.colors.textSecondary)
-                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                                val formatted = if (convertedValue % 1.0 == 0.0) String.format(Locale.US, "%,d", convertedValue.toLong()) else String.format(Locale.US, "%,.4f", convertedValue).trimEnd('0').trimEnd('.')
-                                Text(
-                                    text = "$formatted ${toUnit.symbol}",
-                                    fontSize = 28.sp,
-                                    fontWeight = FontWeight.Black,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                IconButton(onClick = { copy("$formatted ${toUnit.symbol}") }) {
-                                    Icon(Icons.Default.ContentCopy, contentDescription = "Copy", tint = AppTheme.colors.textPrimary, modifier = Modifier.size(18.dp))
-                                }
-                            }
-                        }
-                    }
-                }
-            } else {
-                when (tool.category) {
-                    com.one.utility.core.router.ToolCategory.IMAGES -> DedicatedImageResizerView()
-                    com.one.utility.core.router.ToolCategory.PDF -> DedicatedPdfCompressorView()
-                    com.one.utility.core.router.ToolCategory.SCANNER -> DedicatedReceiptScannerView()
-                    com.one.utility.core.router.ToolCategory.FILES -> DedicatedFileInfoView()
-                    com.one.utility.core.router.ToolCategory.CALCULATOR, com.one.utility.core.router.ToolCategory.MONEY -> DedicatedLoanCalcView(copyAction = ::copy)
-                    com.one.utility.core.router.ToolCategory.DATE_TIME -> DedicatedWorldClockView()
-                    com.one.utility.core.router.ToolCategory.TEXT -> DedicatedFindReplaceView(copyAction = ::copy)
-                    com.one.utility.core.router.ToolCategory.TECH -> DedicatedHashGeneratorView(copyAction = ::copy)
-                    com.one.utility.core.router.ToolCategory.CONVERTER -> DedicatedFileInfoView()
-                }
+            when (tool.category) {
+                com.one.utility.core.router.ToolCategory.IMAGES -> DedicatedImageResizerView()
+                com.one.utility.core.router.ToolCategory.PDF -> DedicatedPdfCompressorView()
+                com.one.utility.core.router.ToolCategory.SCANNER -> DedicatedReceiptScannerView()
+                com.one.utility.core.router.ToolCategory.FILES -> DedicatedFileInfoView()
+                com.one.utility.core.router.ToolCategory.CALCULATOR, com.one.utility.core.router.ToolCategory.MONEY -> DedicatedLoanCalcView(copyAction = ::copy)
+                com.one.utility.core.router.ToolCategory.DATE_TIME -> DedicatedWorldClockView()
+                com.one.utility.core.router.ToolCategory.TEXT -> DedicatedFindReplaceView(copyAction = ::copy)
+                com.one.utility.core.router.ToolCategory.TECH -> DedicatedHashGeneratorView(copyAction = ::copy)
+                com.one.utility.core.router.ToolCategory.CONVERTER -> DedicatedFileInfoView()
             }
         }
     }
