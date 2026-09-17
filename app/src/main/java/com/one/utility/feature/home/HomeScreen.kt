@@ -67,11 +67,7 @@ fun HomeScreen(
     var showLayoutSheet by remember { mutableStateOf(false) }
 
     fun launchTool(id: String, title: String, route: String) {
-        val targetRoute = if (route in listOf("image_to_pdf", "compressor", "background_remover", "document_scanner", "cool_fonts", "qr", "storage_cleaner", "batch_rename", "pdf_toolbox")) {
-            route
-        } else {
-            "tool/$id"
-        }
+        val targetRoute = if (route.isNotBlank()) route else "tool/$id"
         prefs.addRecentTool(id, title, targetRoute)
         recentTools = prefs.getRecentTools()
         onNavigateToTool(targetRoute)

@@ -186,4 +186,223 @@ class DeveloperToolsEngine {
         val blue = Math.round((bPrime + m) * 255).toInt().coerceIn(0, 255)
         return Triple(red, green, blue)
     }
+
+    // 10. XML Formatter
+    fun formatXml(xml: String): String {
+        val trimmed = xml.trim()
+        if (trimmed.isEmpty()) return ""
+        val sb = StringBuilder()
+        var indent = 0
+        var i = 0
+        while (i < trimmed.length) {
+            if (trimmed[i] == '<') {
+                val closeTag = trimmed.indexOf('>', i)
+                if (closeTag == -1) {
+                    sb.append(trimmed.substring(i))
+                    break
+                }
+                val tag = trimmed.substring(i, closeTag + 1)
+                val isClosing = tag.startsWith("</")
+                val isSelfClosing = tag.endsWith("/>") || tag.startsWith("<?") || tag.startsWith("<!")
+
+                if (isClosing) {
+                    indent = (indent - 1).coerceAtLeast(0)
+                }
+
+                if (sb.isNotEmpty() && sb.last() != '\n') sb.append("\n")
+                sb.append("  ".repeat(indent)).append(tag)
+
+                if (!isClosing && !isSelfClosing) {
+                    indent++
+                }
+                i = closeTag + 1
+            } else {
+                val nextTag = trimmed.indexOf('<', i)
+                val content = if (nextTag == -1) trimmed.substring(i) else trimmed.substring(i, nextTag)
+                val cleanContent = content.trim()
+                if (cleanContent.isNotEmpty()) {
+                    sb.append(cleanContent)
+                }
+                i = if (nextTag == -1) trimmed.length else nextTag
+            }
+        }
+        return sb.toString()
+    }
+
+    // 11. CSS Formatter
+    fun formatCss(css: String): String {
+        val trimmed = css.trim()
+        if (trimmed.isEmpty()) return ""
+        val sb = StringBuilder()
+        var indent = 0
+        val tokens = trimmed.replace("\r", "").split(Regex("""(?<=[{};])|(?=[{}])""")).map { it.trim() }.filter { it.isNotEmpty() }
+        for (token in tokens) {
+            when (token) {
+                "{" -> {
+                    sb.append(" {\n")
+                    indent++
+                }
+                "}" -> {
+                    indent = (indent - 1).coerceAtLeast(0)
+                    sb.append("\n").append("  ".repeat(indent)).append("}\n")
+                }
+                else -> {
+                    if (sb.isNotEmpty() && sb.last() != '\n') sb.append("\n")
+                    sb.append("  ".repeat(indent)).append(token)
+                }
+            }
+        }
+        return sb.toString().trim()
+    }
+
+    // 12. URL Parser
+    data class ParsedUrl(
+        val scheme: String,
+        val host: String,
+        val port: String,
+        val path: String,
+        val queryParams: Map<String, String>,
+        val fragment: String
+    )
+
+    fun parseUrl(urlString: String): ParsedUrl {
+        return runCatching {
+            val uri = java.net.URI(urlString.trim())
+            val params = mutableMapOf<String, String>()
+            uri.query?.split("&")?.forEach { part ->
+                val kv = part.split("=")
+                if (kv.isNotEmpty()) {
+                    val k = URLDecoder.decode(kv[0], "UTF-8")
+                    val v = if (kv.size > 1) URLDecoder.decode(kv[1], "UTF-8") else ""
+                    params[k] = v
+                }
+            }
+            ParsedUrl(
+                scheme = uri.scheme ?: "http",
+                host = uri.host ?: "",
+                port = if (uri.port != -1) uri.port.toString() else "default",
+                path = uri.path ?: "/",
+                queryParams = params,
+                fragment = uri.fragment ?: ""
+            )
+        }.getOrDefault(ParsedUrl("", "", "", "", emptyMap(), ""))
+    }
+
+    // 13. Regex Evaluator
+    data class RegexEvaluation(
+        val isMatch: Boolean,
+        val matchCount: Int,
+        val matches: List<String>
+    )
+
+    fun evaluateRegex(pattern: String, text: String): RegexEvaluation {
+        return runCatching {
+            val r = Regex(pattern)
+            val allMatches = r.findAll(text).map { it.value }.toList()
+            RegexEvaluation(allMatches.isNotEmpty(), allMatches.size, allMatches)
+        }.getOrElse {
+            RegexEvaluation(false, 0, emptyList())
+        }
+    }
+
+    // 14. AES 128/256 Offline Text Encryption & Decryption
+    fun aesEncrypt(text: String, secretKey: String): String {
+        return runCatching {
+            val keyBytes = MessageDigest.getInstance("SHA-256").digest(secretKey.toByteArray(StandardCharsets.UTF_8))
+            val keySpec = javax.crypto.spec.SecretKeySpec(keyBytes, "AES")
+            val iv = ByteArray(16) { 0 }
+            val ivSpec = javax.crypto.spec.IvParameterSpec(iv)
+            val cipher = javax.crypto.Cipher.getInstance("AES/CBC/PKCS5Padding")
+            cipher.init(javax.crypto.Cipher.ENCRYPT_MODE, keySpec, ivSpec)
+            val encrypted = cipher.doFinal(text.toByteArray(StandardCharsets.UTF_8))
+            Base64.encodeToString(encrypted, Base64.NO_WRAP)
+        }.getOrElse { "Encryption failed: ${it.message}" }
+    }
+
+    fun aesDecrypt(cipherText: String, secretKey: String): String {
+        return runCatching {
+            val keyBytes = MessageDigest.getInstance("SHA-256").digest(secretKey.toByteArray(StandardCharsets.UTF_8))
+            val keySpec = javax.crypto.spec.SecretKeySpec(keyBytes, "AES")
+            val iv = ByteArray(16) { 0 }
+            val ivSpec = javax.crypto.spec.IvParameterSpec(iv)
+            val cipher = javax.crypto.Cipher.getInstance("AES/CBC/PKCS5Padding")
+            cipher.init(javax.crypto.Cipher.DECRYPT_MODE, keySpec, ivSpec)
+            val decoded = Base64.decode(cipherText.trim(), Base64.DEFAULT)
+            val decrypted = cipher.doFinal(decoded)
+            String(decrypted, StandardCharsets.UTF_8)
+        }.getOrElse { "Decryption failed: Incorrect password or invalid ciphertext" }
+    }
+
+    // 15. Password Strength Evaluation
+    data class PasswordStrength(
+        val scorePercent: Int, // 0 to 100
+        val rating: String,
+        val crackTime: String,
+        val checks: List<Pair<String, Boolean>>
+    )
+
+    fun evaluatePasswordStrength(password: String): PasswordStrength {
+        if (password.isEmpty()) return PasswordStrength(0, "Empty", "Instant", emptyList())
+        var score = 0
+        val checks = mutableListOf<Pair<String, Boolean>>()
+
+        val len = password.length
+        val hasLength = len >= 12
+        checks.add("Length ≥ 12 characters" to hasLength)
+        if (hasLength) score += 30 else if (len >= 8) score += 15
+
+        val hasUpper = password.any { it.isUpperCase() }
+        checks.add("Contains Uppercase letter" to hasUpper)
+        if (hasUpper) score += 20
+
+        val hasLower = password.any { it.isLowerCase() }
+        checks.add("Contains Lowercase letter" to hasLower)
+        if (hasLower) score += 15
+
+        val hasDigit = password.any { it.isDigit() }
+        checks.add("Contains Numbers" to hasDigit)
+        if (hasDigit) score += 20
+
+        val hasSpecial = password.any { !it.isLetterOrDigit() }
+        checks.add("Contains Symbols / Special chars" to hasSpecial)
+        if (hasSpecial) score += 15
+
+        score = score.coerceIn(0, 100)
+        val rating = when {
+            score >= 80 -> "Very Strong"
+            score >= 60 -> "Strong"
+            score >= 40 -> "Moderate"
+            else -> "Weak"
+        }
+
+        val crackTime = when {
+            score >= 90 -> "Centuries"
+            score >= 80 -> "Several Years"
+            score >= 60 -> "Few Months"
+            score >= 40 -> "Few Days"
+            score >= 20 -> "Minutes"
+            else -> "Seconds"
+        }
+
+        return PasswordStrength(score, rating, crackTime, checks)
+    }
+
+    // 16. Color Palette Generation
+    fun generatePalette(hex: String): List<String> {
+        val details = parseColor(hex) ?: return listOf(hex)
+        val h = details.h
+        val s = details.s / 100.0
+        val l = details.l / 100.0
+
+        fun toHex(rgb: Triple<Int, Int, Int>) = "#%02X%02X%02X".format(rgb.first, rgb.second, rgb.third)
+
+        return listOf(
+            details.hex,
+            details.complementaryHex,
+            toHex(hslToRgb(((h + 30.0) % 360.0), s, l)), // Analogous 1
+            toHex(hslToRgb(((h + 330.0) % 360.0), s, l)), // Analogous 2
+            toHex(hslToRgb(((h + 120.0) % 360.0), s, l)), // Triadic 1
+            toHex(hslToRgb(((h + 240.0) % 360.0), s, l))  // Triadic 2
+        )
+    }
 }

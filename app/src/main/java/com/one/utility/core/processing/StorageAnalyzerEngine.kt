@@ -246,4 +246,47 @@ class StorageAnalyzerEngine(private val context: Context) {
             else -> "$bytes B"
         }
     }
+
+    suspend fun findEmptyFolders(): List<File> = withContext(Dispatchers.IO) {
+        val emptyDirs = mutableListOf<File>()
+        val roots = listOfNotNull(context.cacheDir, context.filesDir, context.externalCacheDir, context.getExternalFilesDir(null))
+        fun check(dir: File) {
+            val children = dir.listFiles()
+            if (children != null) {
+                if (children.isEmpty()) {
+                    emptyDirs.add(dir)
+                } else {
+                    children.filter { it.isDirectory }.forEach { check(it) }
+                }
+            }
+        }
+        roots.forEach { check(it) }
+        emptyDirs
+    }
+
+    suspend fun deleteEmptyFolders(dirs: List<File>): Int = withContext(Dispatchers.IO) {
+        var count = 0
+        dirs.forEach {
+            if (it.exists() && it.isDirectory && (it.listFiles()?.isEmpty() == true)) {
+                if (it.delete()) count++
+            }
+        }
+        count
+    }
+
+    suspend fun clearAppCache(): Long = withContext(Dispatchers.IO) {
+        var freed = 0L
+        val cacheRoots = listOfNotNull(context.cacheDir, context.externalCacheDir)
+        fun deleteRecursively(file: File) {
+            if (file.isDirectory) {
+                file.listFiles()?.forEach { deleteRecursively(it) }
+            }
+            val len = file.length()
+            if (file.delete()) freed += len
+        }
+        cacheRoots.forEach { root ->
+            root.listFiles()?.forEach { deleteRecursively(it) }
+        }
+        freed
+    }
 }

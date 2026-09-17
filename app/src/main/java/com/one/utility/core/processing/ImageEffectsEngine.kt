@@ -263,4 +263,48 @@ class ImageEffectsEngine(private val context: Context) {
             outFile
         }
     }
+
+    // 11. Studio Background Replacement for Cutouts / Transparent Bitmaps
+    suspend fun replaceBackgroundWithColor(sourceBitmap: Bitmap, bgColor: Int): Bitmap = withContext(Dispatchers.Default) {
+        val result = Bitmap.createBitmap(sourceBitmap.width, sourceBitmap.height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(result)
+        canvas.drawColor(bgColor)
+        canvas.drawBitmap(sourceBitmap, 0f, 0f, null)
+        result
+    }
+
+    // 12. Image Sharpening filter
+    suspend fun applySharpen(source: Bitmap, intensity: Float = 1.0f): Bitmap = withContext(Dispatchers.Default) {
+        val blurred = applyBlur(source, 2)
+        val w = source.width
+        val h = source.height
+        val srcPixels = IntArray(w * h)
+        val blurPixels = IntArray(w * h)
+        source.getPixels(srcPixels, 0, w, 0, 0, w, h)
+        blurred.getPixels(blurPixels, 0, w, 0, 0, w, h)
+
+        val outPixels = IntArray(w * h)
+        val factor = intensity.coerceIn(0.1f, 3.0f)
+
+        for (i in 0 until w * h) {
+            val a = (srcPixels[i] ushr 24) and 0xff
+            val sr = (srcPixels[i] ushr 16) and 0xff
+            val sg = (srcPixels[i] ushr 8) and 0xff
+            val sb = srcPixels[i] and 0xff
+
+            val br = (blurPixels[i] ushr 16) and 0xff
+            val bg = (blurPixels[i] ushr 8) and 0xff
+            val bb = blurPixels[i] and 0xff
+
+            val r = (sr + factor * (sr - br)).toInt().coerceIn(0, 255)
+            val g = (sg + factor * (sg - bg)).toInt().coerceIn(0, 255)
+            val b = (sb + factor * (sb - bb)).toInt().coerceIn(0, 255)
+
+            outPixels[i] = (a shl 24) or (r shl 16) or (g shl 8) or b
+        }
+        blurred.recycle()
+        val result = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+        result.setPixels(outPixels, 0, w, 0, 0, w, h)
+        result
+    }
 }

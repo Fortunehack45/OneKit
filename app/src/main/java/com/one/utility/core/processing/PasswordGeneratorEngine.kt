@@ -43,4 +43,20 @@ class PasswordGeneratorEngine {
 
         return password.toString()
     }
+
+    private val dicewareWords = listOf(
+        "correct", "horse", "battery", "staple", "galaxy", "orbit", "solar", "matrix",
+        "quantum", "cipher", "beacon", "falcon", "forest", "harbor", "island", "jungle",
+        "meteor", "nebula", "planet", "quarry", "rocket", "summit", "tunnel", "valley",
+        "whisper", "zenith", "crystal", "dragon", "echo", "frost", "glacier", "horizon",
+        "legend", "mirror", "oasis", "prism", "quartz", "shadow", "timber", "voyage"
+    )
+
+    fun generatePassphrase(wordCount: Int = 4, separator: String = "-"): String {
+        val random = SecureRandom()
+        val count = wordCount.coerceIn(2, 10)
+        return (1..count).map {
+            dicewareWords[random.nextInt(dicewareWords.size)]
+        }.joinToString(separator)
+    }
 }

@@ -90,11 +90,7 @@ fun ToolsListScreen(
                                 .fillMaxWidth()
                                 .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(20.dp))
                                 .pressFeedback {
-                                    val targetRoute = if (tool.route in listOf("image_to_pdf", "compressor", "background_remover", "document_scanner", "cool_fonts", "qr", "storage_cleaner", "batch_rename", "pdf_toolbox")) {
-                                        tool.route
-                                    } else {
-                                        "tool/${tool.id}"
-                                    }
+                                    val targetRoute = if (tool.route.isNotBlank()) tool.route else "tool/${tool.id}"
                                     onNavigateToTool(targetRoute)
                                 }
                         ) {

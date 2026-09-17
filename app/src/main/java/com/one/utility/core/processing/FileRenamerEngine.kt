@@ -109,4 +109,24 @@ class FileRenamerEngine {
             lastModified = file.lastModified()
         )
     }
+
+    fun renameSingleFile(file: File, newName: String): Result<File> {
+        return runCatching {
+            val parent = file.parentFile ?: throw IllegalArgumentException("Cannot determine parent directory")
+            val cleanName = newName.trim()
+            val dest = File(parent, cleanName)
+            if (file.renameTo(dest)) {
+                dest
+            } else {
+                throw IllegalStateException("Failed to rename file to $cleanName")
+            }
+        }
+    }
+
+    fun changeFileExtension(file: File, newExt: String): Result<File> {
+        val cleanExt = newExt.trim().removePrefix(".")
+        val baseName = file.nameWithoutExtension
+        val newFullName = if (cleanExt.isNotEmpty()) "$baseName.$cleanExt" else baseName
+        return renameSingleFile(file, newFullName)
+    }
 }

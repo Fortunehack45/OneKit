@@ -26,15 +26,39 @@ enum class ToolCategory(val title: String) {
     TECH("Privacy & Tech")
 }
 
-data class ToolDefinition(
+class ToolDefinition(
     val id: String,
     val title: String,
     val description: String,
     val category: ToolCategory,
-    val route: String,
+    route: String,
     val keywords: List<String>,
     val badge: String? = null
-)
+) {
+    val route: String = when {
+        route.startsWith("tool/") -> route
+        id == "image_to_pdf" -> "image_to_pdf"
+        id == "background_remover" -> "background_remover"
+        id == "cool_fonts" -> "cool_fonts"
+        id == "calc_standard" || id == "calc_scientific" -> "calculator"
+        id == "image_compressor" -> "compressor"
+        id == "image_converter" -> "image_converter"
+        id == "image_cropper" -> "image_cropper"
+        id == "scanner_doc" -> "document_scanner"
+        id == "storage_analyzer" -> "storage_cleaner"
+        id == "batch_file_renamer" -> "batch_rename"
+        id == "qr_generator_tool" -> "qr"
+        else -> "tool/$id"
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ToolDefinition) return false
+        return id == other.id
+    }
+
+    override fun hashCode(): Int = id.hashCode()
+}
 
 object ToolRegistry {
     val tools = listOf(

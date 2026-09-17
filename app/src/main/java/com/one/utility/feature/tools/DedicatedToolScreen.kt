@@ -191,7 +191,143 @@ fun DedicatedToolBody(
 
     when (toolId) {
         // =========================================================================
-        // 📸 IMAGE TOOLS
+        // 📄 DEDICATED PDF TOOLS
+        // =========================================================================
+        "pdf_compressor" -> DedicatedPdfCompressorView()
+        "pdf_rotate" -> DedicatedPdfRotateView()
+        "pdf_split" -> DedicatedPdfSplitView()
+        "pdf_to_images", "pdf_to_images_page" -> DedicatedPdfToImagesView()
+        "pdf_merge", "batch_pdf_processing", "pdf_image_to_pdf" -> DedicatedPdfMergeView()
+        "pdf_delete_pages" -> DedicatedPdfDeletePagesView()
+        "pdf_extract_pages" -> DedicatedPdfExtractPagesView()
+        "pdf_duplicate_pages" -> DedicatedPdfDuplicatePagesView()
+        "pdf_reorder" -> DedicatedPdfReorderPagesView()
+        "pdf_page_counter" -> DedicatedPdfPageCountView()
+        "pdf_add_text" -> DedicatedPdfAddTextView()
+        "pdf_add_signature" -> DedicatedSignatureCaptureView()
+        "pdf_watermark", "pdf_metadata_editor" -> DedicatedPdfWatermarkView()
+        "pdf_metadata_viewer" -> DedicatedPdfPageCountView()
+        "pdf_password_protect" -> DedicatedPdfPasswordProtectView()
+        "pdf_unlock" -> DedicatedPdfUnlockView()
+        "pdf_page_size_converter" -> DedicatedPdfPageSizeConverterView()
+        "pdf_scanner" -> DedicatedReceiptScannerView()
+
+        // =========================================================================
+        // 📸 DEDICATED IMAGE TOOLS
+        // =========================================================================
+        "image_resizer" -> DedicatedImageResizerView()
+        "image_sharpen" -> DedicatedImageSharpenView()
+        "image_grayscale" -> DedicatedImageGrayscaleView()
+        "image_brightness", "image_contrast", "image_saturation" -> DedicatedImageBrightnessContrastView()
+        "background_changer" -> DedicatedBackgroundChangerView()
+        "screenshot_cropper" -> DedicatedScreenshotCropperView()
+        "batch_image_compressor" -> DedicatedBatchImageCompressorView()
+        "batch_image_resizer" -> DedicatedBatchImageResizerView()
+        "batch_image_converter" -> DedicatedBatchImageConverterView()
+        "batch_image_renamer" -> DedicatedBatchImageRenamerView()
+
+        // =========================================================================
+        // 📷 DEDICATED SCANNER TOOLS
+        // =========================================================================
+        "scanner_id", "scanner_passport" -> DedicatedIdScannerView()
+        "scanner_receipt", "scanner_receipt_card", "scanner_contrast", "scanner_bw", "scan_to_image", "scan_to_pdf", "scanner_ocr", "ocr_to_text" -> DedicatedReceiptScannerView()
+        "signature_capture" -> DedicatedSignatureCaptureView()
+        "scanner_perspective", "scanner_auto_edge", "scanner_multi_page", "scanner_book", "scanner_whiteboard" -> DedicatedScreenshotCropperView()
+
+        // =========================================================================
+        // 🧹 DEDICATED STORAGE & FILE TOOLS
+        // =========================================================================
+        "empty_folder_finder" -> DedicatedEmptyFolderFinderView()
+        "temporary_file_cleaner", "cache_cleaner" -> DedicatedCacheCleanerView()
+        "zip_creator" -> DedicatedZipCreatorView()
+        "zip_extractor" -> DedicatedZipExtractorView()
+        "file_information", "file_size_analyzer" -> DedicatedFileInfoView()
+        "folder_size_analyzer" -> DedicatedFolderSizeView()
+        "duplicate_file_finder" -> DedicatedDuplicateFinderView()
+        "large_file_finder" -> DedicatedLargeFileFinderView()
+        "file_renamer" -> DedicatedFileRenamerView()
+        "file_extension_changer" -> DedicatedExtensionChangerView()
+        "screenshot_finder" -> DedicatedScreenshotFinderView()
+        "download_finder" -> DedicatedDownloadFinderView()
+        "similar_image_finder" -> DedicatedSimilarImageFinderView()
+        "old_file_finder" -> DedicatedOldFileFinderView()
+
+        // =========================================================================
+        // 🧮 DEDICATED CALCULATOR TOOLS
+        // =========================================================================
+        "calc_loan", "loan_calculator", "money_loan_payment", "calc_emi", "emi_calculator" -> DedicatedLoanCalcView(copyAction = ::copy)
+        "calc_mortgage", "mortgage_calculator" -> DedicatedMortgageCalcView(copyAction = ::copy)
+        "calc_savings", "savings_goal", "money_savings_goal", "calc_savings_goal" -> DedicatedSavingsGoalCalcView(copyAction = ::copy)
+        "calc_compound_interest", "compound_interest_calculator", "money_compound_growth" -> DedicatedCompoundInterestCalcView(copyAction = ::copy)
+        "calc_simple_interest", "money_interest" -> DedicatedSimpleInterestView(copyAction = ::copy)
+        "calc_investment_return" -> DedicatedInvestmentReturnView(copyAction = ::copy)
+        "calc_profit", "calc_profit_margin", "calc_markup", "money_profit_loss", "money_markup", "money_margin" -> DedicatedProfitMarginView(copyAction = ::copy)
+        "calc_ratio", "ratio_calculator" -> DedicatedRatioCalcView(copyAction = ::copy)
+        "calc_fraction" -> DedicatedFractionView(copyAction = ::copy)
+        "calc_average", "average_calculator" -> DedicatedAverageCalcView(copyAction = ::copy)
+        "calc_speed", "calc_distance", "calc_time_diff" -> DedicatedSpeedDistanceTimeView(copyAction = ::copy)
+        "calc_fuel_cost" -> DedicatedFuelCostView(copyAction = ::copy)
+
+        // =========================================================================
+        // 📅 DEDICATED DATE & TIME TOOLS
+        // =========================================================================
+        "time_world_clock", "world_clock" -> DedicatedWorldClockView()
+        "time_zone_converter" -> DedicatedTimeZoneConverterView()
+        "time_stopwatch", "stopwatch" -> DedicatedStopwatchView()
+        "time_timer", "timer" -> DedicatedTimerView()
+        "time_countdown", "countdown" -> DedicatedTimeCountdownView()
+        "time_unix_timestamp", "tech_unix_timestamp", "unix_timestamp" -> DedicatedUnixTimestampView(copyAction = ::copy)
+        "time_business_days", "business_days" -> DedicatedBusinessDaysView(copyAction = ::copy)
+        "time_date_calculator", "time_date_difference", "calc_date_diff", "date_difference_calculator", "date_difference" -> DedicatedDateCalculatorView(copyAction = ::copy)
+        "time_week_number" -> DedicatedWeekNumberView(copyAction = ::copy)
+        "time_alarm_shortcuts" -> DedicatedAlarmShortcutsView()
+
+        // =========================================================================
+        // 🔐 DEDICATED PRIVACY & TECH TOOLS
+        // =========================================================================
+        "qr_wifi" -> DedicatedWifiQrView()
+        "qr_contact", "qr_email", "qr_phone", "qr_url", "qr_text_tool" -> DedicatedContactQrView()
+        "barcode_generator_tool" -> DedicatedBarcodeGeneratorView()
+        "barcode_scanner_tool", "qr_scanner_tool" -> DedicatedReceiptScannerView()
+        "hash_sha256_tool", "hash_sha512_tool", "hash_md5_tool", "file_hash_checker" -> DedicatedHashGeneratorView(copyAction = ::copy)
+        "base64_enc", "base64_dec" -> DedicatedBase64CodecView(copyAction = ::copy)
+        "url_enc", "url_dec", "url_codec_tool" -> DedicatedUrlCodecView(copyAction = ::copy)
+        "local_text_enc" -> DedicatedAesEncryptionView(copyAction = ::copy)
+        "local_text_dec" -> DedicatedAesDecryptionView(copyAction = ::copy)
+        "json_formatter_tool", "json_minifier_tool", "xml_formatter_tool", "html_formatter_tool", "css_formatter_tool", "html_escape_tool" -> DedicatedJsonFormatterView(copyAction = ::copy)
+        "passphrase_gen", "pass_generator_tool" -> DedicatedPassphraseGenView(copyAction = ::copy)
+        "pass_strength_checker" -> DedicatedPasswordStrengthView()
+        "random_num_gen" -> DedicatedRandomNumberView(copyAction = ::copy)
+        "random_str_gen" -> DedicatedRandomStringView(copyAction = ::copy)
+        "url_parser_tool" -> DedicatedUrlParserView()
+        "jwt_decoder_tool" -> DedicatedJwtDecoderView(copyAction = ::copy)
+        "regex_tester_tool" -> DedicatedRegexTesterView()
+        "color_picker", "screen_color_picker" -> DedicatedColorPickerView(copyAction = ::copy)
+        "color_converter_tool", "hex_to_rgb_tool", "rgb_to_hex_tool", "hsl_converter_tool", "color_hex_to_rgb", "color_rgb_to_hex", "color_rgb_to_hsl", "color_hsl_to_rgb", "color_hex_to_hsl" -> DedicatedColorConverterView(copyAction = ::copy)
+        "color_palette_gen", "complementary_color" -> DedicatedColorPaletteGeneratorView(copyAction = ::copy)
+        "contrast_checker" -> DedicatedContrastCheckerView()
+        "user_agent_viewer" -> DedicatedUserAgentView(copyAction = ::copy)
+        "ip_information" -> DedicatedIpInfoView(copyAction = ::copy)
+        "dns_lookup_tool" -> DedicatedDnsLookupView(copyAction = ::copy)
+        "http_status_checker" -> DedicatedHttpStatusView()
+
+        // =========================================================================
+        // ✍️ DEDICATED TEXT TOOLS
+        // =========================================================================
+        "text_char_counter", "text_char_count", "character_counter" -> DedicatedCharCounterView()
+        "text_sentence_counter", "text_sentence_count", "sentence_counter" -> DedicatedSentenceCounterView()
+        "text_line_counter", "text_line_count", "line_counter" -> DedicatedLineCounterView()
+        "text_reading_time", "reading_time_calculator" -> DedicatedReadingTimeView(copyAction = ::copy)
+        "text_remove_spaces" -> DedicatedRemoveSpacesView(copyAction = ::copy)
+        "text_cleaner" -> DedicatedTextCleanerView(copyAction = ::copy)
+        "text_reverse" -> DedicatedReverseTextView(copyAction = ::copy)
+        "text_remove_dup_lines" -> DedicatedRemoveDuplicateLinesView(copyAction = ::copy)
+        "text_sort_lines" -> DedicatedSortLinesView(copyAction = ::copy)
+        "text_find_replace" -> DedicatedFindReplaceView(copyAction = ::copy)
+        "text_to_qr" -> DedicatedContactQrView()
+
+        // =========================================================================
+        // 📸 IMAGE TOOLS (CONTINUED)
         // =========================================================================
         "image_rotator" -> {
             var selectedUri by remember { mutableStateOf<Uri?>(null) }
@@ -969,7 +1105,7 @@ fun DedicatedToolBody(
             }
         }
 
-        "calc_age", "age_calculator", "calc_date_diff", "date_difference_calculator", "date_difference", "calc_time_diff" -> {
+        "calc_age", "age_calculator" -> {
             var startYear by remember { mutableStateOf("1998") }
             var startMonth by remember { mutableStateOf("5") }
             var startDay by remember { mutableStateOf("15") }
@@ -1015,7 +1151,7 @@ fun DedicatedToolBody(
         // =========================================================================
         // ✍️ TEXT TOOLS
         // =========================================================================
-        "text_word_count", "text_char_count", "text_sentence_count", "text_line_count", "text_reading_time", "word_counter", "character_counter", "sentence_counter", "line_counter", "reading_time_calculator" -> {
+        "text_word_count", "text_word_counter", "word_counter" -> {
             var textInput by remember { mutableStateOf("The quick brown fox jumps over the lazy dog. ONE is an offline everyday utility operating system.") }
             val stats = textEngine.analyze(textInput)
 
@@ -1185,7 +1321,7 @@ fun DedicatedToolBody(
             }
         }
 
-        "device_info", "device_information", "android_version_info", "screen_resolution", "screen_density", "cpu_info", "cpu_information", "ram_info", "ram_information", "battery_info", "battery_information", "display_info" -> {
+        "device_info", "device_information", "android_version_info", "screen_resolution", "screen_density", "cpu_info", "cpu_information", "ram_info", "ram_information", "battery_info", "battery_information", "display_info", "network_info", "app_info", "storage_info" -> {
             val config = LocalConfiguration.current
             val density = LocalDensity.current
             val screenW = config.screenWidthDp
@@ -1199,6 +1335,21 @@ fun DedicatedToolBody(
             val memInfo = android.app.ActivityManager.MemoryInfo().apply { actManager?.getMemoryInfo(this) }
             val totalRamGb = memInfo.totalMem / (1024.0 * 1024.0 * 1024.0)
             val availRamGb = memInfo.availMem / (1024.0 * 1024.0 * 1024.0)
+
+            val stat = android.os.StatFs(android.os.Environment.getDataDirectory().path)
+            val totalStorageGb = (stat.blockCountLong * stat.blockSizeLong) / (1024.0 * 1024.0 * 1024.0)
+            val availStorageGb = (stat.availableBlocksLong * stat.blockSizeLong) / (1024.0 * 1024.0 * 1024.0)
+
+            val connMgr = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? android.net.ConnectivityManager
+            val activeNet = connMgr?.activeNetwork
+            val caps = connMgr?.getNetworkCapabilities(activeNet)
+            val netType = when {
+                caps == null -> "Offline"
+                caps.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI) -> "Wi-Fi (Active)"
+                caps.hasTransport(android.net.NetworkCapabilities.TRANSPORT_CELLULAR) -> "Cellular (Active)"
+                caps.hasTransport(android.net.NetworkCapabilities.TRANSPORT_ETHERNET) -> "Ethernet"
+                else -> "Connected"
+            }
 
             Surface(
                 shape = RoundedCornerShape(18.dp),
@@ -1228,6 +1379,18 @@ fun DedicatedToolBody(
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text("System RAM:", fontSize = 13.sp, color = AppTheme.colors.textSecondary)
                         Text(String.format(Locale.US, "%.1f GB Free / %.1f GB Total", availRamGb, totalRamGb), fontWeight = FontWeight.Bold, color = BentoEmerald)
+                    }
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("Internal Storage:", fontSize = 13.sp, color = AppTheme.colors.textSecondary)
+                        Text(String.format(Locale.US, "%.1f GB Free / %.1f GB Total", availStorageGb, totalStorageGb), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    }
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("Network Status:", fontSize = 13.sp, color = AppTheme.colors.textSecondary)
+                        Text(netType, fontWeight = FontWeight.Bold, color = if (netType == "Offline") AppTheme.colors.textSecondary else BentoEmerald)
+                    }
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("Application Version:", fontSize = 13.sp, color = AppTheme.colors.textSecondary)
+                        Text("ONE Utility OS v1.1.2", fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary)
                     }
                     if (batteryLevel >= 0) {
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -1384,34 +1547,16 @@ fun DedicatedToolBody(
                     }
                 }
             } else {
-                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Surface(
-                        shape = RoundedCornerShape(18.dp),
-                        color = AppTheme.colors.cardSurface,
-                        modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(18.dp))
-                    ) {
-                        Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                            Text(
-                                text = "Ready to Launch ${tool.title}",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp,
-                                color = AppTheme.colors.textPrimary
-                            )
-                            Text(
-                                text = "This utility operates 100% locally and offline on your device with high performance.",
-                                fontSize = 13.sp,
-                                color = AppTheme.colors.textSecondary
-                            )
-                            Button(
-                                onClick = { onNavigateToRoute(tool.route) },
-                                modifier = Modifier.fillMaxWidth().height(48.dp).pressFeedback(),
-                                shape = RoundedCornerShape(12.dp),
-                                colors = obsidianButtonColors()
-                            ) {
-                                Text("Open ${tool.title}", color = Color.White, fontWeight = FontWeight.Bold)
-                            }
-                        }
-                    }
+                when (tool.category) {
+                    com.one.utility.core.router.ToolCategory.IMAGES -> DedicatedImageResizerView()
+                    com.one.utility.core.router.ToolCategory.PDF -> DedicatedPdfCompressorView()
+                    com.one.utility.core.router.ToolCategory.SCANNER -> DedicatedReceiptScannerView()
+                    com.one.utility.core.router.ToolCategory.FILES -> DedicatedFileInfoView()
+                    com.one.utility.core.router.ToolCategory.CALCULATOR, com.one.utility.core.router.ToolCategory.MONEY -> DedicatedLoanCalcView(copyAction = ::copy)
+                    com.one.utility.core.router.ToolCategory.DATE_TIME -> DedicatedWorldClockView()
+                    com.one.utility.core.router.ToolCategory.TEXT -> DedicatedFindReplaceView(copyAction = ::copy)
+                    com.one.utility.core.router.ToolCategory.TECH -> DedicatedHashGeneratorView(copyAction = ::copy)
+                    com.one.utility.core.router.ToolCategory.CONVERTER -> DedicatedFileInfoView()
                 }
             }
         }
