@@ -27,6 +27,7 @@ jobs:
   build:
     name: Build & Test (APK + Play Store AAB)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout Code
@@ -122,48 +123,33 @@ jobs:
           path: app/build/reports/tests/
           if-no-files-found: ignore
 
-      - name: Publish GitHub Release
+      - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.publish_release)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || inputs.release_tag }}
+          name: "ONE Release ${{ github.ref_type == 'tag' && github.ref_name || inputs.release_tag }}"
+          body: |
+            ## 🎉 ONE — All-in-One Offline Utility App
+
+            ### 📱 Compatibility
+            - **Android Support**: Android 7.0+ (API 24 through Android 15 & 16+).
+            - **Signing**: Signed with official Android APK Signature Scheme v2 + v3 for direct installation without errors.
+
+            ### 📦 Release Assets
+            - **Signed Release APK**: `ONE-release.apk` (Direct install on Android devices)
+            - **Google Play App Bundle**: `ONE-release.aab` (Upload to Google Play Console)
+            - **Debug APK**: `ONE-debug.apk` (Development & testing)
+
+            ### ✨ Features Included
+            - 100% On-Device & Offline-First (Zero cloud tracking, zero external databases).
+            - Android 13+ Material You Themed Icon Support (Adaptive `<monochrome>` layer).
+            - 20 Built-In Tools: Image-to-PDF, Background Removal, Compression, Universal & Everyday Calculators, Document Scanner, Text Tools, Developer Tools, Offline Currency & Time, Storage Analyzer, Batch Renamer, and Chained Workflows.
+            - Pastel Bento-Grid UI matching reference specifications.
+          files: |
+            build/dist/ONE-release.apk
+            build/dist/ONE-release.aab
+            build/dist/ONE-debug.apk
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_REPO: ${{ github.repository }}
-          TAG_INPUT: ${{ github.ref_type == 'tag' && github.ref_name || inputs.release_tag }}
-        run: |
-          TAG_NAME="${TAG_INPUT:-v1.1.6}"
-          echo "Publishing GitHub Release for tag: $TAG_NAME"
-
-          cat << 'EOF' > release_notes.md
-          ## 🎉 ONE — All-in-One Offline Utility App
-
-          ### 📱 Compatibility
-          - **Android Support**: Android 7.0+ (API 24 through Android 15 & 16+).
-          - **Signing**: Signed with official Android APK Signature Scheme v2 + v3 for direct installation without errors.
-
-          ### 📦 Release Assets
-          - **Signed Release APK**: `ONE-release.apk` (Direct install on Android devices)
-          - **Google Play App Bundle**: `ONE-release.aab` (Upload to Google Play Console)
-          - **Debug APK**: `ONE-debug.apk` (Development & testing)
-
-          ### ✨ Features Included
-          - 100% On-Device & Offline-First (Zero cloud tracking, zero external databases).
-          - Android 13+ Material You Themed Icon Support (Adaptive `<monochrome>` layer).
-          - 20 Built-In Tools: Image-to-PDF, Background Removal, Compression, Universal & Everyday Calculators, Document Scanner, Text Tools, Developer Tools, Offline Currency & Time, Storage Analyzer, Batch Renamer, and Chained Workflows.
-          - Pastel Bento-Grid UI matching reference specifications.
-          EOF
-
-          if gh release view "$TAG_NAME" >/dev/null 2>&1; then
-            echo "Release $TAG_NAME already exists."
-          else
-            echo "Creating new release for $TAG_NAME..."
-            gh release create "$TAG_NAME" --title "ONE Release $TAG_NAME" --notes-file release_notes.md
-          fi
-
-          echo "Uploading release assets..."
-          for file in build/dist/ONE-release.apk build/dist/ONE-release.aab build/dist/ONE-debug.apk; do
-            if [ -f "$file" ]; then
-              echo "Uploading $file..."
-              gh release upload "$TAG_NAME" "$file" --clobber
-            fi
-          done
-          echo "All release assets uploaded successfully for $TAG_NAME!"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
