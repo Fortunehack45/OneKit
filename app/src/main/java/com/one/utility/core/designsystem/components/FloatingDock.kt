@@ -2,11 +2,10 @@ package com.one.utility.core.designsystem.components
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,16 +15,19 @@ import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.one.utility.core.designsystem.AppTheme
 import com.one.utility.core.designsystem.DockObsidian
 import com.one.utility.core.designsystem.pressFeedback
@@ -37,6 +39,13 @@ enum class NavigationTab(val icon: ImageVector, val label: String, val route: St
     SETTINGS(Icons.Outlined.Settings, "Settings", "settings")
 }
 
+/**
+ * Flagship floating capsule dock with precise ergonomics:
+ * - Constrained max width of 380dp for perfect symmetry across all screen form factors
+ * - 64dp standard capsule height with dual ambient/spot elevation shadows
+ * - Equal weight distribution across tabs with spring-animated icon scaling and active indicator bars
+ * - Tactile press feedback with haptic response
+ */
 @Composable
 fun FloatingDock(
     selectedTab: NavigationTab,
@@ -46,21 +55,24 @@ fun FloatingDock(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp),
+            .padding(horizontal = 16.dp),
         contentAlignment = Alignment.Center
     ) {
         FrostedGlassBox(
-            shape = RoundedCornerShape(36.dp),
-            elevation = 10.dp,
+            shape = CircleShape,
+            elevation = 12.dp,
             borderWidth = 1.dp,
-            modifier = Modifier.height(66.dp)
+            modifier = Modifier
+                .widthIn(max = 380.dp)
+                .fillMaxWidth()
+                .height(64.dp)
         ) {
             Row(
                 modifier = Modifier
-                    .fillMaxHeight()
-                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                    .fillMaxSize()
+                    .padding(horizontal = 6.dp, vertical = 5.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(14.dp)
+                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 NavigationTab.values().forEach { tab ->
                     val isSelected = tab == selectedTab
@@ -68,38 +80,88 @@ fun FloatingDock(
 
                     val iconColor by animateColorAsState(
                         targetValue = when {
-                            isSelected -> if (isDark) Color(0xFF14151B) else Color.White
-                            else -> if (isDark) Color(0xFFA5A8BA) else Color(0xFF6C6F82)
+                            isSelected -> if (isDark) Color.White else DockObsidian
+                            else -> if (isDark) Color(0xFF888B9E) else Color(0xFF717588)
                         },
                         animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
-                        label = "iconColor"
+                        label = "dockIconColor"
                     )
 
-                    val badgeBg by animateColorAsState(
+                    val labelColor by animateColorAsState(
                         targetValue = when {
                             isSelected -> if (isDark) Color.White else DockObsidian
+                            else -> if (isDark) Color(0xFF888B9E) else Color(0xFF717588)
+                        },
+                        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+                        label = "dockLabelColor"
+                    )
+
+                    val pillBg by animateColorAsState(
+                        targetValue = when {
+                            isSelected -> if (isDark) Color.White.copy(alpha = 0.12f) else DockObsidian.copy(alpha = 0.08f)
                             else -> Color.Transparent
                         },
                         animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
-                        label = "badgeBg"
+                        label = "dockPillBg"
                     )
 
-                    val interactionSource = remember { MutableInteractionSource() }
+                    val indicatorWidth by animateDpAsState(
+                        targetValue = if (isSelected) 12.dp else 0.dp,
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                            stiffness = Spring.StiffnessLow
+                        ),
+                        label = "indicatorWidth"
+                    )
+
+                    val iconScale by animateFloatAsState(
+                        targetValue = if (isSelected) 1.12f else 1.0f,
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                            stiffness = Spring.StiffnessLow
+                        ),
+                        label = "dockIconScale"
+                    )
 
                     Box(
                         modifier = Modifier
-                            .size(52.dp)
+                            .weight(1f)
+                            .fillMaxHeight()
                             .clip(CircleShape)
-                            .background(badgeBg)
+                            .background(pillBg)
                             .pressFeedback { onTabSelected(tab) },
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = tab.icon,
-                            contentDescription = tab.label,
-                            tint = iconColor,
-                            modifier = Modifier.size(24.dp)
-                        )
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                            modifier = Modifier.padding(vertical = 2.dp)
+                        ) {
+                            Icon(
+                                imageVector = tab.icon,
+                                contentDescription = tab.label,
+                                tint = iconColor,
+                                modifier = Modifier
+                                    .size(22.dp)
+                                    .graphicsLayer(scaleX = iconScale, scaleY = iconScale)
+                            )
+                            Spacer(Modifier.height(2.dp))
+                            Text(
+                                text = tab.label,
+                                fontSize = 10.sp,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                color = labelColor,
+                                maxLines = 1
+                            )
+                            Spacer(Modifier.height(2.dp))
+                            Box(
+                                modifier = Modifier
+                                    .height(2.5.dp)
+                                    .width(indicatorWidth)
+                                    .clip(CircleShape)
+                                    .background(if (isDark) MaterialTheme.colorScheme.primary else DockObsidian)
+                            )
+                        }
                     }
                 }
             }

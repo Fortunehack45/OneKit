@@ -1288,38 +1288,7 @@ fun DedicatedToolBody(
         // =========================================================================
         // 🔐 PRIVACY & TECH TOOLS
         // =========================================================================
-        "uuid_gen", "uuid_generator", "tech_uuid_tool" -> {
-            var currentUuid by remember { mutableStateOf(java.util.UUID.randomUUID().toString()) }
-
-            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                Surface(
-                    shape = RoundedCornerShape(18.dp),
-                    color = AppTheme.colors.cardSurface,
-                    modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(18.dp))
-                ) {
-                    Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Text("UUID Version 4 (RFC 4122):", fontSize = 13.sp, color = AppTheme.colors.textSecondary)
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                            Text(currentUuid, fontFamily = FontFamily.Monospace, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary, modifier = Modifier.weight(1f))
-                            IconButton(onClick = { copy(currentUuid) }) {
-                                Icon(Icons.Default.ContentCopy, contentDescription = "Copy", tint = AppTheme.colors.textPrimary, modifier = Modifier.size(18.dp))
-                            }
-                        }
-                    }
-                }
-
-                Button(
-                    onClick = { currentUuid = java.util.UUID.randomUUID().toString() },
-                    modifier = Modifier.fillMaxWidth().height(50.dp).pressFeedback(),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = obsidianButtonColors()
-                ) {
-                    Icon(Icons.Default.Refresh, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Text("Generate New UUID", color = Color.White, fontWeight = FontWeight.Bold)
-                }
-            }
-        }
+        "uuid_gen", "uuid_generator", "tech_uuid_tool" -> DedicatedUuidView(copyAction = ::copy)
 
         "device_info", "device_information", "android_version_info", "screen_resolution", "screen_density", "cpu_info", "cpu_information", "ram_info", "ram_information", "battery_info", "battery_information", "display_info", "network_info", "app_info", "storage_info" -> {
             val config = LocalConfiguration.current
@@ -1390,7 +1359,7 @@ fun DedicatedToolBody(
                     }
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text("Application Version:", fontSize = 13.sp, color = AppTheme.colors.textSecondary)
-                        Text("ONE Utility OS v1.1.2", fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary)
+                        Text("ONE Utility OS v1.1.4", fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary)
                     }
                     if (batteryLevel >= 0) {
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {

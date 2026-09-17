@@ -303,7 +303,7 @@ fun OneAppNavigation(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .navigationBarsPadding()
-                    .padding(bottom = 16.dp)
+                    .padding(bottom = 12.dp)
             )
         }
     }

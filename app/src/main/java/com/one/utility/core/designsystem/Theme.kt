@@ -101,12 +101,22 @@ fun primaryButtonColors(): androidx.compose.material3.ButtonColors = androidx.co
 )
 
 @Composable
-fun accentButtonColors(accentColor: Color): androidx.compose.material3.ButtonColors = androidx.compose.material3.ButtonDefaults.buttonColors(
-    containerColor = accentColor,
-    contentColor = Color(0xFF14151B),
-    disabledContainerColor = if (AppTheme.colors.isDark) Color(0xFF252834) else Color(0xFFE4E6ED),
-    disabledContentColor = if (AppTheme.colors.isDark) Color(0xFF686D80) else Color(0xFF888D9E)
-)
+fun accentButtonColors(accentColor: Color): androidx.compose.material3.ButtonColors {
+    val isDark = AppTheme.colors.isDark
+    val actualContainer = if (accentColor == Color.White && isDark) Color(0xFF2E313D) else accentColor
+    val isLightBackground = if (actualContainer == Color.White) true else {
+        // Luminance approximation: 0.299*R + 0.587*G + 0.114*B
+        (actualContainer.red * 0.299f + actualContainer.green * 0.587f + actualContainer.blue * 0.114f) > 0.55f
+    }
+    val contentColor = if (isLightBackground) Color(0xFF14151B) else Color.White
+
+    return androidx.compose.material3.ButtonDefaults.buttonColors(
+        containerColor = actualContainer,
+        contentColor = contentColor,
+        disabledContainerColor = if (isDark) Color(0xFF252834) else Color(0xFFE4E6ED),
+        disabledContentColor = if (isDark) Color(0xFF686D80) else Color(0xFF888D9E)
+    )
+}
 
 private val LightColorScheme = lightColorScheme(
     primary = DockObsidian,
@@ -126,12 +136,12 @@ private val LightColorScheme = lightColorScheme(
 
 // Matte Slate Grey Palette (Refined charcoal/slate, NOT pitch black)
 private val DarkColorScheme = darkColorScheme(
-    primary = Color.White,
-    onPrimary = DockObsidian,
+    primary = Color(0xFF818CF8),
+    onPrimary = Color.White,
     primaryContainer = Color(0xFF2E313D),
     onPrimaryContainer = Color.White,
     secondary = BentoHoney,
-    onSecondary = TextPrimary,
+    onSecondary = Color.White,
     background = DarkCanvasBackground,
     onBackground = DarkTextPrimary,
     surface = DarkCanvasSurface,

@@ -10,8 +10,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.UnfoldLess
+import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,6 +32,8 @@ fun ToolsListScreen(
     onNavigateToTool: (String) -> Unit,
     onNavigateBack: () -> Unit
 ) {
+    val collapsedSections = remember { mutableStateMapOf<String, Boolean>() }
+
     Scaffold(
         containerColor = AppTheme.colors.canvasBackground,
         topBar = {
@@ -36,6 +42,21 @@ fun ToolsListScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = AppTheme.colors.textPrimary)
+                    }
+                },
+                actions = {
+                    IconButton(onClick = {
+                        val allCollapsed = ToolRegistry.sections.isNotEmpty() && ToolRegistry.sections.all { collapsedSections[it.id] == true }
+                        ToolRegistry.sections.forEach { sec ->
+                            collapsedSections[sec.id] = !allCollapsed
+                        }
+                    }) {
+                        val allCollapsed = ToolRegistry.sections.isNotEmpty() && ToolRegistry.sections.all { collapsedSections[it.id] == true }
+                        Icon(
+                            imageVector = if (allCollapsed) Icons.Default.UnfoldMore else Icons.Default.UnfoldLess,
+                            contentDescription = if (allCollapsed) "Expand All" else "Collapse All",
+                            tint = AppTheme.colors.textPrimary
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = AppTheme.colors.canvasBackground)
@@ -53,36 +74,55 @@ fun ToolsListScreen(
             ToolRegistry.sections.forEach { section ->
                 val sectionTools = section.getTools()
                 if (sectionTools.isNotEmpty()) {
-                    item {
+                    val isCollapsed = collapsedSections[section.id] == true
+                    item(key = "header_${section.id}") {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(10.dp),
-                            modifier = Modifier.padding(top = 16.dp, bottom = 6.dp)
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(10.dp))
+                                .clickable {
+                                    collapsedSections[section.id] = !isCollapsed
+                                }
+                                .padding(top = 16.dp, bottom = 6.dp)
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(30.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
-                                contentAlignment = Alignment.Center
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
-                                Icon(
-                                    imageVector = section.icon,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(16.dp)
+                                Box(
+                                    modifier = Modifier
+                                        .size(30.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = section.icon,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                                Text(
+                                    text = "${section.title} (${sectionTools.size})",
+                                    fontSize = 17.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = AppTheme.colors.textPrimary
                                 )
                             }
-                            Text(
-                                text = "${section.title} (${sectionTools.size})",
-                                fontSize = 17.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = AppTheme.colors.textPrimary
+                            Icon(
+                                imageVector = if (isCollapsed) Icons.Default.KeyboardArrowDown else Icons.Default.KeyboardArrowUp,
+                                contentDescription = if (isCollapsed) "Expand ${section.title}" else "Collapse ${section.title}",
+                                tint = AppTheme.colors.textSecondary,
+                                modifier = Modifier.size(20.dp)
                             )
                         }
                     }
 
-                    items(sectionTools) { tool ->
+                    if (!isCollapsed) {
+                        items(sectionTools, key = { "tool_${section.id}_${it.id}" }) { tool ->
                         Surface(
                             shape = RoundedCornerShape(20.dp),
                             color = AppTheme.colors.cardSurface,
@@ -121,6 +161,7 @@ fun ToolsListScreen(
                                 Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = AppTheme.colors.textSecondary, modifier = Modifier.size(18.dp))
                             }
                         }
+                    }
                     }
                 }
             }

@@ -3,6 +3,7 @@ package com.one.utility.core.processing
 import android.util.Base64
 import org.json.JSONArray
 import org.json.JSONObject
+import java.math.BigInteger
 import java.net.URLDecoder
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -13,6 +14,25 @@ import java.util.*
 data class JwtPayload(
     val headerJson: String,
     val bodyJson: String
+)
+
+data class HashReverseResult(
+    val plainText: String,
+    val algorithm: String,
+    val matchType: String
+)
+
+data class UuidDetails(
+    val rawUuid: String,
+    val version: Int,
+    val versionName: String,
+    val variant: String,
+    val formattedTimestamp: String?,
+    val timestampMillis: Long?,
+    val clockSequence: String,
+    val nodeId: String,
+    val decimalValue: String,
+    val hexNoDashes: String
 )
 
 data class ColorDetails(
@@ -403,6 +423,154 @@ class DeveloperToolsEngine {
             toHex(hslToRgb(((h + 330.0) % 360.0), s, l)), // Analogous 2
             toHex(hslToRgb(((h + 120.0) % 360.0), s, l)), // Triadic 1
             toHex(hslToRgb(((h + 240.0) % 360.0), s, l))  // Triadic 2
+        )
+    }
+
+    // 17. Hash Reverse Lookup Engine (Offline Dictionary + PIN / Number Lookup)
+    fun reverseHash(rawHash: String): HashReverseResult? {
+        val cleanHash = rawHash.trim().lowercase()
+        if (cleanHash.length !in listOf(32, 40, 64, 128)) return null
+        val detectedAlgo = when (cleanHash.length) {
+            32 -> "MD5"
+            40 -> "SHA-1"
+            64 -> "SHA-256"
+            128 -> "SHA-512"
+            else -> "MD5"
+        }
+
+        // 1. High-frequency common passwords, phrases, terms
+        val dictionary = listOf(
+            "password", "123456", "12345678", "1234", "qwerty", "12345", "123456789", "admin", "1234567",
+            "welcome", "login", "secret", "root", "guest", "test", "hello", "world", "one", "utility",
+            "android", "google", "pass", "master", "dragon", "superman", "iloveyou", "trustno1", "letmein",
+            "changeme", "football", "baseball", "monkey", "shadow", "sunshine", "princess", "coffee", "music",
+            "computer", "system", "access", "default", "token", "shield", "vault", "private", "public",
+            "success", "true", "false", "null", "undefined", "testing", "matrix", "infinity", "zenith",
+            "apex", "vanguard", "catalyst", "eclipse", "aurora", "nebula", "quantum", "enigma", "synergy",
+            "paradox", "velocity", "sentinel", "000000", "111111", "222222", "333333", "444444", "555555",
+            "666666", "777777", "888888", "999999", "123123", "abc123", "password123", "admin123", "welcome1",
+            "iloveyou1", "secret123", "apple", "banana", "orange", "charlie", "hunter2", "starwars", "pokemon"
+        )
+
+        for (word in dictionary) {
+            if (hashString(word, detectedAlgo).lowercase() == cleanHash) {
+                return HashReverseResult(word, detectedAlgo, "Dictionary Match")
+            }
+        }
+
+        // 2. Numeric 4-digit PINs (0000 to 9999)
+        for (pin in 0..9999) {
+            val pinStr = String.format(Locale.US, "%04d", pin)
+            if (hashString(pinStr, detectedAlgo).lowercase() == cleanHash) {
+                return HashReverseResult(pinStr, detectedAlgo, "4-Digit PIN")
+            }
+        }
+
+        // 3. Common sequence numbers (0 to 99999)
+        for (num in 0..99999) {
+            val numStr = num.toString()
+            if (hashString(numStr, detectedAlgo).lowercase() == cleanHash) {
+                return HashReverseResult(numStr, detectedAlgo, "Numeric Sequence")
+            }
+        }
+
+        // 4. Short letters (1-2 chars)
+        val alphabet = "abcdefghijklmnopqrstuvwxyz"
+        for (c in alphabet) {
+            val s = c.toString()
+            if (hashString(s, detectedAlgo).lowercase() == cleanHash) return HashReverseResult(s, detectedAlgo, "Short Text")
+        }
+        for (c1 in alphabet) {
+            for (c2 in alphabet) {
+                val s = "$c1$c2"
+                if (hashString(s, detectedAlgo).lowercase() == cleanHash) return HashReverseResult(s, detectedAlgo, "Short Text")
+            }
+        }
+
+        return null
+    }
+
+    // 18. UUID Reverse Inspector
+    fun parseUuid(rawUuid: String): UuidDetails? {
+        val clean = rawUuid.trim().replace("-", "").lowercase()
+        if (clean.length != 32 || !clean.all { it in "0123456789abcdef" }) return null
+
+        val formattedUuid = runCatching {
+            UUID.fromString(
+                "${clean.substring(0, 8)}-${clean.substring(8, 12)}-${clean.substring(12, 16)}-${clean.substring(16, 20)}-${clean.substring(20, 32)}"
+            )
+        }.getOrNull() ?: return null
+
+        val version = formattedUuid.version()
+        val variantInt = formattedUuid.variant()
+        val versionName = when (version) {
+            1 -> "Version 1 (Time-based)"
+            2 -> "Version 2 (DCE Security)"
+            3 -> "Version 3 (MD5 namespace)"
+            4 -> "Version 4 (Cryptographically Random)"
+            5 -> "Version 5 (SHA-1 namespace)"
+            7 -> "Version 7 (Unix Epoch time-based)"
+            else -> "Version $version (Custom)"
+        }
+
+        val variantName = when (variantInt) {
+            0 -> "NCS backward compatible"
+            2 -> "RFC 4122 / Leach-Salz"
+            6 -> "Microsoft Corporation GUID"
+            else -> "Reserved"
+        }
+
+        var formattedTimestamp: String? = null
+        var timestampMillis: Long? = null
+
+        if (version == 1) {
+            runCatching {
+                val ts = formattedUuid.timestamp()
+                val millis = (ts - 0x01b21dd213814000L) / 10000L
+                timestampMillis = millis
+                val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS 'UTC'", Locale.US)
+                sdf.timeZone = TimeZone.getTimeZone("UTC")
+                formattedTimestamp = sdf.format(Date(millis))
+            }
+        } else if (clean.length == 32 && (version == 7 || clean[12] == '7')) {
+            runCatching {
+                val epochHex = clean.substring(0, 12)
+                val millis = epochHex.toLong(16)
+                timestampMillis = millis
+                val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS 'UTC'", Locale.US)
+                sdf.timeZone = TimeZone.getTimeZone("UTC")
+                formattedTimestamp = sdf.format(Date(millis))
+            }
+        }
+
+        val clockSeq = runCatching { String.format(Locale.US, "0x%04X", formattedUuid.clockSequence()) }.getOrElse { "N/A" }
+        val nodeMac = runCatching {
+            val nodeLong = formattedUuid.node()
+            String.format(Locale.US, "%02X:%02X:%02X:%02X:%02X:%02X",
+                (nodeLong shr 40 and 0xFF),
+                (nodeLong shr 32 and 0xFF),
+                (nodeLong shr 24 and 0xFF),
+                (nodeLong shr 16 and 0xFF),
+                (nodeLong shr 8 and 0xFF),
+                (nodeLong and 0xFF)
+            )
+        }.getOrElse { clean.substring(20).chunked(2).joinToString(":").uppercase() }
+
+        val decimalBigInt = runCatching {
+            BigInteger(clean, 16).toString()
+        }.getOrDefault("N/A")
+
+        return UuidDetails(
+            rawUuid = formattedUuid.toString(),
+            version = version,
+            versionName = versionName,
+            variant = variantName,
+            formattedTimestamp = formattedTimestamp,
+            timestampMillis = timestampMillis,
+            clockSequence = clockSeq,
+            nodeId = nodeMac,
+            decimalValue = decimalBigInt,
+            hexNoDashes = clean
         )
     }
 }

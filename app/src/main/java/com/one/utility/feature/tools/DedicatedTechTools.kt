@@ -1,12 +1,19 @@
 package com.one.utility.feature.tools
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -30,24 +37,170 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.util.Locale
+import java.util.UUID
+
+data class QrPalette(
+    val name: String,
+    val darkColor: Int,
+    val lightColor: Int
+)
+
+val QR_PALETTES = listOf(
+    QrPalette("Classic", android.graphics.Color.BLACK, android.graphics.Color.WHITE),
+    QrPalette("Obsidian", android.graphics.Color.parseColor("#0F172A"), android.graphics.Color.parseColor("#F8FAFC")),
+    QrPalette("Indigo", android.graphics.Color.parseColor("#4338CA"), android.graphics.Color.parseColor("#EEF2FF")),
+    QrPalette("Emerald", android.graphics.Color.parseColor("#047857"), android.graphics.Color.parseColor("#ECFDF5")),
+    QrPalette("Crimson", android.graphics.Color.parseColor("#BE123C"), android.graphics.Color.parseColor("#FFF1F2")),
+    QrPalette("Violet", android.graphics.Color.parseColor("#6D28D9"), android.graphics.Color.parseColor("#F5F3FF")),
+    QrPalette("Gold", android.graphics.Color.parseColor("#B45309"), android.graphics.Color.parseColor("#FFFBEB"))
+)
+
+@Composable
+fun QrCustomizerSection(
+    selectedStyle: QrDotStyle,
+    onStyleChange: (QrDotStyle) -> Unit,
+    selectedPalette: QrPalette,
+    onPaletteChange: (QrPalette) -> Unit,
+    selectedCenterIcon: QrCenterIcon,
+    onCenterIconChange: (QrCenterIcon) -> Unit
+) {
+    Surface(
+        shape = RoundedCornerShape(18.dp),
+        color = AppTheme.colors.cardSurface,
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(18.dp))
+    ) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Icon(Icons.Default.Palette, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+                Text("QR Code Customizer", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = AppTheme.colors.textPrimary)
+            }
+
+            // 1. Module Dot Style
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text("Pattern Style", fontSize = 12.sp, color = AppTheme.colors.textSecondary, fontWeight = FontWeight.Medium)
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf(
+                        "Square" to QrDotStyle.SQUARE,
+                        "Dots" to QrDotStyle.ROUNDED_DOTS,
+                        "Squircle" to QrDotStyle.SQUIRCLE
+                    ).forEach { (label, style) ->
+                        FilterChip(
+                            selected = selectedStyle == style,
+                            onClick = { onStyleChange(style) },
+                            label = { Text(label, fontSize = 12.sp) },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+            }
+
+            // 2. Color Palettes
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text("Color Palette", fontSize = 12.sp, color = AppTheme.colors.textSecondary, fontWeight = FontWeight.Medium)
+                Row(
+                    modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    QR_PALETTES.forEach { palette ->
+                        val isSelected = selectedPalette.name == palette.name
+                        Surface(
+                            shape = RoundedCornerShape(10.dp),
+                            color = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else AppTheme.colors.surfaceElevated,
+                            border = androidx.compose.foundation.BorderStroke(
+                                if (isSelected) 1.5.dp else 1.dp,
+                                if (isSelected) MaterialTheme.colorScheme.primary else AppTheme.colors.borderSubtle
+                            ),
+                            modifier = Modifier.clickable { onPaletteChange(palette) }
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(14.dp)
+                                        .clip(CircleShape)
+                                        .background(Color(palette.darkColor))
+                                        .border(1.dp, Color(palette.lightColor), CircleShape)
+                                )
+                                Text(
+                                    text = palette.name,
+                                    fontSize = 12.sp,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                    color = if (isSelected) MaterialTheme.colorScheme.primary else AppTheme.colors.textPrimary
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 3. Center Icon / Logo
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text("Center Icon Badge", fontSize = 12.sp, color = AppTheme.colors.textSecondary, fontWeight = FontWeight.Medium)
+                Row(
+                    modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    listOf(
+                        "None" to QrCenterIcon.NONE,
+                        "Phone" to QrCenterIcon.PHONE,
+                        "Contact" to QrCenterIcon.CONTACT,
+                        "Link" to QrCenterIcon.LINK,
+                        "Wi-Fi" to QrCenterIcon.WIFI,
+                        "Star" to QrCenterIcon.STAR,
+                        "Heart" to QrCenterIcon.HEART
+                    ).forEach { (label, icon) ->
+                        FilterChip(
+                            selected = selectedCenterIcon == icon,
+                            onClick = { onCenterIconChange(icon) },
+                            label = { Text(label, fontSize = 12.sp) }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
 
 @Composable
 fun DedicatedWifiQrView() {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val qrEngine = remember { QrEngine() }
+
     var ssid by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var security by remember { mutableStateOf("WPA") }
+
+    // Customization state
+    var selectedStyle by remember { mutableStateOf(QrDotStyle.SQUARE) }
+    var selectedPalette by remember { mutableStateOf(QR_PALETTES[0]) }
+    var selectedCenterIcon by remember { mutableStateOf(QrCenterIcon.WIFI) }
+
     var qrBitmap by remember { mutableStateOf<Bitmap?>(null) }
 
     fun updateQr() {
         if (ssid.isNotBlank()) {
             coroutineScope.launch {
                 val payload = qrEngine.buildWifiPayload(ssid, password, security)
-                qrBitmap = qrEngine.generateQrCode(payload, 600).getOrNull()
+                val options = QrCustomOptions(
+                    style = selectedStyle,
+                    darkColor = selectedPalette.darkColor,
+                    lightColor = selectedPalette.lightColor,
+                    centerIcon = selectedCenterIcon,
+                    sizePixels = 700
+                )
+                qrBitmap = qrEngine.generateCustomQrCode(payload, options).getOrNull()
             }
         }
+    }
+
+    LaunchedEffect(selectedStyle, selectedPalette, selectedCenterIcon) {
+        updateQr()
     }
 
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -55,6 +208,7 @@ fun DedicatedWifiQrView() {
             value = ssid,
             onValueChange = { ssid = it; updateQr() },
             label = { Text("Network Name (SSID)") },
+            placeholder = { Text("e.g. Home_Network_5G") },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(14.dp)
         )
@@ -63,12 +217,13 @@ fun DedicatedWifiQrView() {
             value = password,
             onValueChange = { password = it; updateQr() },
             label = { Text("Wi-Fi Password") },
+            placeholder = { Text("Leave blank for open networks") },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(14.dp)
         )
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-            FilterChip(selected = security == "WPA", onClick = { security = "WPA"; updateQr() }, label = { Text("WPA/WPA2") }, modifier = Modifier.weight(1f))
+            FilterChip(selected = security == "WPA", onClick = { security = "WPA"; updateQr() }, label = { Text("WPA/WPA2/WPA3") }, modifier = Modifier.weight(1f))
             FilterChip(selected = security == "WEP", onClick = { security = "WEP"; updateQr() }, label = { Text("WEP") }, modifier = Modifier.weight(1f))
             FilterChip(selected = security == "nopass", onClick = { security = "nopass"; updateQr() }, label = { Text("Open / None") }, modifier = Modifier.weight(1f))
         }
@@ -77,32 +232,50 @@ fun DedicatedWifiQrView() {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(240.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(Color.White)
-                    .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(16.dp)),
+                    .height(260.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(Color(selectedPalette.lightColor))
+                    .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(20.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                Image(bitmap = bmp.asImageBitmap(), contentDescription = "Wi-Fi QR", modifier = Modifier.fillMaxSize().padding(14.dp))
+                Image(bitmap = bmp.asImageBitmap(), contentDescription = "Wi-Fi QR", modifier = Modifier.fillMaxSize().padding(16.dp))
             }
+
+            QrCustomizerSection(
+                selectedStyle = selectedStyle,
+                onStyleChange = { selectedStyle = it },
+                selectedPalette = selectedPalette,
+                onPaletteChange = { selectedPalette = it },
+                selectedCenterIcon = selectedCenterIcon,
+                onCenterIconChange = { selectedCenterIcon = it }
+            )
 
             Button(
                 onClick = {
                     coroutineScope.launch {
+                        val payload = qrEngine.buildWifiPayload(ssid, password, security)
+                        val highResOptions = QrCustomOptions(
+                            style = selectedStyle,
+                            darkColor = selectedPalette.darkColor,
+                            lightColor = selectedPalette.lightColor,
+                            centerIcon = selectedCenterIcon,
+                            sizePixels = 1400
+                        )
+                        val exportBmp = qrEngine.generateCustomQrCode(payload, highResOptions).getOrNull() ?: bmp
                         val outFile = File(context.cacheDir, "ONE_wifi_qr_${System.currentTimeMillis()}.png")
                         withContext(Dispatchers.IO) {
-                            FileOutputStream(outFile).use { out -> bmp.compress(Bitmap.CompressFormat.PNG, 100, out) }
+                            FileOutputStream(outFile).use { out -> exportBmp.compress(Bitmap.CompressFormat.PNG, 100, out) }
                         }
                         shareFile(context, outFile, "image/png", "Share Wi-Fi QR Code")
                     }
                 },
                 modifier = Modifier.fillMaxWidth().height(48.dp).pressFeedback(),
                 shape = RoundedCornerShape(12.dp),
-                colors = accentButtonColors(BentoEmerald)
+                colors = obsidianButtonColors()
             ) {
                 Icon(Icons.Default.Share, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(6.dp))
-                Text("Export & Share Wi-Fi QR Code", color = Color.White, fontWeight = FontWeight.Bold)
+                Text("Export & Share Custom Wi-Fi QR", color = Color.White, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -113,57 +286,256 @@ fun DedicatedContactQrView() {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val qrEngine = remember { QrEngine() }
-    var name by remember { mutableStateOf("") }
-    var phone by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var company by remember { mutableStateOf("") }
+
+    // Mode: 0 = Direct Phone Call (tel:), 1 = Full Contact Card (vCard 3.0), 2 = SMS Message (smsto:)
+    var modeIndex by remember { mutableIntStateOf(0) }
+
+    // Direct Phone Call state
+    var phoneNumber by remember { mutableStateOf("+1 555-0199") }
+
+    // Contact Card vCard state
+    var fullName by remember { mutableStateOf("Alex Morgan") }
+    var contactPhone by remember { mutableStateOf("+1 555-0199") }
+    var email by remember { mutableStateOf("alex.morgan@company.com") }
+    var company by remember { mutableStateOf("Acme Corporation") }
+    var jobTitle by remember { mutableStateOf("Lead Architect") }
+    var contactNote by remember { mutableStateOf("") }
+
+    // SMS Message state
+    var smsPhone by remember { mutableStateOf("+1 555-0199") }
+    var smsMessage by remember { mutableStateOf("Hello, I am contacting you regarding your service.") }
+
+    // Customization state
+    var selectedStyle by remember { mutableStateOf(QrDotStyle.SQUIRCLE) }
+    var selectedPalette by remember { mutableStateOf(QR_PALETTES[1]) } // Obsidian preset
+    var selectedCenterIcon by remember { mutableStateOf(QrCenterIcon.PHONE) }
+
     var qrBitmap by remember { mutableStateOf<Bitmap?>(null) }
 
+    fun currentPayload(): String {
+        return when (modeIndex) {
+            0 -> qrEngine.buildPhonePayload(phoneNumber)
+            1 -> qrEngine.buildContactVCard(
+                name = fullName,
+                phone = contactPhone,
+                email = email,
+                org = company,
+                title = jobTitle,
+                note = contactNote
+            )
+            else -> qrEngine.buildSmsPayload(smsPhone, smsMessage)
+        }
+    }
+
     fun updateQr() {
-        if (name.isNotBlank() || phone.isNotBlank()) {
+        val payload = currentPayload()
+        if (payload.isNotBlank()) {
             coroutineScope.launch {
-                val payload = qrEngine.buildContactVCard(name, phone, email, company)
-                qrBitmap = qrEngine.generateQrCode(payload, 600).getOrNull()
+                val options = QrCustomOptions(
+                    style = selectedStyle,
+                    darkColor = selectedPalette.darkColor,
+                    lightColor = selectedPalette.lightColor,
+                    centerIcon = selectedCenterIcon,
+                    sizePixels = 700
+                )
+                qrBitmap = qrEngine.generateCustomQrCode(payload, options).getOrNull()
             }
         }
     }
 
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        OutlinedTextField(value = name, onValueChange = { name = it; updateQr() }, label = { Text("Full Name") }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp))
-        OutlinedTextField(value = phone, onValueChange = { phone = it; updateQr() }, label = { Text("Phone Number") }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp))
-        OutlinedTextField(value = email, onValueChange = { email = it; updateQr() }, label = { Text("Email Address") }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp))
-        OutlinedTextField(value = company, onValueChange = { company = it; updateQr() }, label = { Text("Company / Organization") }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp))
+    LaunchedEffect(modeIndex, phoneNumber, fullName, contactPhone, email, company, jobTitle, contactNote, smsPhone, smsMessage, selectedStyle, selectedPalette, selectedCenterIcon) {
+        // Automatically default icon to Phone for Direct Call and Contact for vCard
+        if (modeIndex == 0 && selectedCenterIcon == QrCenterIcon.CONTACT) {
+            selectedCenterIcon = QrCenterIcon.PHONE
+        } else if (modeIndex == 1 && selectedCenterIcon == QrCenterIcon.PHONE) {
+            selectedCenterIcon = QrCenterIcon.CONTACT
+        }
+        updateQr()
+    }
+
+    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        TechSegmentedControl(
+            options = listOf("Phone Call (tel:)", "Contact Card (vCard)", "SMS (smsto:)"),
+            selectedIndex = modeIndex,
+            onSelect = { modeIndex = it }
+        )
+
+        when (modeIndex) {
+            0 -> {
+                // === DIRECT PHONE CALL MODE ===
+                OutlinedTextField(
+                    value = phoneNumber,
+                    onValueChange = { phoneNumber = it },
+                    label = { Text("Phone Number to Dial") },
+                    placeholder = { Text("e.g. +1 555-0199 or 080 1234 5678") },
+                    leadingIcon = { Icon(Icons.Default.Phone, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(14.dp)
+                )
+
+                Surface(
+                    shape = RoundedCornerShape(14.dp),
+                    color = BentoEmerald.copy(alpha = 0.12f),
+                    modifier = Modifier.fillMaxWidth().border(1.dp, BentoEmerald.copy(alpha = 0.3f), RoundedCornerShape(14.dp))
+                ) {
+                    Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Icon(Icons.Default.CheckCircle, contentDescription = null, tint = BentoEmerald, modifier = Modifier.size(18.dp))
+                        Column {
+                            Text("Direct Phone Dialer Protocol", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = BentoEmerald)
+                            Text("Scanners immediately launch the dialer with ${qrEngine.cleanPhoneNumber(phoneNumber)}. No contact saving required.", fontSize = 11.sp, color = AppTheme.colors.textSecondary)
+                        }
+                    }
+                }
+
+                Button(
+                    onClick = {
+                        val clean = qrEngine.cleanPhoneNumber(phoneNumber)
+                        val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:$clean"))
+                        runCatching { context.startActivity(intent) }
+                    },
+                    modifier = Modifier.fillMaxWidth().height(42.dp),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = obsidianButtonColors()
+                ) {
+                    Icon(Icons.Default.Call, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text("Test Dial on This Device", color = Color.White, fontSize = 12.sp)
+                }
+            }
+
+            1 -> {
+                // === FULL VCARD 3.0 CONTACT CARD MODE ===
+                OutlinedTextField(
+                    value = fullName,
+                    onValueChange = { fullName = it },
+                    label = { Text("Full Name (First & Last)") },
+                    placeholder = { Text("e.g. Jane Doe") },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
+                )
+
+                OutlinedTextField(
+                    value = contactPhone,
+                    onValueChange = { contactPhone = it },
+                    label = { Text("Mobile / Cell Phone") },
+                    placeholder = { Text("e.g. +1 555-0199") },
+                    leadingIcon = { Icon(Icons.Default.Phone, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
+                )
+
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Email Address") },
+                    placeholder = { Text("e.g. jane@company.com") },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
+                )
+
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                    OutlinedTextField(
+                        value = company,
+                        onValueChange = { company = it },
+                        label = { Text("Company") },
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    OutlinedTextField(
+                        value = jobTitle,
+                        onValueChange = { jobTitle = it },
+                        label = { Text("Job Title") },
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(14.dp),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                    modifier = Modifier.fillMaxWidth().border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f), RoundedCornerShape(14.dp))
+                ) {
+                    Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Icon(Icons.Default.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+                        Text("RFC-Compliant vCard 3.0: Formatted with standard CRLF line delimiters and structured name records for 100% scanner compatibility.", fontSize = 11.sp, color = AppTheme.colors.textSecondary)
+                    }
+                }
+            }
+
+            2 -> {
+                // === SMS MESSAGE MODE ===
+                OutlinedTextField(
+                    value = smsPhone,
+                    onValueChange = { smsPhone = it },
+                    label = { Text("Recipient Phone Number") },
+                    placeholder = { Text("e.g. +1 555-0199") },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
+                )
+
+                OutlinedTextField(
+                    value = smsMessage,
+                    onValueChange = { smsMessage = it },
+                    label = { Text("Pre-filled Text Message") },
+                    modifier = Modifier.fillMaxWidth().height(90.dp),
+                    shape = RoundedCornerShape(12.dp)
+                )
+            }
+        }
 
         qrBitmap?.let { bmp ->
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(240.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(Color.White)
-                    .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(16.dp)),
+                    .height(260.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(Color(selectedPalette.lightColor))
+                    .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(20.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                Image(bitmap = bmp.asImageBitmap(), contentDescription = "vCard QR", modifier = Modifier.fillMaxSize().padding(14.dp))
+                Image(
+                    bitmap = bmp.asImageBitmap(),
+                    contentDescription = "Contact QR",
+                    modifier = Modifier.fillMaxSize().padding(16.dp)
+                )
             }
+
+            // QR Customization Section (Module style, Color palette, Center badge)
+            QrCustomizerSection(
+                selectedStyle = selectedStyle,
+                onStyleChange = { selectedStyle = it },
+                selectedPalette = selectedPalette,
+                onPaletteChange = { selectedPalette = it },
+                selectedCenterIcon = selectedCenterIcon,
+                onCenterIconChange = { selectedCenterIcon = it }
+            )
 
             Button(
                 onClick = {
                     coroutineScope.launch {
-                        val outFile = File(context.cacheDir, "ONE_vcard_qr_${System.currentTimeMillis()}.png")
+                        val payload = currentPayload()
+                        val highResOptions = QrCustomOptions(
+                            style = selectedStyle,
+                            darkColor = selectedPalette.darkColor,
+                            lightColor = selectedPalette.lightColor,
+                            centerIcon = selectedCenterIcon,
+                            sizePixels = 1400
+                        )
+                        val exportBmp = qrEngine.generateCustomQrCode(payload, highResOptions).getOrNull() ?: bmp
+                        val outFile = File(context.cacheDir, "ONE_contact_qr_${System.currentTimeMillis()}.png")
                         withContext(Dispatchers.IO) {
-                            FileOutputStream(outFile).use { out -> bmp.compress(Bitmap.CompressFormat.PNG, 100, out) }
+                            FileOutputStream(outFile).use { out -> exportBmp.compress(Bitmap.CompressFormat.PNG, 100, out) }
                         }
-                        shareFile(context, outFile, "image/png", "Share vCard QR")
+                        shareFile(context, outFile, "image/png", "Share Custom Contact QR")
                     }
                 },
                 modifier = Modifier.fillMaxWidth().height(48.dp).pressFeedback(),
                 shape = RoundedCornerShape(12.dp),
-                colors = accentButtonColors(BentoEmerald)
+                colors = obsidianButtonColors()
             ) {
                 Icon(Icons.Default.Share, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(6.dp))
-                Text("Export & Share Contact QR", color = Color.White, fontWeight = FontWeight.Bold)
+                Text("Export & Share Custom Contact QR", color = Color.White, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -228,8 +600,50 @@ fun DedicatedBarcodeGeneratorView() {
 }
 
 @Composable
+private fun TechSegmentedControl(
+    options: List<String>,
+    selectedIndex: Int,
+    onSelect: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        shape = RoundedCornerShape(14.dp),
+        color = AppTheme.colors.surfaceElevated,
+        modifier = modifier.fillMaxWidth().height(48.dp).border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(14.dp))
+    ) {
+        Row(modifier = Modifier.fillMaxSize().padding(4.dp)) {
+            options.forEachIndexed { index, title ->
+                val isSelected = index == selectedIndex
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
+                        .clickable { onSelect(index) },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = title,
+                        fontSize = 13.sp,
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                        color = if (isSelected) MaterialTheme.colorScheme.onPrimary else AppTheme.colors.textSecondary,
+                        maxLines = 1
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun DedicatedHashGeneratorView(copyAction: (String) -> Unit) {
     val devEngine = remember { DeveloperToolsEngine() }
+    val context = LocalContext.current
+    val clipboard = remember { context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager }
+    var tabIndex by remember { mutableIntStateOf(0) }
+
+    // Generate Hash State
     var textInput by remember { mutableStateOf("The quick brown fox jumps over the lazy dog") }
     var selectedAlgorithm by remember { mutableStateOf("SHA-256") }
 
@@ -237,45 +651,235 @@ fun DedicatedHashGeneratorView(copyAction: (String) -> Unit) {
         runCatching { devEngine.hashString(textInput, selectedAlgorithm) }.getOrDefault("")
     }
 
+    // Reverse / Lookup Hash State
+    var reverseInput by remember { mutableStateOf("5f4dcc3b5aa765d61d8327deb882cf99") } // sample MD5 for 'password'
+    var reverseResult by remember { mutableStateOf<HashReverseResult?>(null) }
+    var hasSearchedReverse by remember { mutableStateOf(false) }
+
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        OutlinedTextField(
-            value = textInput,
-            onValueChange = { textInput = it },
-            label = { Text("Input Text or Password") },
-            modifier = Modifier.fillMaxWidth().height(120.dp),
-            shape = RoundedCornerShape(14.dp)
+        TechSegmentedControl(
+            options = listOf("Generate Hash", "Reverse / Lookup Hash"),
+            selectedIndex = tabIndex,
+            onSelect = { tabIndex = it }
         )
 
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-            listOf("SHA-256", "SHA-512", "MD5", "SHA-1").forEach { algo ->
-                FilterChip(
-                    selected = selectedAlgorithm == algo,
-                    onClick = { selectedAlgorithm = algo },
-                    label = { Text(algo) },
-                    modifier = Modifier.weight(1f)
-                )
+        if (tabIndex == 0) {
+            // === GENERATE HASH MODE ===
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                listOf("SHA-256", "SHA-512", "MD5", "SHA-1").forEach { algo ->
+                    FilterChip(
+                        selected = selectedAlgorithm == algo,
+                        onClick = { selectedAlgorithm = algo },
+                        label = { Text(algo, maxLines = 1) },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
-        }
 
-        Surface(
-            shape = RoundedCornerShape(18.dp),
-            color = AppTheme.colors.cardSurface,
-            modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(18.dp))
-        ) {
-            Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("$selectedAlgorithm Digest:", fontSize = 13.sp, color = AppTheme.colors.textSecondary)
-                    IconButton(onClick = { copyAction(computedHash) }) {
-                        Icon(Icons.Default.ContentCopy, contentDescription = "Copy", tint = AppTheme.colors.textPrimary, modifier = Modifier.size(16.dp))
+            OutlinedTextField(
+                value = textInput,
+                onValueChange = { textInput = it },
+                label = { Text("Input Text or Password") },
+                modifier = Modifier.fillMaxWidth().height(120.dp),
+                shape = RoundedCornerShape(14.dp)
+            )
+
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                Button(
+                    onClick = {
+                        val clip = clipboard?.primaryClip?.getItemAt(0)?.text?.toString()
+                        if (!clip.isNullOrBlank()) textInput = clip
+                    },
+                    modifier = Modifier.weight(1f).height(42.dp),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = obsidianButtonColors()
+                ) {
+                    Icon(Icons.Default.ContentPaste, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text("Paste", color = Color.White, fontSize = 12.sp)
+                }
+
+                Button(
+                    onClick = { textInput = "" },
+                    modifier = Modifier.weight(1f).height(42.dp),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = obsidianButtonColors()
+                ) {
+                    Icon(Icons.Default.Clear, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text("Clear", color = Color.White, fontSize = 12.sp)
+                }
+            }
+
+            Surface(
+                shape = RoundedCornerShape(18.dp),
+                color = AppTheme.colors.cardSurface,
+                modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(18.dp))
+            ) {
+                Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                        Text("$selectedAlgorithm Digest Output:", fontSize = 13.sp, color = AppTheme.colors.textSecondary)
+                        IconButton(onClick = { copyAction(computedHash) }) {
+                            Icon(Icons.Default.ContentCopy, contentDescription = "Copy", tint = AppTheme.colors.textPrimary, modifier = Modifier.size(16.dp))
+                        }
+                    }
+                    Text(
+                        text = computedHash,
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    Button(
+                        onClick = {
+                            reverseInput = computedHash
+                            tabIndex = 1
+                            reverseResult = devEngine.reverseHash(computedHash)
+                            hasSearchedReverse = true
+                        },
+                        modifier = Modifier.fillMaxWidth().height(42.dp),
+                        shape = RoundedCornerShape(10.dp),
+                        colors = obsidianButtonColors()
+                    ) {
+                        Icon(Icons.Default.FindInPage, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text("Test Reversing This Hash in Lookup Engine", color = Color.White, fontSize = 12.sp)
                     }
                 }
-                Text(
-                    text = computedHash,
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
+            }
+        } else {
+            // === REVERSE / LOOKUP HASH MODE ===
+            OutlinedTextField(
+                value = reverseInput,
+                onValueChange = {
+                    reverseInput = it
+                    hasSearchedReverse = false
+                },
+                label = { Text("Paste MD5, SHA-1, or SHA-256 Hash") },
+                placeholder = { Text("e.g. 5f4dcc3b5aa765d61d8327deb882cf99") },
+                modifier = Modifier.fillMaxWidth().height(110.dp),
+                shape = RoundedCornerShape(14.dp)
+            )
+
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                Button(
+                    onClick = {
+                        val clip = clipboard?.primaryClip?.getItemAt(0)?.text?.toString()
+                        if (!clip.isNullOrBlank()) {
+                            reverseInput = clip.trim()
+                            hasSearchedReverse = false
+                        }
+                    },
+                    modifier = Modifier.weight(1f).height(42.dp),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = obsidianButtonColors()
+                ) {
+                    Icon(Icons.Default.ContentPaste, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text("Paste Hash", color = Color.White, fontSize = 12.sp)
+                }
+
+                Button(
+                    onClick = {
+                        reverseInput = ""
+                        reverseResult = null
+                        hasSearchedReverse = false
+                    },
+                    modifier = Modifier.weight(1f).height(42.dp),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = obsidianButtonColors()
+                ) {
+                    Icon(Icons.Default.Clear, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text("Clear", color = Color.White, fontSize = 12.sp)
+                }
+            }
+
+            // Quick Samples
+            Row(
+                modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                listOf(
+                    "MD5 'password'" to "5f4dcc3b5aa765d61d8327deb882cf99",
+                    "MD5 'admin'" to "21232f297a57a5a743894a0e4a801fc3",
+                    "SHA-256 '123456'" to "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92",
+                    "SHA-1 'root'" to "dc76e9f0c0006e8f919e0c515c66dbba3982f785"
+                ).forEach { (label, hashVal) ->
+                    AssistChip(
+                        onClick = {
+                            reverseInput = hashVal
+                            reverseResult = devEngine.reverseHash(hashVal)
+                            hasSearchedReverse = true
+                        },
+                        label = { Text(label, fontSize = 11.sp) }
+                    )
+                }
+            }
+
+            Button(
+                onClick = {
+                    reverseResult = devEngine.reverseHash(reverseInput)
+                    hasSearchedReverse = true
+                },
+                modifier = Modifier.fillMaxWidth().height(48.dp).pressFeedback(),
+                shape = RoundedCornerShape(12.dp),
+                colors = obsidianButtonColors()
+            ) {
+                Icon(Icons.Default.Key, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
+                Text("Reverse & Decrypt Hash", color = Color.White, fontWeight = FontWeight.Bold)
+            }
+
+            if (hasSearchedReverse) {
+                reverseResult?.let { res ->
+                    Surface(
+                        shape = RoundedCornerShape(18.dp),
+                        color = BentoEmerald.copy(alpha = 0.1f),
+                        modifier = Modifier.fillMaxWidth().border(1.dp, BentoEmerald.copy(alpha = 0.35f), RoundedCornerShape(18.dp))
+                    ) {
+                        Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    Icon(Icons.Default.CheckCircle, contentDescription = null, tint = BentoEmerald, modifier = Modifier.size(20.dp))
+                                    Text("Plaintext Found (${res.algorithm})", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = BentoEmerald)
+                                }
+                                IconButton(onClick = { copyAction(res.plainText) }) {
+                                    Icon(Icons.Default.ContentCopy, contentDescription = "Copy Plaintext", tint = AppTheme.colors.textPrimary, modifier = Modifier.size(16.dp))
+                                }
+                            }
+                            Text(
+                                text = res.plainText,
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Black,
+                                color = AppTheme.colors.textPrimary
+                            )
+                            HorizontalDivider(color = BentoEmerald.copy(alpha = 0.2f))
+                            Text("Source: ${res.matchType}", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
+                        }
+                    }
+                } ?: run {
+                    Surface(
+                        shape = RoundedCornerShape(18.dp),
+                        color = AppTheme.colors.cardSurface,
+                        modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(18.dp))
+                    ) {
+                        Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                Icon(Icons.Default.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+                                Text("No Dictionary Match Found", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = AppTheme.colors.textPrimary)
+                            }
+                            Text(
+                                "Cryptographic hash algorithms (MD5, SHA-1, SHA-256) are mathematically one-way functions designed not to be reversed. This digest is not present in our high-frequency offline dictionary or common 4-digit PIN table.",
+                                fontSize = 12.sp,
+                                color = AppTheme.colors.textSecondary,
+                                lineHeight = 17.sp
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -284,30 +888,105 @@ fun DedicatedHashGeneratorView(copyAction: (String) -> Unit) {
 @Composable
 fun DedicatedBase64CodecView(copyAction: (String) -> Unit) {
     val devEngine = remember { DeveloperToolsEngine() }
+    val context = LocalContext.current
+    val clipboard = remember { context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager }
+
     var inputText by remember { mutableStateOf("ONE Utility Offline System") }
     var isEncodeMode by remember { mutableStateOf(true) }
 
-    val outputText: String = remember(inputText, isEncodeMode) {
+    var decodeError by remember { mutableStateOf<String?>(null) }
+    val outputText = remember(inputText, isEncodeMode) {
         if (isEncodeMode) {
+            decodeError = null
             devEngine.base64Encode(inputText)
         } else {
-            runCatching { devEngine.base64Decode(inputText) }.getOrElse { "Invalid Base64 string" }
+            if (inputText.isBlank()) {
+                decodeError = null
+                ""
+            } else {
+                runCatching {
+                    val res = devEngine.base64Decode(inputText.trim())
+                    decodeError = null
+                    res
+                }.getOrElse {
+                    decodeError = "Invalid Base64 string: Contains non-base64 characters or improper padding"
+                    ""
+                }
+            }
         }
     }
 
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-            FilterChip(selected = isEncodeMode, onClick = { isEncodeMode = true }, label = { Text("Encode to Base64") }, modifier = Modifier.weight(1f))
-            FilterChip(selected = !isEncodeMode, onClick = { isEncodeMode = false }, label = { Text("Decode from Base64") }, modifier = Modifier.weight(1f))
-        }
+        TechSegmentedControl(
+            options = listOf("Encode to Base64", "Decode from Base64"),
+            selectedIndex = if (isEncodeMode) 0 else 1,
+            onSelect = { isEncodeMode = it == 0 }
+        )
 
         OutlinedTextField(
             value = inputText,
             onValueChange = { inputText = it },
             label = { Text(if (isEncodeMode) "Plaintext String" else "Base64 Encoded String") },
+            placeholder = { Text(if (isEncodeMode) "Type or paste plaintext to encode..." else "Paste Base64 string to decode...") },
             modifier = Modifier.fillMaxWidth().height(120.dp),
             shape = RoundedCornerShape(14.dp)
         )
+
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+            Button(
+                onClick = {
+                    val clip = clipboard?.primaryClip?.getItemAt(0)?.text?.toString()
+                    if (!clip.isNullOrBlank()) inputText = clip
+                },
+                modifier = Modifier.weight(1f).height(42.dp),
+                shape = RoundedCornerShape(10.dp),
+                colors = obsidianButtonColors()
+            ) {
+                Icon(Icons.Default.ContentPaste, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("Paste", color = Color.White, fontSize = 12.sp)
+            }
+
+            Button(
+                onClick = {
+                    if (outputText.isNotBlank() && decodeError == null) {
+                        inputText = outputText
+                        isEncodeMode = !isEncodeMode
+                    }
+                },
+                modifier = Modifier.weight(1f).height(42.dp),
+                shape = RoundedCornerShape(10.dp),
+                colors = obsidianButtonColors()
+            ) {
+                Icon(Icons.Default.SwapVert, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("Swap", color = Color.White, fontSize = 12.sp)
+            }
+
+            Button(
+                onClick = { inputText = "" },
+                modifier = Modifier.weight(1f).height(42.dp),
+                shape = RoundedCornerShape(10.dp),
+                colors = obsidianButtonColors()
+            ) {
+                Icon(Icons.Default.Clear, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("Clear", color = Color.White, fontSize = 12.sp)
+            }
+        }
+
+        decodeError?.let { err ->
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = MaterialTheme.colorScheme.error.copy(alpha = 0.12f),
+                modifier = Modifier.fillMaxWidth().border(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+            ) {
+                Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Icon(Icons.Default.Warning, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp))
+                    Text(err, color = MaterialTheme.colorScheme.error, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                }
+            }
+        }
 
         Surface(
             shape = RoundedCornerShape(18.dp),
@@ -316,13 +995,13 @@ fun DedicatedBase64CodecView(copyAction: (String) -> Unit) {
         ) {
             Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("Resulting Output:", fontSize = 13.sp, color = AppTheme.colors.textSecondary)
+                    Text(if (isEncodeMode) "Base64 Encoded Result:" else "Decoded Plaintext Result:", fontSize = 13.sp, color = AppTheme.colors.textSecondary)
                     IconButton(onClick = { copyAction(outputText) }) {
                         Icon(Icons.Default.ContentCopy, contentDescription = "Copy", tint = AppTheme.colors.textPrimary, modifier = Modifier.size(16.dp))
                     }
                 }
                 Text(
-                    text = outputText,
+                    text = outputText.ifEmpty { "(No output)" },
                     fontFamily = FontFamily.Monospace,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
@@ -399,6 +1078,9 @@ fun DedicatedAesDecryptionView(copyAction: (String) -> Unit) {
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        val context = LocalContext.current
+        val clipboard = remember { context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager }
+
         OutlinedTextField(
             value = cipherInput,
             onValueChange = { cipherInput = it },
@@ -406,6 +1088,37 @@ fun DedicatedAesDecryptionView(copyAction: (String) -> Unit) {
             modifier = Modifier.fillMaxWidth().height(120.dp),
             shape = RoundedCornerShape(14.dp)
         )
+
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+            Button(
+                onClick = {
+                    val clip = clipboard?.primaryClip?.getItemAt(0)?.text?.toString()
+                    if (!clip.isNullOrBlank()) cipherInput = clip.trim()
+                },
+                modifier = Modifier.weight(1f).height(42.dp),
+                shape = RoundedCornerShape(10.dp),
+                colors = obsidianButtonColors()
+            ) {
+                Icon(Icons.Default.ContentPaste, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("Paste", color = Color.White, fontSize = 12.sp)
+            }
+
+            Button(
+                onClick = {
+                    cipherInput = ""
+                    decryptedText = ""
+                    errorMessage = null
+                },
+                modifier = Modifier.weight(1f).height(42.dp),
+                shape = RoundedCornerShape(10.dp),
+                colors = obsidianButtonColors()
+            ) {
+                Icon(Icons.Default.Clear, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("Clear", color = Color.White, fontSize = 12.sp)
+            }
+        }
 
         OutlinedTextField(
             value = passwordInput,
@@ -428,7 +1141,7 @@ fun DedicatedAesDecryptionView(copyAction: (String) -> Unit) {
             },
             modifier = Modifier.fillMaxWidth().height(48.dp).pressFeedback(),
             shape = RoundedCornerShape(12.dp),
-            colors = accentButtonColors(MaterialTheme.colorScheme.primary)
+            colors = obsidianButtonColors()
         ) {
             Icon(Icons.Default.LockOpen, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
             Spacer(Modifier.width(6.dp))
@@ -984,28 +1697,104 @@ fun DedicatedUrlParserView() {
 
 @Composable
 fun DedicatedUrlCodecView(copyAction: (String) -> Unit) {
+    val context = LocalContext.current
+    val clipboard = remember { context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager }
+
     var rawText by remember { mutableStateOf("https://example.com/search?q=One Utility & App 2026") }
     var isEncode by remember { mutableStateOf(true) }
+    var decodeError by remember { mutableStateOf<String?>(null) }
 
     val result = remember(rawText, isEncode) {
-        runCatching {
-            if (isEncode) java.net.URLEncoder.encode(rawText, "UTF-8")
-            else java.net.URLDecoder.decode(rawText, "UTF-8")
-        }.getOrDefault("")
+        if (isEncode) {
+            decodeError = null
+            runCatching { java.net.URLEncoder.encode(rawText, "UTF-8") }.getOrDefault("")
+        } else {
+            if (rawText.isBlank()) {
+                decodeError = null
+                ""
+            } else {
+                runCatching {
+                    val decoded = java.net.URLDecoder.decode(rawText.trim(), "UTF-8")
+                    decodeError = null
+                    decoded
+                }.getOrElse {
+                    decodeError = "Malformed URL percent-encoding: Invalid % sequence or charset"
+                    ""
+                }
+            }
+        }
     }
 
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        TechSegmentedControl(
+            options = listOf("URL Encode", "URL Decode"),
+            selectedIndex = if (isEncode) 0 else 1,
+            onSelect = { isEncode = it == 0 }
+        )
+
         OutlinedTextField(
             value = rawText,
             onValueChange = { rawText = it },
-            label = { Text(if (isEncode) "Text to URL-Encode" else "URL to Decode") },
+            label = { Text(if (isEncode) "Text / URL to Encode" else "Encoded URL to Decode") },
+            placeholder = { Text(if (isEncode) "Enter URL or query parameters to encode..." else "Paste %20 encoded URL string to decode...") },
             modifier = Modifier.fillMaxWidth().height(120.dp),
             shape = RoundedCornerShape(14.dp)
         )
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-            FilterChip(selected = isEncode, onClick = { isEncode = true }, label = { Text("URL Encode") }, modifier = Modifier.weight(1f))
-            FilterChip(selected = !isEncode, onClick = { isEncode = false }, label = { Text("URL Decode") }, modifier = Modifier.weight(1f))
+            Button(
+                onClick = {
+                    val clip = clipboard?.primaryClip?.getItemAt(0)?.text?.toString()
+                    if (!clip.isNullOrBlank()) rawText = clip
+                },
+                modifier = Modifier.weight(1f).height(42.dp),
+                shape = RoundedCornerShape(10.dp),
+                colors = obsidianButtonColors()
+            ) {
+                Icon(Icons.Default.ContentPaste, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("Paste", color = Color.White, fontSize = 12.sp)
+            }
+
+            Button(
+                onClick = {
+                    if (result.isNotBlank() && decodeError == null) {
+                        rawText = result
+                        isEncode = !isEncode
+                    }
+                },
+                modifier = Modifier.weight(1f).height(42.dp),
+                shape = RoundedCornerShape(10.dp),
+                colors = obsidianButtonColors()
+            ) {
+                Icon(Icons.Default.SwapVert, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("Swap", color = Color.White, fontSize = 12.sp)
+            }
+
+            Button(
+                onClick = { rawText = "" },
+                modifier = Modifier.weight(1f).height(42.dp),
+                shape = RoundedCornerShape(10.dp),
+                colors = obsidianButtonColors()
+            ) {
+                Icon(Icons.Default.Clear, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("Clear", color = Color.White, fontSize = 12.sp)
+            }
+        }
+
+        decodeError?.let { err ->
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = MaterialTheme.colorScheme.error.copy(alpha = 0.12f),
+                modifier = Modifier.fillMaxWidth().border(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+            ) {
+                Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Icon(Icons.Default.Warning, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp))
+                    Text(err, color = MaterialTheme.colorScheme.error, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                }
+            }
         }
 
         Surface(
@@ -1015,12 +1804,12 @@ fun DedicatedUrlCodecView(copyAction: (String) -> Unit) {
         ) {
             Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("Result:", fontSize = 13.sp, color = AppTheme.colors.textSecondary)
+                    Text(if (isEncode) "URL Encoded Output:" else "Decoded Plaintext Output:", fontSize = 13.sp, color = AppTheme.colors.textSecondary)
                     IconButton(onClick = { copyAction(result) }) {
                         Icon(Icons.Default.ContentCopy, contentDescription = "Copy", tint = AppTheme.colors.textPrimary, modifier = Modifier.size(16.dp))
                     }
                 }
-                Text(result, fontFamily = FontFamily.Monospace, fontSize = 13.sp, color = AppTheme.colors.textPrimary)
+                Text(result.ifEmpty { "(No output)" }, fontFamily = FontFamily.Monospace, fontSize = 13.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -1258,6 +2047,212 @@ fun DedicatedPasswordStrengthView() {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text(crit, fontSize = 13.sp, color = AppTheme.colors.textSecondary)
                         Text(if (ok) "✓ Pass" else "✗ Missing", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = if (ok) BentoEmerald else MaterialTheme.colorScheme.error)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun DedicatedUuidView(copyAction: (String) -> Unit) {
+    val devEngine = remember { DeveloperToolsEngine() }
+    val context = LocalContext.current
+    val clipboard = remember { context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager }
+
+    var tabIndex by remember { mutableIntStateOf(0) }
+
+    // Generate Tab State
+    var generatedUuid by remember { mutableStateOf(UUID.randomUUID().toString()) }
+    var isUppercase by remember { mutableStateOf(false) }
+
+    val displayUuid = if (isUppercase) generatedUuid.uppercase(Locale.US) else generatedUuid.lowercase(Locale.US)
+
+    // Inspect & Reverse Tab State
+    var inspectInput by remember { mutableStateOf(generatedUuid) }
+    val parsedDetails = remember(inspectInput) {
+        if (inspectInput.isBlank()) null else devEngine.parseUuid(inspectInput)
+    }
+
+    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        TechSegmentedControl(
+            options = listOf("Generate UUID", "Inspect & Reverse UUID"),
+            selectedIndex = tabIndex,
+            onSelect = { tabIndex = it }
+        )
+
+        if (tabIndex == 0) {
+            // === GENERATE TAB ===
+            Surface(
+                shape = RoundedCornerShape(18.dp),
+                color = AppTheme.colors.cardSurface,
+                modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(18.dp))
+            ) {
+                Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                        Text("UUID Version 4 (RFC 4122):", fontSize = 13.sp, color = AppTheme.colors.textSecondary)
+                        IconButton(onClick = { copyAction(displayUuid) }) {
+                            Icon(Icons.Default.ContentCopy, contentDescription = "Copy UUID", tint = AppTheme.colors.textPrimary, modifier = Modifier.size(16.dp))
+                        }
+                    }
+
+                    Text(
+                        text = displayUuid,
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    HorizontalDivider(color = AppTheme.colors.borderSubtle)
+
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                        Text("Uppercase Format", fontSize = 13.sp, color = AppTheme.colors.textPrimary)
+                        Switch(
+                            checked = isUppercase,
+                            onCheckedChange = { isUppercase = it }
+                        )
+                    }
+                }
+            }
+
+            Button(
+                onClick = { generatedUuid = UUID.randomUUID().toString() },
+                modifier = Modifier.fillMaxWidth().height(48.dp).pressFeedback(),
+                shape = RoundedCornerShape(12.dp),
+                colors = obsidianButtonColors()
+            ) {
+                Icon(Icons.Default.Refresh, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
+                Text("Generate New UUID v4", color = Color.White, fontWeight = FontWeight.Bold)
+            }
+
+            Button(
+                onClick = {
+                    inspectInput = displayUuid
+                    tabIndex = 1
+                },
+                modifier = Modifier.fillMaxWidth().height(42.dp),
+                shape = RoundedCornerShape(10.dp),
+                colors = obsidianButtonColors()
+            ) {
+                Icon(Icons.Default.Search, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("Inspect & Reverse This UUID", color = Color.White, fontSize = 12.sp)
+            }
+        } else {
+            // === INSPECT & REVERSE TAB ===
+            OutlinedTextField(
+                value = inspectInput,
+                onValueChange = { inspectInput = it },
+                label = { Text("Paste UUID to Inspect & Reverse") },
+                placeholder = { Text("e.g. 123e4567-e89b-12d3-a456-426614174000") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(14.dp)
+            )
+
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                Button(
+                    onClick = {
+                        val clip = clipboard?.primaryClip?.getItemAt(0)?.text?.toString()
+                        if (!clip.isNullOrBlank()) inspectInput = clip.trim()
+                    },
+                    modifier = Modifier.weight(1f).height(42.dp),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = obsidianButtonColors()
+                ) {
+                    Icon(Icons.Default.ContentPaste, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text("Paste", color = Color.White, fontSize = 12.sp)
+                }
+
+                Button(
+                    onClick = { inspectInput = UUID.randomUUID().toString() },
+                    modifier = Modifier.weight(1f).height(42.dp),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = obsidianButtonColors()
+                ) {
+                    Icon(Icons.Default.Shuffle, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text("Sample v4", color = Color.White, fontSize = 12.sp)
+                }
+
+                Button(
+                    onClick = { inspectInput = "" },
+                    modifier = Modifier.weight(1f).height(42.dp),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = obsidianButtonColors()
+                ) {
+                    Icon(Icons.Default.Clear, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text("Clear", color = Color.White, fontSize = 12.sp)
+                }
+            }
+
+            parsedDetails?.let { details ->
+                Surface(
+                    shape = RoundedCornerShape(18.dp),
+                    color = AppTheme.colors.cardSurface,
+                    modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(18.dp))
+                ) {
+                    Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                            Text("Reversed & Analyzed Structure:", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = BentoEmerald)
+                            IconButton(onClick = { copyAction(details.rawUuid) }) {
+                                Icon(Icons.Default.ContentCopy, contentDescription = "Copy Canonical UUID", tint = AppTheme.colors.textPrimary, modifier = Modifier.size(16.dp))
+                            }
+                        }
+
+                        HorizontalDivider(color = AppTheme.colors.borderSubtle)
+
+                        listOf(
+                            "Standard UUID" to details.rawUuid,
+                            "Version" to details.versionName,
+                            "Variant" to details.variant,
+                            "Clock Sequence" to details.clockSequence,
+                            "Node / MAC" to details.nodeId,
+                            "Extracted Timestamp" to (details.formattedTimestamp ?: "N/A (Non-time-based UUID)")
+                        ).forEach { (label, value) ->
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                Text(label, fontSize = 12.sp, color = AppTheme.colors.textSecondary)
+                                Text(value, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.SemiBold, fontSize = 12.sp, color = AppTheme.colors.textPrimary)
+                            }
+                        }
+
+                        HorizontalDivider(color = AppTheme.colors.borderSubtle)
+
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                                Text("Clean Hex (32 chars):", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
+                                IconButton(onClick = { copyAction(details.hexNoDashes) }, modifier = Modifier.size(24.dp)) {
+                                    Icon(Icons.Default.ContentCopy, contentDescription = "Copy Hex", tint = AppTheme.colors.textPrimary, modifier = Modifier.size(14.dp))
+                                }
+                            }
+                            Text(details.hexNoDashes, fontFamily = FontFamily.Monospace, fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+                        }
+
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                                Text("Decimal Integer (BigInt):", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
+                                IconButton(onClick = { copyAction(details.decimalValue) }, modifier = Modifier.size(24.dp)) {
+                                    Icon(Icons.Default.ContentCopy, contentDescription = "Copy Decimal", tint = AppTheme.colors.textPrimary, modifier = Modifier.size(14.dp))
+                                }
+                            }
+                            Text(details.decimalValue, fontFamily = FontFamily.Monospace, fontSize = 11.sp, color = AppTheme.colors.textPrimary)
+                        }
+                    }
+                }
+            } ?: run {
+                if (inspectInput.isNotBlank()) {
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = MaterialTheme.colorScheme.error.copy(alpha = 0.12f),
+                        modifier = Modifier.fillMaxWidth().border(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+                    ) {
+                        Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Icon(Icons.Default.Warning, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp))
+                            Text("Invalid UUID string: Expected 32 hex characters with standard 8-4-4-4-12 grouping.", color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
+                        }
                     }
                 }
             }

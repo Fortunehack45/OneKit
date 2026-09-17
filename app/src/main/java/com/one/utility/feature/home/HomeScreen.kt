@@ -16,8 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.outlined.Segment
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -53,6 +52,7 @@ fun HomeScreen(
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf("All") }
+    val collapsedSections = remember { mutableStateMapOf<String, Boolean>() }
 
     val toolRouter = remember { ToolRouter() }
     val intentResult = remember(searchQuery) { toolRouter.resolve(searchQuery) }
@@ -557,6 +557,31 @@ fun HomeScreen(
                             )
                         }
                     }
+
+                    // Quick Collapse / Expand All Categories Button
+                    Surface(
+                        shape = CircleShape,
+                        color = AppTheme.colors.surfaceCard,
+                        border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle),
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clickable {
+                                val allCollapsed = activeSections.isNotEmpty() && activeSections.all { collapsedSections[it.id] == true }
+                                activeSections.forEach { sec ->
+                                    collapsedSections[sec.id] = !allCollapsed
+                                }
+                            }
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            val allCollapsed = activeSections.isNotEmpty() && activeSections.all { collapsedSections[it.id] == true }
+                            Icon(
+                                imageVector = if (allCollapsed) Icons.Default.UnfoldMore else Icons.Default.UnfoldLess,
+                                contentDescription = if (allCollapsed) "Expand All Categories" else "Collapse All Categories",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(17.dp)
+                            )
+                        }
+                    }
                 }
             }
 
@@ -738,12 +763,18 @@ fun HomeScreen(
             activeSections.forEach { section ->
                 val sectionTools = section.getTools()
                 if (sectionTools.isNotEmpty()) {
-                    // Section Header
+                    val isCollapsed = collapsedSections[section.id] == true
+
+                    // Section Header (Clickable to Collapse / Expand)
                     item(key = "header_${section.id}") {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(top = 14.dp, bottom = 6.dp),
+                                .clip(RoundedCornerShape(10.dp))
+                                .clickable {
+                                    collapsedSections[section.id] = !isCollapsed
+                                }
+                                .padding(vertical = 8.dp, horizontal = 4.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -773,19 +804,31 @@ fun HomeScreen(
                                     fontWeight = FontWeight.Bold
                                 )
                             }
-                            if (section.id == activeSections.firstOrNull()?.id) {
-                                Text(
-                                    text = "100% On-Device",
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.primary
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                if (section.id == activeSections.firstOrNull()?.id) {
+                                    Text(
+                                        text = "100% On-Device",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                                Icon(
+                                    imageVector = if (isCollapsed) Icons.Default.KeyboardArrowDown else Icons.Default.KeyboardArrowUp,
+                                    contentDescription = if (isCollapsed) "Expand ${section.title}" else "Collapse ${section.title}",
+                                    tint = AppTheme.colors.textSecondary,
+                                    modifier = Modifier.size(20.dp)
                                 )
                             }
                         }
                     }
 
-                    // Section Tools according to currentLayout
-                    when (currentLayout) {
+                    if (!isCollapsed) {
+                        // Section Tools according to currentLayout
+                        when (currentLayout) {
                         "GRID" -> {
                             sectionTools.chunked(2).forEachIndexed { chunkIndex, rowTools ->
                                 item(key = "grid_${section.id}_$chunkIndex") {
@@ -1148,6 +1191,7 @@ fun HomeScreen(
                                 }
                             }
                         }
+                    }
                     }
                 }
             }
