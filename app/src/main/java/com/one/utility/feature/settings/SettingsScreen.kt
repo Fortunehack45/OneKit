@@ -61,36 +61,39 @@ fun SettingsScreen(
                 .padding(padding)
                 .padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(bottom = 110.dp)
+            contentPadding = PaddingValues(bottom = 140.dp)
         ) {
             // 1. Privacy Banner Card
             item {
+                val isDark = AppTheme.colors.isDark
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(24.dp))
-                        .background(HeroLavender)
+                        .background(if (isDark) Color(0xFF232533) else HeroLavender)
+                        .border(1.dp, if (isDark) AppTheme.colors.borderSubtle else Color.Transparent, RoundedCornerShape(24.dp))
                         .padding(22.dp)
                 ) {
+                    val privContentColor = if (isDark) Color.White else DockObsidian
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Icon(Icons.Outlined.Shield, contentDescription = null, tint = DockObsidian)
-                            Text("100% On-Device Privacy", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = DockObsidian)
+                            Icon(Icons.Outlined.Shield, contentDescription = null, tint = privContentColor)
+                            Text("100% On-Device Privacy", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = privContentColor)
                         }
                         Text(
                             text = "“ONE processes all tasks on your device offline without remote tracking.”",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = DockObsidian
+                            color = privContentColor
                         )
                         Text(
                             text = "• Zero account creation required\n• Zero remote databases\n• Files, photos, and PDFs never leave your phone\n• Completely offline by design",
                             fontSize = 12.sp,
                             lineHeight = 18.sp,
-                            color = DockObsidian.copy(alpha = 0.85f)
+                            color = privContentColor.copy(alpha = 0.85f)
                         )
                     }
                 }
@@ -278,8 +281,8 @@ fun SettingsScreen(
                                 }
                             },
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = BentoSky,
-                                contentColor = TextPrimary
+                                containerColor = if (AppTheme.colors.isDark) Color(0xFF2B3A4A) else BentoSky,
+                                contentColor = if (AppTheme.colors.isDark) Color.White else Color(0xFF14151B)
                             ),
                             shape = RoundedCornerShape(14.dp),
                             modifier = Modifier.fillMaxWidth()

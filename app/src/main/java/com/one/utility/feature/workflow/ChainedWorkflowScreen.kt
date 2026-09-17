@@ -70,16 +70,16 @@ fun ChainedWorkflowScreen(
     }
 
     Scaffold(
-        containerColor = CanvasBackground,
+        containerColor = AppTheme.colors.canvasBackground,
         topBar = {
             TopAppBar(
-                title = { Text("Smart Pipeline: Compress → PDF", fontWeight = FontWeight.Bold, color = TextPrimary) },
+                title = { Text("Smart Pipeline: Compress → PDF", fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = TextPrimary)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = AppTheme.colors.textPrimary)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = CanvasBackground)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = AppTheme.colors.canvasBackground)
             )
         }
     ) { padding ->
@@ -88,7 +88,8 @@ fun ChainedWorkflowScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(bottom = 140.dp)
         ) {
             // Workflow Step Indicators
             item {
@@ -106,9 +107,9 @@ fun ChainedWorkflowScreen(
                                 .clip(RoundedCornerShape(3.dp))
                                 .background(
                                     when {
-                                        isDone -> DockObsidian
+                                        isDone -> MaterialTheme.colorScheme.primary
                                         isActive -> BentoHoney
-                                        else -> BorderSubtle
+                                        else -> AppTheme.colors.borderSubtle
                                     }
                                 )
                         )
@@ -120,20 +121,20 @@ fun ChainedWorkflowScreen(
             item {
                 Surface(
                     shape = RoundedCornerShape(24.dp),
-                    color = Color.White,
-                    modifier = Modifier.fillMaxWidth().border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                    color = AppTheme.colors.cardSurface,
+                    modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(24.dp))
                 ) {
                     Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                         Text(
                             text = steps.getOrNull(currentStepIndex)?.name ?: "Workflow",
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp,
-                            color = TextPrimary
+                            color = AppTheme.colors.textPrimary
                         )
                         Text(
                             text = steps.getOrNull(currentStepIndex)?.description ?: "",
                             fontSize = 13.sp,
-                            color = TextSecondary
+                            color = AppTheme.colors.textSecondary
                         )
 
                         if (currentStepIndex == 0) {
@@ -145,14 +146,14 @@ fun ChainedWorkflowScreen(
                                 },
                                 modifier = Modifier.fillMaxWidth().height(52.dp),
                                 shape = RoundedCornerShape(16.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = DockObsidian)
+                                colors = obsidianButtonColors()
                             ) {
-                                Icon(Icons.Default.AddPhotoAlternate, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Icon(Icons.Default.AddPhotoAlternate, contentDescription = null, modifier = Modifier.size(18.dp), tint = Color.White)
                                 Spacer(Modifier.width(8.dp))
-                                Text("Choose Photos", fontWeight = FontWeight.Bold)
+                                Text("Choose Photos", fontWeight = FontWeight.Bold, color = Color.White)
                             }
                         } else if (currentStepIndex == 1) {
-                            Text("${selectedUris.size} photos ready for auto-compression and PDF assembly.", fontSize = 13.sp, color = TextPrimary)
+                            Text("${selectedUris.size} photos ready for auto-compression and PDF assembly.", fontSize = 13.sp, color = AppTheme.colors.textPrimary)
 
                             Button(
                                 onClick = {
@@ -186,7 +187,7 @@ fun ChainedWorkflowScreen(
                                 enabled = !isProcessing,
                                 modifier = Modifier.fillMaxWidth().height(52.dp),
                                 shape = RoundedCornerShape(16.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = BentoHoney)
+                                colors = accentButtonColors(BentoHoney)
                             ) {
                                 Text(
                                     text = if (isProcessing) progressStatus else "Run Compress & PDF Pipeline",
@@ -199,15 +200,15 @@ fun ChainedWorkflowScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(16.dp))
-                                    .background(BentoHoneyLight)
+                                    .background(AppTheme.colors.bentoHoneySubtle)
                                     .padding(18.dp)
                             ) {
                                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                        Icon(Icons.Outlined.CheckCircle, contentDescription = null, tint = DockObsidian)
-                                        Text("Pipeline Complete!", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                                        Icon(Icons.Outlined.CheckCircle, contentDescription = null, tint = BentoHoney)
+                                        Text("Pipeline Complete!", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
                                     }
-                                    Text("Photos were compressed and compiled into ${finalPdfFile!!.name}", fontSize = 13.sp, color = TextSecondary)
+                                    Text("Photos were compressed and compiled into ${finalPdfFile!!.name}", fontSize = 13.sp, color = AppTheme.colors.textSecondary)
                                 }
                             }
 
@@ -227,11 +228,11 @@ fun ChainedWorkflowScreen(
                                 },
                                 modifier = Modifier.fillMaxWidth().height(52.dp),
                                 shape = RoundedCornerShape(16.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = DockObsidian)
+                                colors = obsidianButtonColors()
                             ) {
-                                Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(18.dp), tint = Color.White)
                                 Spacer(Modifier.width(8.dp))
-                                Text("Share Result PDF", fontWeight = FontWeight.Bold)
+                                Text("Share Result PDF", fontWeight = FontWeight.Bold, color = Color.White)
                             }
                         }
                     }

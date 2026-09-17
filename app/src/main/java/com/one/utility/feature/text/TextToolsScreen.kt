@@ -43,16 +43,16 @@ fun TextToolsScreen(
     }
 
     Scaffold(
-        containerColor = CanvasBackground,
+        containerColor = AppTheme.colors.canvasBackground,
         topBar = {
             TopAppBar(
-                title = { Text("Text Tools", fontWeight = FontWeight.Bold, color = TextPrimary) },
+                title = { Text("Text Tools", fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = TextPrimary)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = AppTheme.colors.textPrimary)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = CanvasBackground)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = AppTheme.colors.canvasBackground)
             )
         }
     ) { padding ->
@@ -61,34 +61,36 @@ fun TextToolsScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(bottom = 140.dp)
         ) {
             // 1. Live Stats Banner
             item {
                 Surface(
                     shape = RoundedCornerShape(24.dp),
-                    color = Color.White,
-                    modifier = Modifier.fillMaxWidth().border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                    color = AppTheme.colors.surfaceCard,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
                         modifier = Modifier.padding(18.dp).fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceAround
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("${stats.words}", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = DockObsidian)
-                            Text("Words", fontSize = 12.sp, color = TextSecondary)
+                            Text("${stats.words}", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = AppTheme.colors.textPrimary)
+                            Text("Words", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
                         }
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("${stats.charactersWithSpaces}", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = DockObsidian)
-                            Text("Characters", fontSize = 12.sp, color = TextSecondary)
+                            Text("${stats.charactersWithSpaces}", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = AppTheme.colors.textPrimary)
+                            Text("Characters", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
                         }
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("${stats.lines}", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = DockObsidian)
-                            Text("Lines", fontSize = 12.sp, color = TextSecondary)
+                            Text("${stats.lines}", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = AppTheme.colors.textPrimary)
+                            Text("Lines", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
                         }
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("${stats.sentences}", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = DockObsidian)
-                            Text("Sentences", fontSize = 12.sp, color = TextSecondary)
+                            Text("${stats.sentences}", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = AppTheme.colors.textPrimary)
+                            Text("Sentences", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
                         }
                     }
                 }
@@ -98,8 +100,9 @@ fun TextToolsScreen(
             item {
                 Surface(
                     shape = RoundedCornerShape(24.dp),
-                    color = Color.White,
-                    modifier = Modifier.fillMaxWidth().border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                    color = AppTheme.colors.surfaceCard,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         OutlinedTextField(
@@ -108,9 +111,17 @@ fun TextToolsScreen(
                                 inputText = it
                                 copiedMessage = null
                             },
-                            placeholder = { Text("Paste or type your text here...") },
+                            placeholder = { Text("Paste or type your text here...", color = AppTheme.colors.textMuted) },
                             modifier = Modifier.fillMaxWidth().height(160.dp),
-                            shape = RoundedCornerShape(16.dp)
+                            shape = RoundedCornerShape(16.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedTextColor = AppTheme.colors.textPrimary,
+                                unfocusedTextColor = AppTheme.colors.textPrimary,
+                                focusedContainerColor = AppTheme.colors.canvasBackground,
+                                unfocusedContainerColor = AppTheme.colors.canvasBackground,
+                                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                unfocusedBorderColor = AppTheme.colors.borderSubtle
+                            )
                         )
 
                         copiedMessage?.let { msg ->
@@ -122,7 +133,7 @@ fun TextToolsScreen(
 
             // 3. Transformation Actions
             item {
-                Text("Quick Text Actions", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                Text("Quick Text Actions", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
 
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -130,22 +141,22 @@ fun TextToolsScreen(
                             onClick = { inputText = engine.toUpperCase(inputText) },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = DockObsidian)
-                        ) { Text("UPPERCASE", fontSize = 12.sp) }
+                            colors = obsidianButtonColors()
+                        ) { Text("UPPERCASE", fontSize = 12.sp, color = Color.White) }
 
                         Button(
                             onClick = { inputText = engine.toLowerCase(inputText) },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = DockObsidian)
-                        ) { Text("lowercase", fontSize = 12.sp) }
+                            colors = obsidianButtonColors()
+                        ) { Text("lowercase", fontSize = 12.sp, color = Color.White) }
 
                         Button(
                             onClick = { inputText = engine.toTitleCase(inputText) },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = DockObsidian)
-                        ) { Text("Title Case", fontSize = 12.sp) }
+                            colors = obsidianButtonColors()
+                        ) { Text("Title Case", fontSize = 12.sp, color = Color.White) }
                     }
 
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -153,33 +164,42 @@ fun TextToolsScreen(
                             onClick = { inputText = engine.removeExtraSpaces(inputText) },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = BentoSky)
-                        ) { Text("Trim Spaces", color = TextPrimary, fontSize = 12.sp) }
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (AppTheme.colors.isDark) Color(0xFF2B3A4A) else BentoSky,
+                                contentColor = if (AppTheme.colors.isDark) Color.White else Color(0xFF14151B)
+                            )
+                        ) { Text("Trim Spaces", fontSize = 12.sp, fontWeight = FontWeight.SemiBold) }
 
                         Button(
                             onClick = { inputText = engine.removeDuplicateLines(inputText) },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = BentoPink)
-                        ) { Text("Deduplicate", color = TextPrimary, fontSize = 12.sp) }
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (AppTheme.colors.isDark) Color(0xFF3D253A) else BentoPink,
+                                contentColor = if (AppTheme.colors.isDark) Color.White else Color(0xFF14151B)
+                            )
+                        ) { Text("Deduplicate", fontSize = 12.sp, fontWeight = FontWeight.SemiBold) }
 
                         Button(
                             onClick = { inputText = engine.sortLinesAlphabetically(inputText) },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = BentoHoney)
-                        ) { Text("Sort Lines", color = TextPrimary, fontSize = 12.sp) }
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (AppTheme.colors.isDark) Color(0xFF3D3520) else BentoHoney,
+                                contentColor = if (AppTheme.colors.isDark) Color.White else Color(0xFF14151B)
+                            )
+                        ) { Text("Sort Lines", fontSize = 12.sp, fontWeight = FontWeight.SemiBold) }
                     }
 
                     Button(
                         onClick = { copyToClipboard(inputText) },
                         modifier = Modifier.fillMaxWidth().height(50.dp).padding(top = 8.dp),
                         shape = RoundedCornerShape(14.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = DockObsidian)
+                        colors = obsidianButtonColors()
                     ) {
-                        Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
                         Spacer(Modifier.width(8.dp))
-                        Text("Copy Transformed Text", fontWeight = FontWeight.Bold)
+                        Text("Copy Transformed Text", fontWeight = FontWeight.Bold, color = Color.White)
                     }
                 }
             }

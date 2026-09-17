@@ -79,16 +79,16 @@ fun DocumentScannerScreen(
     }
 
     Scaffold(
-        containerColor = CanvasBackground,
+        containerColor = AppTheme.colors.canvasBackground,
         topBar = {
             TopAppBar(
-                title = { Text("Document Scanner", fontWeight = FontWeight.Bold, color = TextPrimary) },
+                title = { Text("Document Scanner", fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = TextPrimary)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = AppTheme.colors.textPrimary)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = CanvasBackground)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = AppTheme.colors.canvasBackground)
             )
         }
     ) { padding ->
@@ -98,7 +98,8 @@ fun DocumentScannerScreen(
                 .padding(padding)
                 .padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            contentPadding = PaddingValues(bottom = 140.dp)
         ) {
             // 1. Preview Box
             item {
@@ -107,8 +108,8 @@ fun DocumentScannerScreen(
                         .fillMaxWidth()
                         .height(300.dp)
                         .clip(RoundedCornerShape(24.dp))
-                        .background(Color.White)
-                        .border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                        .background(AppTheme.colors.cardSurface)
+                        .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(24.dp))
                         .clickable {
                             photoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                         },
@@ -126,8 +127,8 @@ fun DocumentScannerScreen(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Icon(Icons.Default.AddPhotoAlternate, contentDescription = null, tint = BentoHoney, modifier = Modifier.size(48.dp))
-                            Text("Capture or Select Document", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
-                            Text("Transforms paper photos into clean scans", fontSize = 12.sp, color = TextSecondary)
+                            Text("Capture or Select Document", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
+                            Text("Transforms paper photos into clean scans", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
                         }
                     }
                 }
@@ -137,7 +138,8 @@ fun DocumentScannerScreen(
                 // 2. Filter Selector Chips
                 item {
                     Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("Document Mode", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = TextPrimary)
+                        Text("Document Mode", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = AppTheme.colors.textPrimary)
+
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             DocumentFilterMode.values().forEach { mode ->
                                 val isSelected = selectedFilter == mode
@@ -146,8 +148,10 @@ fun DocumentScannerScreen(
                                     onClick = { applyFilter(mode) },
                                     label = { Text(mode.label) },
                                     colors = FilterChipDefaults.filterChipColors(
-                                        selectedContainerColor = DockObsidian,
-                                        selectedLabelColor = Color.White
+                                        selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                                        containerColor = AppTheme.colors.cardSurface,
+                                        labelColor = AppTheme.colors.textSecondary
                                     )
                                 )
                             }
@@ -186,11 +190,11 @@ fun DocumentScannerScreen(
                             enabled = !isProcessing,
                             modifier = Modifier.weight(1f).height(52.dp),
                             shape = RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = DockObsidian)
+                            colors = obsidianButtonColors()
                         ) {
-                            Icon(Icons.Default.PictureAsPdf, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Default.PictureAsPdf, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
                             Spacer(Modifier.width(6.dp))
-                            Text(if (isProcessing) "Exporting..." else "Save as PDF")
+                            Text(if (isProcessing) "Exporting..." else "Save as PDF", fontWeight = FontWeight.Bold, color = Color.White)
                         }
 
                         Button(
@@ -210,7 +214,7 @@ fun DocumentScannerScreen(
                             },
                             modifier = Modifier.weight(1f).height(52.dp),
                             shape = RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = BentoHoney)
+                            colors = accentButtonColors(BentoHoney)
                         ) {
                             Icon(Icons.Default.Share, contentDescription = null, tint = TextPrimary, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(6.dp))

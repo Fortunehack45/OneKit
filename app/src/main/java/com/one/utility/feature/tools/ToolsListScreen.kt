@@ -54,13 +54,32 @@ fun ToolsListScreen(
                 val sectionTools = section.getTools()
                 if (sectionTools.isNotEmpty()) {
                     item {
-                        Text(
-                            text = "${section.emoji} ${section.title} (${sectionTools.size})",
-                            fontSize = 17.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = AppTheme.colors.textPrimary,
-                            modifier = Modifier.padding(top = 10.dp, bottom = 4.dp)
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            modifier = Modifier.padding(top = 16.dp, bottom = 6.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(30.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = section.icon,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                            Text(
+                                text = "${section.title} (${sectionTools.size})",
+                                fontSize = 17.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = AppTheme.colors.textPrimary
+                            )
+                        }
                     }
 
                     items(sectionTools) { tool ->

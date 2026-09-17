@@ -22,7 +22,11 @@ data class AppColors(
     val textMuted: Color,
     val dockBackground: Color,
     val primaryButton: Color,
-    val onPrimaryButton: Color
+    val onPrimaryButton: Color,
+    val bentoHoneySubtle: Color,
+    val bentoSkySubtle: Color,
+    val bentoPinkSubtle: Color,
+    val bentoMintSubtle: Color
 ) {
     val surfaceCard: Color get() = cardSurface
     val textTertiary: Color get() = textMuted
@@ -40,7 +44,11 @@ private val LightAppColors = AppColors(
     textMuted = TextMuted,
     dockBackground = FrostedGlassLight,
     primaryButton = DockObsidian,
-    onPrimaryButton = Color.White
+    onPrimaryButton = Color.White,
+    bentoHoneySubtle = BentoHoneyLight,
+    bentoSkySubtle = BentoSkyLight,
+    bentoPinkSubtle = BentoPinkLight,
+    bentoMintSubtle = BentoMintLight
 )
 
 private val DarkAppColors = AppColors(
@@ -54,8 +62,12 @@ private val DarkAppColors = AppColors(
     textSecondary = DarkTextSecondary,
     textMuted = DarkTextMuted,
     dockBackground = FrostedGlassDark,
-    primaryButton = Color.White,
-    onPrimaryButton = DockObsidian
+    primaryButton = Color(0xFF2E313D),
+    onPrimaryButton = Color.White,
+    bentoHoneySubtle = BentoHoney.copy(alpha = 0.18f),
+    bentoSkySubtle = BentoSky.copy(alpha = 0.18f),
+    bentoPinkSubtle = BentoPink.copy(alpha = 0.18f),
+    bentoMintSubtle = BentoMint.copy(alpha = 0.18f)
 )
 
 val LocalAppColors = staticCompositionLocalOf { LightAppColors }
@@ -71,6 +83,30 @@ object AppTheme {
         @ReadOnlyComposable
         get() = MaterialTheme.typography
 }
+
+@Composable
+fun obsidianButtonColors(): androidx.compose.material3.ButtonColors = androidx.compose.material3.ButtonDefaults.buttonColors(
+    containerColor = if (AppTheme.colors.isDark) Color(0xFF2E313D) else DockObsidian,
+    contentColor = Color.White,
+    disabledContainerColor = AppTheme.colors.surfaceVariant,
+    disabledContentColor = AppTheme.colors.textMuted
+)
+
+@Composable
+fun primaryButtonColors(): androidx.compose.material3.ButtonColors = androidx.compose.material3.ButtonDefaults.buttonColors(
+    containerColor = AppTheme.colors.primaryButton,
+    contentColor = AppTheme.colors.onPrimaryButton,
+    disabledContainerColor = AppTheme.colors.surfaceVariant,
+    disabledContentColor = AppTheme.colors.textMuted
+)
+
+@Composable
+fun accentButtonColors(accentColor: Color): androidx.compose.material3.ButtonColors = androidx.compose.material3.ButtonDefaults.buttonColors(
+    containerColor = accentColor,
+    contentColor = TextPrimary,
+    disabledContainerColor = AppTheme.colors.surfaceVariant,
+    disabledContentColor = AppTheme.colors.textMuted
+)
 
 private val LightColorScheme = lightColorScheme(
     primary = DockObsidian,

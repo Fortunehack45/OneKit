@@ -47,16 +47,16 @@ fun CurrencyAndTimeScreen(
     var toTz by remember { mutableStateOf("Asia/Tokyo") }
 
     Scaffold(
-        containerColor = CanvasBackground,
+        containerColor = AppTheme.colors.canvasBackground,
         topBar = {
             TopAppBar(
-                title = { Text("Currency & World Time", fontWeight = FontWeight.Bold, color = TextPrimary) },
+                title = { Text("Currency & World Time", fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = TextPrimary)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = AppTheme.colors.textPrimary)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = CanvasBackground)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = AppTheme.colors.canvasBackground)
             )
         }
     ) { padding ->
@@ -65,7 +65,8 @@ fun CurrencyAndTimeScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(bottom = 140.dp)
         ) {
             // Tab Selector Chips
             item {
@@ -77,8 +78,10 @@ fun CurrencyAndTimeScreen(
                             onClick = { selectedTab = tab },
                             label = { Text(tab.label) },
                             colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = DockObsidian,
-                                selectedLabelColor = Color.White
+                                selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                                containerColor = AppTheme.colors.cardSurface,
+                                labelColor = AppTheme.colors.textSecondary
                             )
                         )
                     }
@@ -90,11 +93,11 @@ fun CurrencyAndTimeScreen(
                     item {
                         Surface(
                             shape = RoundedCornerShape(24.dp),
-                            color = Color.White,
-                            modifier = Modifier.fillMaxWidth().border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                            color = AppTheme.colors.cardSurface,
+                            modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(24.dp))
                         ) {
                             Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                                Text("Offline Currency Calculator", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                                Text("Offline Currency Calculator", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
 
                                 // Privacy Notice badge
                                 Box(
@@ -131,13 +134,13 @@ fun CurrencyAndTimeScreen(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clip(RoundedCornerShape(16.dp))
-                                        .background(BentoHoneyLight)
+                                        .background(AppTheme.colors.bentoHoneySubtle)
                                         .padding(18.dp)
                                 ) {
                                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                        Text("$amount $fromCurrencyName is equal to:", fontSize = 13.sp, color = TextSecondary)
-                                        Text("${"%,.2f".format(converted)} $toCurrencyName", fontWeight = FontWeight.Bold, fontSize = 26.sp, color = DockObsidian)
-                                        Text("Based on 1 $fromCurrencyName = $rate $toCurrencyName", fontSize = 11.sp, color = TextSecondary)
+                                        Text("$amount $fromCurrencyName is equal to:", fontSize = 13.sp, color = AppTheme.colors.textSecondary)
+                                        Text("${"%,.2f".format(converted)} $toCurrencyName", fontWeight = FontWeight.Bold, fontSize = 26.sp, color = AppTheme.colors.textPrimary)
+                                        Text("Based on 1 $fromCurrencyName = $rate $toCurrencyName", fontSize = 11.sp, color = AppTheme.colors.textSecondary)
                                     }
                                 }
                             }
@@ -149,12 +152,12 @@ fun CurrencyAndTimeScreen(
                     item {
                         Surface(
                             shape = RoundedCornerShape(24.dp),
-                            color = Color.White,
-                            modifier = Modifier.fillMaxWidth().border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                            color = AppTheme.colors.cardSurface,
+                            modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(24.dp))
                         ) {
                             Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                                Text("World Clock & Time Zones", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
-                                Text("Calculated using Android's on-device time-zone database.", fontSize = 12.sp, color = TextSecondary)
+                                Text("World Clock & Time Zones", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
+                                Text("Calculated using Android's on-device time-zone database.", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
 
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
@@ -162,13 +165,13 @@ fun CurrencyAndTimeScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
                                     Column(modifier = Modifier.weight(1f)) {
-                                        Text("From Zone", fontSize = 11.sp, color = TextSecondary)
-                                        Text(fromTz, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = TextPrimary)
+                                        Text("From Zone", fontSize = 11.sp, color = AppTheme.colors.textSecondary)
+                                        Text(fromTz, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = AppTheme.colors.textPrimary)
                                     }
                                     Icon(Icons.Default.ArrowForward, contentDescription = null, tint = BentoHoney)
                                     Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
-                                        Text("To Zone", fontSize = 11.sp, color = TextSecondary)
-                                        Text(toTz, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = TextPrimary)
+                                        Text("To Zone", fontSize = 11.sp, color = AppTheme.colors.textSecondary)
+                                        Text(toTz, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = AppTheme.colors.textPrimary)
                                     }
                                 }
 
@@ -182,16 +185,16 @@ fun CurrencyAndTimeScreen(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clip(RoundedCornerShape(16.dp))
-                                        .background(BentoSkyLight)
+                                        .background(AppTheme.colors.bentoSkySubtle)
                                         .padding(18.dp)
                                 ) {
                                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                        Text("${result.fromZone}: ${result.fromTimeFormatted}", fontSize = 13.sp, color = TextSecondary)
+                                        Text("${result.fromZone}: ${result.fromTimeFormatted}", fontSize = 13.sp, color = AppTheme.colors.textSecondary)
                                         Text(
                                             "${result.toZone}: ${result.toTimeFormatted}",
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 22.sp,
-                                            color = DockObsidian
+                                            color = AppTheme.colors.textPrimary
                                         )
                                         val aheadOrBehind = if (result.hourDifference >= 0) "+${result.hourDifference} hours ahead" else "${result.hourDifference} hours behind"
                                         Text(aheadOrBehind, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = HeroLavenderDark)

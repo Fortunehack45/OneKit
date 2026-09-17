@@ -1,5 +1,17 @@
 package com.one.utility.core.router
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Calculate
+import androidx.compose.material.icons.outlined.DocumentScanner
+import androidx.compose.material.icons.outlined.Folder
+import androidx.compose.material.icons.outlined.FormatSize
+import androidx.compose.material.icons.outlined.Paid
+import androidx.compose.material.icons.outlined.PhotoLibrary
+import androidx.compose.material.icons.outlined.PictureAsPdf
+import androidx.compose.material.icons.outlined.Security
+import androidx.compose.material.icons.outlined.SwapHoriz
+import androidx.compose.ui.graphics.vector.ImageVector
+
 enum class ToolCategory(val title: String) {
     IMAGES("Images"),
     PDF("PDFs"),
@@ -189,15 +201,15 @@ object ToolRegistry {
     fun findByCategory(category: ToolCategory): List<ToolDefinition> = tools.filter { it.category == category }
 
     val sections = listOf(
-        ToolSection("images", "Images", "📸", listOf("image_to_pdf", "background_remover", "image_compressor", "image_resizer", "image_cropper", "image_converter")),
-        ToolSection("pdfs", "PDF Documents", "📄", listOf("pdf_toolbox", "image_to_pdf")),
-        ToolSection("scanner", "Scanner & QR", "📷", listOf("document_scanner", "qr_generator")),
-        ToolSection("files", "Storage & Files", "🧹", listOf("storage_cleaner", "batch_rename")),
-        ToolSection("calculators", "Calculators", "🧮", listOf("calculator", "everyday_calculators")),
-        ToolSection("converters", "Converters", "🔄", listOf("unit_converter", "image_converter", "currency_time")),
-        ToolSection("money_time", "Money & Time", "💰", listOf("everyday_calculators", "currency_time")),
-        ToolSection("text", "Text Tools", "✍️", listOf("text_tools", "cool_fonts")),
-        ToolSection("tech", "Privacy & Tech", "🔐", listOf("password_generator", "dev_tools"))
+        ToolSection("images", "Images", Icons.Outlined.PhotoLibrary, listOf("image_to_pdf", "background_remover", "image_compressor", "image_resizer", "image_cropper", "image_converter")),
+        ToolSection("pdfs", "PDF Documents", Icons.Outlined.PictureAsPdf, listOf("pdf_toolbox", "image_to_pdf")),
+        ToolSection("scanner", "Scanner & QR", Icons.Outlined.DocumentScanner, listOf("document_scanner", "qr_generator")),
+        ToolSection("files", "Storage & Files", Icons.Outlined.Folder, listOf("storage_cleaner", "batch_rename")),
+        ToolSection("calculators", "Calculators", Icons.Outlined.Calculate, listOf("calculator", "everyday_calculators")),
+        ToolSection("converters", "Converters", Icons.Outlined.SwapHoriz, listOf("unit_converter", "image_converter", "currency_time")),
+        ToolSection("money_time", "Money & Time", Icons.Outlined.Paid, listOf("everyday_calculators", "currency_time")),
+        ToolSection("text", "Text Tools", Icons.Outlined.FormatSize, listOf("text_tools", "cool_fonts")),
+        ToolSection("tech", "Privacy & Tech", Icons.Outlined.Security, listOf("password_generator", "dev_tools"))
     )
 
     fun findSectionById(id: String): ToolSection? = sections.find { it.id == id }
@@ -206,7 +218,7 @@ object ToolRegistry {
 data class ToolSection(
     val id: String,
     val title: String,
-    val emoji: String,
+    val icon: ImageVector,
     val toolIds: List<String>
 ) {
     fun getTools(): List<ToolDefinition> {

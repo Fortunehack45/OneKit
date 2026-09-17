@@ -78,16 +78,16 @@ fun StorageCleanerScreen(
     }
 
     Scaffold(
-        containerColor = CanvasBackground,
+        containerColor = AppTheme.colors.canvasBackground,
         topBar = {
             TopAppBar(
-                title = { Text("Storage & File Cleaner", fontWeight = FontWeight.Bold, color = TextPrimary) },
+                title = { Text("Storage & File Cleaner", fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = TextPrimary)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = AppTheme.colors.textPrimary)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = CanvasBackground)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = AppTheme.colors.canvasBackground)
             )
         }
     ) { padding ->
@@ -97,14 +97,14 @@ fun StorageCleanerScreen(
                 .padding(padding)
                 .padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(bottom = 40.dp)
+            contentPadding = PaddingValues(bottom = 140.dp)
         ) {
             // Action Notification Banner
             actionMessage?.let { msg ->
                 item {
                     Surface(
                         shape = RoundedCornerShape(14.dp),
-                        color = BentoHoneyLight,
+                        color = if (AppTheme.colors.isDark) Color(0xFF332B1A) else BentoHoneyLight,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
@@ -112,8 +112,8 @@ fun StorageCleanerScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Icon(Icons.Default.Check, contentDescription = null, tint = DockObsidian, modifier = Modifier.size(18.dp))
-                            Text(msg, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = TextPrimary)
+                            Icon(Icons.Default.Check, contentDescription = null, tint = BentoHoney, modifier = Modifier.size(18.dp))
+                            Text(msg, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = AppTheme.colors.textPrimary)
                         }
                     }
                 }
@@ -123,33 +123,34 @@ fun StorageCleanerScreen(
             item {
                 Surface(
                     shape = RoundedCornerShape(24.dp),
-                    color = Color.White,
-                    modifier = Modifier.fillMaxWidth().border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                    color = AppTheme.colors.surfaceCard,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Icon(Icons.Outlined.Storage, contentDescription = null, tint = DockObsidian)
-                            Text("Device Storage Breakdown", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                            Icon(Icons.Outlined.Storage, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                            Text("Device Storage Breakdown", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
                         }
 
                         LinearProgressIndicator(
                             progress = { (storageInfo.usedPercentage / 100.0).toFloat().coerceIn(0f, 1f) },
                             modifier = Modifier.fillMaxWidth().height(10.dp).clip(RoundedCornerShape(5.dp)),
                             color = BentoHoney,
-                            trackColor = BorderSubtle
+                            trackColor = AppTheme.colors.borderSubtle
                         )
 
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                             Text(
                                 text = "Used: ${engine.formatBytes(storageInfo.usedBytes)} (${storageInfo.usedPercentage.toInt()}%)",
                                 fontSize = 13.sp,
-                                color = TextSecondary
+                                color = AppTheme.colors.textSecondary
                             )
                             Text(
                                 text = "Free: ${engine.formatBytes(storageInfo.freeBytes)}",
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = TextPrimary
+                                color = AppTheme.colors.textPrimary
                             )
                         }
                     }
@@ -160,8 +161,9 @@ fun StorageCleanerScreen(
             item {
                 Surface(
                     shape = RoundedCornerShape(24.dp),
-                    color = Color.White,
-                    modifier = Modifier.fillMaxWidth().border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                    color = AppTheme.colors.surfaceCard,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Row(
@@ -170,29 +172,30 @@ fun StorageCleanerScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                Icon(Icons.Outlined.CleaningServices, contentDescription = null, tint = DockObsidian)
-                                Text("App Cache & Temporary Files", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                                Icon(Icons.Outlined.CleaningServices, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                                Text("App Cache & Temporary Files", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
                             }
                         }
 
                         Text(
                             text = "Temporary cache: ${cacheInfo.formattedSize} (${cacheInfo.fileCount} temporary files). Safe to clean anytime — does not delete your saved documents or presets.",
                             fontSize = 12.sp,
-                            color = TextSecondary
+                            color = AppTheme.colors.textSecondary
                         )
 
                         Button(
                             onClick = { showCleanCacheDialog = true },
-                            colors = ButtonDefaults.buttonColors(containerColor = DockObsidian),
+                            colors = obsidianButtonColors(),
                             shape = RoundedCornerShape(14.dp),
                             enabled = cacheInfo.totalSizeBytes > 0 && !isScanning,
                             modifier = Modifier.fillMaxWidth().height(48.dp)
                         ) {
-                            Icon(Icons.Outlined.CleaningServices, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Outlined.CleaningServices, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
                             Spacer(Modifier.width(8.dp))
                             Text(
                                 if (cacheInfo.totalSizeBytes == 0L) "Cache is Completely Clean" else "Clean Cache (${cacheInfo.formattedSize})",
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
                             )
                         }
                     }
@@ -210,7 +213,7 @@ fun StorageCleanerScreen(
                         "Duplicate Files (${duplicateGroups.size} groups)",
                         fontWeight = FontWeight.Bold,
                         fontSize = 17.sp,
-                        color = TextPrimary
+                        color = AppTheme.colors.textPrimary
                     )
                     TextButton(onClick = { refreshAll() }, enabled = !isScanning) {
                         Text(if (isScanning) "Scanning..." else "Rescan", color = BentoHoney, fontWeight = FontWeight.Bold)
@@ -222,11 +225,12 @@ fun StorageCleanerScreen(
                 item {
                     Surface(
                         shape = RoundedCornerShape(18.dp),
-                        color = Color.White,
-                        modifier = Modifier.fillMaxWidth().border(1.dp, BorderSubtle, RoundedCornerShape(18.dp))
+                        color = AppTheme.colors.surfaceCard,
+                        border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle),
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text("No identical duplicate content found.", fontSize = 13.sp, color = TextSecondary)
+                            Text("No identical duplicate content found.", fontSize = 13.sp, color = AppTheme.colors.textSecondary)
                             OutlinedButton(
                                 onClick = {
                                     coroutineScope.launch {
@@ -248,7 +252,8 @@ fun StorageCleanerScreen(
                 items(duplicateGroups) { group ->
                     Surface(
                         shape = RoundedCornerShape(20.dp),
-                        color = BentoPinkLight,
+                        color = if (AppTheme.colors.isDark) Color(0xFF2E1C2B) else BentoPinkLight,
+                        border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -262,22 +267,22 @@ fun StorageCleanerScreen(
                                         "SHA-256 Match (${group.files.size} identical copies)",
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 14.sp,
-                                        color = TextPrimary
+                                        color = AppTheme.colors.textPrimary
                                     )
                                     Text(
                                         "Each copy: ${group.formattedSize} • Total: ${engine.formatBytes(group.sizeBytes * group.files.size)}",
                                         fontSize = 12.sp,
-                                        color = TextSecondary
+                                        color = AppTheme.colors.textSecondary
                                     )
                                 }
 
                                 Button(
                                     onClick = { duplicateGroupToClean = group },
-                                    colors = ButtonDefaults.buttonColors(containerColor = DockObsidian),
+                                    colors = obsidianButtonColors(),
                                     shape = RoundedCornerShape(10.dp),
                                     contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
                                 ) {
-                                    Text("Keep 1, Clean", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                    Text("Keep 1, Clean", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
                                 }
                             }
 
@@ -286,7 +291,7 @@ fun StorageCleanerScreen(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clip(RoundedCornerShape(10.dp))
-                                        .background(Color.White.copy(alpha = 0.8f))
+                                        .background(AppTheme.colors.canvasBackground.copy(alpha = 0.9f))
                                         .padding(horizontal = 12.dp, vertical = 8.dp),
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
@@ -299,12 +304,12 @@ fun StorageCleanerScreen(
                                                         .background(BentoMint, RoundedCornerShape(4.dp))
                                                         .padding(horizontal = 5.dp, vertical = 2.dp)
                                                 ) {
-                                                    Text("ORIGINAL", fontSize = 8.sp, fontWeight = FontWeight.Bold, color = DockObsidian)
+                                                    Text("ORIGINAL", fontSize = 8.sp, fontWeight = FontWeight.Bold, color = Color(0xFF14151B))
                                                 }
                                             }
-                                            Text(f.name, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
+                                            Text(f.name, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = AppTheme.colors.textPrimary, maxLines = 1)
                                         }
-                                        Text(f.parent ?: "", fontSize = 10.sp, color = TextSecondary, maxLines = 1)
+                                        Text(f.parent ?: "", fontSize = 10.sp, color = AppTheme.colors.textSecondary, maxLines = 1)
                                     }
 
                                     if (i > 0) {
@@ -321,25 +326,27 @@ fun StorageCleanerScreen(
 
             // 4. Large Files Section
             item {
-                Text("Large Files (${largeFiles.size})", fontWeight = FontWeight.Bold, fontSize = 17.sp, color = TextPrimary)
+                Text("Large Files (${largeFiles.size})", fontWeight = FontWeight.Bold, fontSize = 17.sp, color = AppTheme.colors.textPrimary)
             }
 
             if (largeFiles.isEmpty() && !isScanning) {
                 item {
                     Surface(
                         shape = RoundedCornerShape(16.dp),
-                        color = Color.White,
-                        modifier = Modifier.fillMaxWidth().border(1.dp, BorderSubtle, RoundedCornerShape(16.dp))
+                        color = AppTheme.colors.surfaceCard,
+                        border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle),
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("No excessively large files detected (> 10MB).", fontSize = 13.sp, color = TextSecondary, modifier = Modifier.padding(16.dp))
+                        Text("No excessively large files detected (> 10MB).", fontSize = 13.sp, color = AppTheme.colors.textSecondary, modifier = Modifier.padding(16.dp))
                     }
                 }
             } else {
                 items(largeFiles) { item ->
                     Surface(
                         shape = RoundedCornerShape(16.dp),
-                        color = Color.White,
-                        modifier = Modifier.fillMaxWidth().border(1.dp, BorderSubtle, RoundedCornerShape(16.dp))
+                        color = AppTheme.colors.surfaceCard,
+                        border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle),
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
                             modifier = Modifier.padding(16.dp),
@@ -347,8 +354,8 @@ fun StorageCleanerScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(item.file.name, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = TextPrimary)
-                                Text("${item.formattedSize} • ${item.file.parent ?: ""}", fontSize = 11.sp, color = TextSecondary, maxLines = 1)
+                                Text(item.file.name, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = AppTheme.colors.textPrimary)
+                                Text("${item.formattedSize} • ${item.file.parent ?: ""}", fontSize = 11.sp, color = AppTheme.colors.textSecondary, maxLines = 1)
                             }
                             IconButton(onClick = { fileToDelete = item.file }) {
                                 Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.Red.copy(alpha = 0.7f), modifier = Modifier.size(20.dp))

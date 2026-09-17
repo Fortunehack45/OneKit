@@ -70,16 +70,16 @@ fun DeveloperToolsScreen(
     }
 
     Scaffold(
-        containerColor = CanvasBackground,
+        containerColor = AppTheme.colors.canvasBackground,
         topBar = {
             TopAppBar(
-                title = { Text("Developer Tools", fontWeight = FontWeight.Bold, color = TextPrimary) },
+                title = { Text("Developer Tools", fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = TextPrimary)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = AppTheme.colors.textPrimary)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = CanvasBackground)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = AppTheme.colors.canvasBackground)
             )
         }
     ) { padding ->
@@ -88,6 +88,7 @@ fun DeveloperToolsScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = 20.dp),
+            contentPadding = PaddingValues(bottom = 140.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Tab row
@@ -102,15 +103,15 @@ fun DeveloperToolsScreen(
                             modifier = Modifier
                                 .weight(1f)
                                 .clip(RoundedCornerShape(14.dp))
-                                .background(if (isSelected) DockObsidian else Color.White)
-                                .border(1.dp, if (isSelected) Color.Transparent else BorderSubtle, RoundedCornerShape(14.dp))
+                                .background(if (isSelected) MaterialTheme.colorScheme.primary else AppTheme.colors.cardSurface)
+                                .border(1.dp, if (isSelected) Color.Transparent else AppTheme.colors.borderSubtle, RoundedCornerShape(14.dp))
                                 .clickable { selectedTab = tab }
                                 .padding(vertical = 10.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = tab.title,
-                                color = if (isSelected) Color.White else TextPrimary,
+                                color = if (isSelected) MaterialTheme.colorScheme.onPrimary else AppTheme.colors.textPrimary,
                                 fontSize = 12.sp,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                             )
@@ -124,11 +125,11 @@ fun DeveloperToolsScreen(
                     item {
                         Surface(
                             shape = RoundedCornerShape(24.dp),
-                            color = Color.White,
-                            modifier = Modifier.fillMaxWidth().border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                            color = AppTheme.colors.cardSurface,
+                            modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(24.dp))
                         ) {
                             Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                                Text("JSON Formatter & Minifier", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                                Text("JSON Formatter & Minifier", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
                                 OutlinedTextField(
                                     value = jsonInput,
                                     onValueChange = { jsonInput = it },
@@ -147,9 +148,9 @@ fun DeveloperToolsScreen(
                                             }
                                         },
                                         modifier = Modifier.weight(1f),
-                                        colors = ButtonDefaults.buttonColors(containerColor = DockObsidian),
+                                        colors = obsidianButtonColors(),
                                         shape = RoundedCornerShape(12.dp)
-                                    ) { Text("Format") }
+                                    ) { Text("Format", color = Color.White, fontWeight = FontWeight.Bold) }
 
                                     Button(
                                         onClick = {
@@ -160,9 +161,9 @@ fun DeveloperToolsScreen(
                                             }
                                         },
                                         modifier = Modifier.weight(1f),
-                                        colors = ButtonDefaults.buttonColors(containerColor = BentoSky),
+                                        colors = accentButtonColors(BentoSky),
                                         shape = RoundedCornerShape(12.dp)
-                                    ) { Text("Minify", color = TextPrimary) }
+                                    ) { Text("Minify", color = TextPrimary, fontWeight = FontWeight.Bold) }
                                 }
 
                                 if (jsonOutput.isNotEmpty()) {
@@ -170,10 +171,19 @@ fun DeveloperToolsScreen(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .clip(RoundedCornerShape(14.dp))
-                                            .background(BentoSkyLight)
+                                            .background(AppTheme.colors.bentoSkySubtle)
                                             .padding(14.dp)
                                     ) {
-                                        Text(jsonOutput, fontFamily = FontFamily.Monospace, fontSize = 12.sp, color = TextPrimary)
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(jsonOutput, fontFamily = FontFamily.Monospace, fontSize = 12.sp, color = AppTheme.colors.textPrimary, modifier = Modifier.weight(1f))
+                                            IconButton(onClick = { copy(jsonOutput) }) {
+                                                Icon(Icons.Default.ContentCopy, contentDescription = null, tint = AppTheme.colors.textPrimary, modifier = Modifier.size(18.dp))
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -185,15 +195,15 @@ fun DeveloperToolsScreen(
                     item {
                         Surface(
                             shape = RoundedCornerShape(24.dp),
-                            color = Color.White,
-                            modifier = Modifier.fillMaxWidth().border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                            color = AppTheme.colors.cardSurface,
+                            modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(24.dp))
                         ) {
                             Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                                Text("Base64 Encoder / Decoder", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                                Text("Base64 Encoder & Decoder", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
                                 OutlinedTextField(
                                     value = base64Input,
                                     onValueChange = { base64Input = it },
-                                    label = { Text("Text / Base64") },
+                                    label = { Text("Text or Base64 String") },
                                     modifier = Modifier.fillMaxWidth().height(120.dp),
                                     shape = RoundedCornerShape(14.dp)
                                 )
@@ -202,9 +212,9 @@ fun DeveloperToolsScreen(
                                     Button(
                                         onClick = { base64Output = engine.base64Encode(base64Input) },
                                         modifier = Modifier.weight(1f),
-                                        colors = ButtonDefaults.buttonColors(containerColor = DockObsidian),
+                                        colors = obsidianButtonColors(),
                                         shape = RoundedCornerShape(12.dp)
-                                    ) { Text("Encode") }
+                                    ) { Text("Encode", color = Color.White, fontWeight = FontWeight.Bold) }
 
                                     Button(
                                         onClick = {
@@ -215,9 +225,9 @@ fun DeveloperToolsScreen(
                                             }
                                         },
                                         modifier = Modifier.weight(1f),
-                                        colors = ButtonDefaults.buttonColors(containerColor = BentoHoney),
+                                        colors = accentButtonColors(BentoHoney),
                                         shape = RoundedCornerShape(12.dp)
-                                    ) { Text("Decode", color = TextPrimary) }
+                                    ) { Text("Decode", color = TextPrimary, fontWeight = FontWeight.Bold) }
                                 }
 
                                 if (base64Output.isNotEmpty()) {
@@ -225,7 +235,7 @@ fun DeveloperToolsScreen(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .clip(RoundedCornerShape(14.dp))
-                                            .background(BentoHoneyLight)
+                                            .background(AppTheme.colors.bentoHoneySubtle)
                                             .padding(14.dp)
                                     ) {
                                         Row(
@@ -233,9 +243,9 @@ fun DeveloperToolsScreen(
                                             horizontalArrangement = Arrangement.SpaceBetween,
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            Text(base64Output, fontFamily = FontFamily.Monospace, fontSize = 13.sp, color = TextPrimary, modifier = Modifier.weight(1f))
+                                            Text(base64Output, fontFamily = FontFamily.Monospace, fontSize = 13.sp, color = AppTheme.colors.textPrimary, modifier = Modifier.weight(1f))
                                             IconButton(onClick = { copy(base64Output) }) {
-                                                Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(18.dp))
+                                                Icon(Icons.Default.ContentCopy, contentDescription = null, tint = AppTheme.colors.textPrimary, modifier = Modifier.size(18.dp))
                                             }
                                         }
                                     }
@@ -249,11 +259,11 @@ fun DeveloperToolsScreen(
                     item {
                         Surface(
                             shape = RoundedCornerShape(24.dp),
-                            color = Color.White,
-                            modifier = Modifier.fillMaxWidth().border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                            color = AppTheme.colors.cardSurface,
+                            modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(24.dp))
                         ) {
                             Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                                Text("JWT Inspector", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                                Text("JWT Inspector", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
                                 OutlinedTextField(
                                     value = jwtInput,
                                     onValueChange = { jwtInput = it },
@@ -272,19 +282,19 @@ fun DeveloperToolsScreen(
                                         }
                                     },
                                     modifier = Modifier.fillMaxWidth(),
-                                    colors = ButtonDefaults.buttonColors(containerColor = DockObsidian),
+                                    colors = obsidianButtonColors(),
                                     shape = RoundedCornerShape(12.dp)
-                                ) { Text("Decode JWT") }
+                                ) { Text("Decode JWT", color = Color.White, fontWeight = FontWeight.Bold) }
 
                                 if (jwtOutput.isNotEmpty()) {
                                     Box(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .clip(RoundedCornerShape(14.dp))
-                                            .background(BentoPinkLight)
+                                            .background(AppTheme.colors.bentoPinkSubtle)
                                             .padding(14.dp)
                                     ) {
-                                        Text(jwtOutput, fontFamily = FontFamily.Monospace, fontSize = 12.sp, color = TextPrimary)
+                                        Text(jwtOutput, fontFamily = FontFamily.Monospace, fontSize = 12.sp, color = AppTheme.colors.textPrimary)
                                     }
                                 }
                             }
@@ -296,11 +306,11 @@ fun DeveloperToolsScreen(
                     item {
                         Surface(
                             shape = RoundedCornerShape(24.dp),
-                            color = Color.White,
-                            modifier = Modifier.fillMaxWidth().border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                            color = AppTheme.colors.cardSurface,
+                            modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(24.dp))
                         ) {
                             Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                                Text("Cryptographic Hash Generator", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                                Text("Cryptographic Hash Generator", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
                                 OutlinedTextField(
                                     value = hashInput,
                                     onValueChange = { hashInput = it },
@@ -313,16 +323,16 @@ fun DeveloperToolsScreen(
                                     Button(
                                         onClick = { hashOutput = "SHA-256:\n" + engine.hashString(hashInput, "SHA-256") },
                                         modifier = Modifier.weight(1f),
-                                        colors = ButtonDefaults.buttonColors(containerColor = DockObsidian),
+                                        colors = obsidianButtonColors(),
                                         shape = RoundedCornerShape(12.dp)
-                                    ) { Text("SHA-256") }
+                                    ) { Text("SHA-256", color = Color.White, fontWeight = FontWeight.Bold) }
 
                                     Button(
                                         onClick = { hashOutput = "SHA-512:\n" + engine.hashString(hashInput, "SHA-512") },
                                         modifier = Modifier.weight(1f),
-                                        colors = ButtonDefaults.buttonColors(containerColor = DockObsidian),
+                                        colors = obsidianButtonColors(),
                                         shape = RoundedCornerShape(12.dp)
-                                    ) { Text("SHA-512") }
+                                    ) { Text("SHA-512", color = Color.White, fontWeight = FontWeight.Bold) }
                                 }
 
                                 if (hashOutput.isNotEmpty()) {
@@ -330,7 +340,7 @@ fun DeveloperToolsScreen(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .clip(RoundedCornerShape(14.dp))
-                                            .background(BentoSkyLight)
+                                            .background(AppTheme.colors.bentoSkySubtle)
                                             .padding(14.dp)
                                     ) {
                                         Row(
@@ -338,9 +348,9 @@ fun DeveloperToolsScreen(
                                             horizontalArrangement = Arrangement.SpaceBetween,
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            Text(hashOutput, fontFamily = FontFamily.Monospace, fontSize = 12.sp, color = TextPrimary, modifier = Modifier.weight(1f))
+                                            Text(hashOutput, fontFamily = FontFamily.Monospace, fontSize = 12.sp, color = AppTheme.colors.textPrimary, modifier = Modifier.weight(1f))
                                             IconButton(onClick = { copy(hashOutput) }) {
-                                                Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(18.dp))
+                                                Icon(Icons.Default.ContentCopy, contentDescription = null, tint = AppTheme.colors.textPrimary, modifier = Modifier.size(18.dp))
                                             }
                                         }
                                     }
@@ -354,11 +364,11 @@ fun DeveloperToolsScreen(
                     item {
                         Surface(
                             shape = RoundedCornerShape(24.dp),
-                            color = Color.White,
-                            modifier = Modifier.fillMaxWidth().border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                            color = AppTheme.colors.cardSurface,
+                            modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(24.dp))
                         ) {
                             Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                                Text("Unix Timestamp Converter", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                                Text("Unix Timestamp Converter", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
 
                                 OutlinedTextField(
                                     value = timestampInput,
@@ -378,19 +388,19 @@ fun DeveloperToolsScreen(
                                         }
                                     },
                                     modifier = Modifier.fillMaxWidth(),
-                                    colors = ButtonDefaults.buttonColors(containerColor = DockObsidian),
+                                    colors = obsidianButtonColors(),
                                     shape = RoundedCornerShape(12.dp)
-                                ) { Text("Convert to Human Date") }
+                                ) { Text("Convert to Human Date", color = Color.White, fontWeight = FontWeight.Bold) }
 
                                 if (dateOutput.isNotEmpty()) {
                                     Box(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .clip(RoundedCornerShape(14.dp))
-                                            .background(BentoHoneyLight)
+                                            .background(AppTheme.colors.bentoHoneySubtle)
                                             .padding(14.dp)
                                     ) {
-                                        Text(dateOutput, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = TextPrimary)
+                                        Text(dateOutput, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = AppTheme.colors.textPrimary)
                                     }
                                 }
                             }

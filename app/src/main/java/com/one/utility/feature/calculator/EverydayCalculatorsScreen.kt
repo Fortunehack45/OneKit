@@ -81,16 +81,16 @@ fun EverydayCalculatorsScreen(
     var endDayInput by remember { mutableStateOf(LocalDate.now().dayOfMonth.toString()) }
 
     Scaffold(
-        containerColor = CanvasBackground,
+        containerColor = AppTheme.colors.canvasBackground,
         topBar = {
             TopAppBar(
-                title = { Text("Everyday Calculators", fontWeight = FontWeight.Bold, color = TextPrimary) },
+                title = { Text("Everyday Calculators", fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = TextPrimary)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = AppTheme.colors.textPrimary)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = CanvasBackground)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = AppTheme.colors.canvasBackground)
             )
         }
     ) { padding ->
@@ -99,7 +99,8 @@ fun EverydayCalculatorsScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(bottom = 140.dp)
         ) {
             // Tab Selector Chips
             item {
@@ -112,8 +113,10 @@ fun EverydayCalculatorsScreen(
                             onClick = { selectedTab = tab },
                             label = { Text(tab.label) },
                             colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = DockObsidian,
-                                selectedLabelColor = Color.White
+                                selectedContainerColor = if (AppTheme.colors.isDark) Color.White else DockObsidian,
+                                selectedLabelColor = if (AppTheme.colors.isDark) Color(0xFF14151B) else Color.White,
+                                containerColor = AppTheme.colors.surfaceVariant,
+                                labelColor = AppTheme.colors.textPrimary
                             )
                         )
                     }
@@ -125,11 +128,12 @@ fun EverydayCalculatorsScreen(
                     item {
                         Surface(
                             shape = RoundedCornerShape(24.dp),
-                            color = Color.White,
-                            modifier = Modifier.fillMaxWidth().border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                            color = AppTheme.colors.surfaceCard,
+                            border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle),
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                                Text("Profit, Margin & Markup", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                                Text("Profit, Margin & Markup", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
 
                                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                                     OutlinedTextField(
@@ -156,13 +160,13 @@ fun EverydayCalculatorsScreen(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clip(RoundedCornerShape(16.dp))
-                                        .background(BentoHoneyLight)
+                                        .background(if (AppTheme.colors.isDark) Color(0xFF332B1A) else BentoHoneyLight)
                                         .padding(16.dp)
                                 ) {
                                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                        Text("Net Profit: \$${"%.2f".format(res.profit)}", fontWeight = FontWeight.Bold, fontSize = 22.sp, color = DockObsidian)
-                                        Text("Profit Margin: ${"%.1f".format(res.profitMarginPercent)}%", fontSize = 14.sp, color = TextPrimary)
-                                        Text("Markup: ${"%.1f".format(res.markupPercent)}%", fontSize = 14.sp, color = TextSecondary)
+                                        Text("Net Profit: \$${"%.2f".format(res.profit)}", fontWeight = FontWeight.Bold, fontSize = 22.sp, color = AppTheme.colors.textPrimary)
+                                        Text("Profit Margin: ${"%.1f".format(res.profitMarginPercent)}%", fontSize = 14.sp, color = AppTheme.colors.textPrimary)
+                                        Text("Markup: ${"%.1f".format(res.markupPercent)}%", fontSize = 14.sp, color = AppTheme.colors.textSecondary)
                                     }
                                 }
                             }
@@ -174,11 +178,12 @@ fun EverydayCalculatorsScreen(
                     item {
                         Surface(
                             shape = RoundedCornerShape(24.dp),
-                            color = Color.White,
-                            modifier = Modifier.fillMaxWidth().border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                            color = AppTheme.colors.surfaceCard,
+                            border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle),
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                                Text("Discount Calculator", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                                Text("Discount Calculator", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
 
                                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                                     OutlinedTextField(
@@ -212,12 +217,12 @@ fun EverydayCalculatorsScreen(
 
                                 Surface(
                                     shape = RoundedCornerShape(16.dp),
-                                    color = BentoHoneyLight,
+                                    color = if (AppTheme.colors.isDark) Color(0xFF332B1A) else BentoHoneyLight,
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
                                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                        Text("Final Price: $${"%.2f".format(res.finalPrice)}", fontWeight = FontWeight.Bold, fontSize = 22.sp, color = DockObsidian)
-                                        Text("You Save: $${"%.2f".format(res.savedAmount)} ($disc% off)", fontSize = 14.sp, color = TextPrimary)
+                                        Text("Final Price: $${"%.2f".format(res.finalPrice)}", fontWeight = FontWeight.Bold, fontSize = 22.sp, color = AppTheme.colors.textPrimary)
+                                        Text("You Save: $${"%.2f".format(res.savedAmount)} ($disc% off)", fontSize = 14.sp, color = AppTheme.colors.textPrimary)
                                     }
                                 }
                             }
@@ -229,11 +234,12 @@ fun EverydayCalculatorsScreen(
                     item {
                         Surface(
                             shape = RoundedCornerShape(24.dp),
-                            color = Color.White,
-                            modifier = Modifier.fillMaxWidth().border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                            color = AppTheme.colors.surfaceCard,
+                            border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle),
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                                Text("Tip & Split Bill", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                                Text("Tip & Split Bill", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
 
                                 OutlinedTextField(
                                     value = billAmountInput,
@@ -276,12 +282,12 @@ fun EverydayCalculatorsScreen(
 
                                 Surface(
                                     shape = RoundedCornerShape(16.dp),
-                                    color = BentoMintLight,
+                                    color = if (AppTheme.colors.isDark) Color(0xFF1B332A) else BentoMintLight,
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
                                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                        Text("Each Person Pays: $${"%.2f".format(splitRes.perPersonAmount)}", fontWeight = FontWeight.Bold, fontSize = 22.sp, color = DockObsidian)
-                                        Text("Total Tip: $${"%.2f".format(splitRes.tipAmount)} • Grand Total: $${"%.2f".format(splitRes.grandTotal)}", fontSize = 14.sp, color = TextPrimary)
+                                        Text("Each Person Pays: $${"%.2f".format(splitRes.perPersonAmount)}", fontWeight = FontWeight.Bold, fontSize = 22.sp, color = AppTheme.colors.textPrimary)
+                                        Text("Total Tip: $${"%.2f".format(splitRes.tipAmount)} • Grand Total: $${"%.2f".format(splitRes.grandTotal)}", fontSize = 14.sp, color = AppTheme.colors.textPrimary)
                                     }
                                 }
                             }
@@ -293,11 +299,12 @@ fun EverydayCalculatorsScreen(
                     item {
                         Surface(
                             shape = RoundedCornerShape(24.dp),
-                            color = Color.White,
-                            modifier = Modifier.fillMaxWidth().border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                            color = AppTheme.colors.surfaceCard,
+                            border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle),
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                                Text("Sales Tax / VAT", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                                Text("Sales Tax / VAT", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
 
                                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                                     OutlinedTextField(
@@ -324,12 +331,12 @@ fun EverydayCalculatorsScreen(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clip(RoundedCornerShape(16.dp))
-                                        .background(BentoSkyLight)
+                                        .background(if (AppTheme.colors.isDark) Color(0xFF1E293B) else BentoSkyLight)
                                         .padding(16.dp)
                                 ) {
                                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                        Text("Total with Tax: \$${"%.2f".format(total)}", fontWeight = FontWeight.Bold, fontSize = 22.sp, color = DockObsidian)
-                                        Text("Tax Amount: \$${"%.2f".format(tax)}", fontSize = 14.sp, color = TextSecondary)
+                                        Text("Total with Tax: \$${"%.2f".format(total)}", fontWeight = FontWeight.Bold, fontSize = 22.sp, color = AppTheme.colors.textPrimary)
+                                        Text("Tax Amount: \$${"%.2f".format(tax)}", fontSize = 14.sp, color = AppTheme.colors.textSecondary)
                                     }
                                 }
                             }
@@ -341,11 +348,12 @@ fun EverydayCalculatorsScreen(
                     item {
                         Surface(
                             shape = RoundedCornerShape(24.dp),
-                            color = Color.White,
-                            modifier = Modifier.fillMaxWidth().border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                            color = AppTheme.colors.surfaceCard,
+                            border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle),
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                                Text("Compound Interest", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                                Text("Compound Interest", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
 
                                 OutlinedTextField(
                                     value = principalInput,
@@ -381,12 +389,12 @@ fun EverydayCalculatorsScreen(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clip(RoundedCornerShape(16.dp))
-                                        .background(BentoPinkLight)
+                                        .background(if (AppTheme.colors.isDark) Color(0xFF331E2A) else BentoPinkLight)
                                         .padding(16.dp)
                                 ) {
                                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                        Text("Future Value: \$${"%,.2f".format(comp.totalAmount)}", fontWeight = FontWeight.Bold, fontSize = 22.sp, color = DockObsidian)
-                                        Text("Total Interest Earned: \$${"%,.2f".format(comp.totalInterestEarned)}", fontSize = 14.sp, color = TextSecondary)
+                                        Text("Future Value: \$${"%,.2f".format(comp.totalAmount)}", fontWeight = FontWeight.Bold, fontSize = 22.sp, color = AppTheme.colors.textPrimary)
+                                        Text("Total Interest Earned: \$${"%,.2f".format(comp.totalInterestEarned)}", fontSize = 14.sp, color = AppTheme.colors.textSecondary)
                                     }
                                 }
                             }
@@ -398,11 +406,12 @@ fun EverydayCalculatorsScreen(
                     item {
                         Surface(
                             shape = RoundedCornerShape(24.dp),
-                            color = Color.White,
-                            modifier = Modifier.fillMaxWidth().border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                            color = AppTheme.colors.surfaceCard,
+                            border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle),
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                                Text("Body Mass Index (BMI)", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                                Text("Body Mass Index (BMI)", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
 
                                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                                     OutlinedTextField(
@@ -429,12 +438,12 @@ fun EverydayCalculatorsScreen(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clip(RoundedCornerShape(16.dp))
-                                        .background(BentoSkyLight)
+                                        .background(if (AppTheme.colors.isDark) Color(0xFF1E293B) else BentoSkyLight)
                                         .padding(16.dp)
                                 ) {
                                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                        Text("BMI: ${"%.1f".format(bmi.bmi)}", fontWeight = FontWeight.Bold, fontSize = 24.sp, color = DockObsidian)
-                                        Text("Category: ${bmi.category}", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
+                                        Text("BMI: ${"%.1f".format(bmi.bmi)}", fontWeight = FontWeight.Bold, fontSize = 24.sp, color = AppTheme.colors.textPrimary)
+                                        Text("Category: ${bmi.category}", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = AppTheme.colors.textPrimary)
                                     }
                                 }
                             }
@@ -446,11 +455,12 @@ fun EverydayCalculatorsScreen(
                     item {
                         Surface(
                             shape = RoundedCornerShape(24.dp),
-                            color = Color.White,
-                            modifier = Modifier.fillMaxWidth().border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                            color = AppTheme.colors.surfaceCard,
+                            border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle),
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                                Text("Trip Fuel Cost", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                                Text("Trip Fuel Cost", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
 
                                 OutlinedTextField(
                                     value = distanceInput,
@@ -486,12 +496,12 @@ fun EverydayCalculatorsScreen(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clip(RoundedCornerShape(16.dp))
-                                        .background(BentoHoneyLight)
+                                        .background(if (AppTheme.colors.isDark) Color(0xFF332B1A) else BentoHoneyLight)
                                         .padding(16.dp)
                                 ) {
                                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                        Text("Estimated Cost: \$${"%.2f".format(fuel.totalCost)}", fontWeight = FontWeight.Bold, fontSize = 22.sp, color = DockObsidian)
-                                        Text("Fuel Required: ${"%.1f".format(fuel.fuelNeeded)} Liters", fontSize = 14.sp, color = TextSecondary)
+                                        Text("Estimated Cost: \$${"%.2f".format(fuel.totalCost)}", fontWeight = FontWeight.Bold, fontSize = 22.sp, color = AppTheme.colors.textPrimary)
+                                        Text("Fuel Required: ${"%.1f".format(fuel.fuelNeeded)} Liters", fontSize = 14.sp, color = AppTheme.colors.textSecondary)
                                     }
                                 }
                             }
@@ -503,13 +513,14 @@ fun EverydayCalculatorsScreen(
                     item {
                         Surface(
                             shape = RoundedCornerShape(24.dp),
-                            color = Color.White,
-                            modifier = Modifier.fillMaxWidth().border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                            color = AppTheme.colors.surfaceCard,
+                            border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle),
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                                Text("Date Difference & Age Calculator", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                                Text("Date Difference & Age Calculator", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
 
-                                Text("Start Date / Birth Date (YYYY - MM - DD)", fontSize = 12.sp, color = TextSecondary)
+                                Text("Start Date / Birth Date (YYYY - MM - DD)", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
                                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                     OutlinedTextField(
                                         value = startYearInput,
@@ -534,7 +545,7 @@ fun EverydayCalculatorsScreen(
                                     )
                                 }
 
-                                Text("End Date / Today (YYYY - MM - DD)", fontSize = 12.sp, color = TextSecondary)
+                                Text("End Date / Today (YYYY - MM - DD)", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
                                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                     OutlinedTextField(
                                         value = endYearInput,
@@ -581,12 +592,12 @@ fun EverydayCalculatorsScreen(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clip(RoundedCornerShape(16.dp))
-                                        .background(BentoMintLight)
+                                        .background(if (AppTheme.colors.isDark) Color(0xFF1B332A) else BentoMintLight)
                                         .padding(16.dp)
                                 ) {
                                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                        Text("${diff.years} Years, ${diff.months} Months, ${diff.days} Days", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = DockObsidian)
-                                        Text("Total Days: ${diff.totalDays} days", fontSize = 14.sp, color = TextPrimary)
+                                        Text("${diff.years} Years, ${diff.months} Months, ${diff.days} Days", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = AppTheme.colors.textPrimary)
+                                        Text("Total Days: ${diff.totalDays} days", fontSize = 14.sp, color = AppTheme.colors.textPrimary)
                                     }
                                 }
                             }

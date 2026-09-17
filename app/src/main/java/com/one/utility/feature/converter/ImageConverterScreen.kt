@@ -61,16 +61,16 @@ fun ImageConverterScreen(
     }
 
     Scaffold(
-        containerColor = CanvasBackground,
+        containerColor = AppTheme.colors.canvasBackground,
         topBar = {
             TopAppBar(
-                title = { Text("Image Format Converter", fontWeight = FontWeight.Bold, color = TextPrimary) },
+                title = { Text("Image Format Converter", fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = TextPrimary)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = AppTheme.colors.textPrimary)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = CanvasBackground)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = AppTheme.colors.canvasBackground)
             )
         }
     ) { padding ->
@@ -79,7 +79,8 @@ fun ImageConverterScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(bottom = 140.dp)
         ) {
             // 1. Image Preview Box
             item {
@@ -88,8 +89,8 @@ fun ImageConverterScreen(
                         .fillMaxWidth()
                         .height(240.dp)
                         .clip(RoundedCornerShape(24.dp))
-                        .background(Color.White)
-                        .border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                        .background(AppTheme.colors.surfaceCard)
+                        .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(24.dp))
                         .clickable {
                             photoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                         },
@@ -102,9 +103,9 @@ fun ImageConverterScreen(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Icon(Icons.Default.AddPhotoAlternate, contentDescription = null, tint = BentoSky, modifier = Modifier.size(48.dp))
-                            Text("Select an Image to Convert", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
-                            Text("Convert between JPG, PNG, and modern WEBP", fontSize = 12.sp, color = TextSecondary)
+                            Icon(Icons.Default.AddPhotoAlternate, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(48.dp))
+                            Text("Select an Image to Convert", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
+                            Text("Convert between JPG, PNG, and modern WEBP", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
                         }
                     }
                 }
@@ -114,11 +115,12 @@ fun ImageConverterScreen(
             item {
                 Surface(
                     shape = RoundedCornerShape(24.dp),
-                    color = Color.White,
-                    modifier = Modifier.fillMaxWidth().border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                    color = AppTheme.colors.surfaceCard,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                        Text("Target Format", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                        Text("Target Format", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
 
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             ImageFormat.values().forEach { format ->
@@ -128,22 +130,24 @@ fun ImageConverterScreen(
                                     onClick = { targetFormat = format },
                                     label = { Text(format.extension.uppercase()) },
                                     colors = FilterChipDefaults.filterChipColors(
-                                        selectedContainerColor = DockObsidian,
-                                        selectedLabelColor = Color.White
+                                        selectedContainerColor = if (AppTheme.colors.isDark) Color.White else DockObsidian,
+                                        selectedLabelColor = if (AppTheme.colors.isDark) Color(0xFF14151B) else Color.White,
+                                        containerColor = AppTheme.colors.surfaceVariant,
+                                        labelColor = AppTheme.colors.textPrimary
                                     )
                                 )
                             }
                         }
 
                         if (targetFormat == ImageFormat.JPEG) {
-                            Text("Note: Transparent areas will be filled with a solid white background.", fontSize = 12.sp, color = TextSecondary)
+                            Text("Note: Transparent areas will be filled with a solid white background.", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
                         } else if (targetFormat == ImageFormat.WEBP) {
-                            Text("WEBP offers up to 30% smaller file sizes with transparency support.", fontSize = 12.sp, color = HeroLavenderDark)
+                            Text("WEBP offers up to 30% smaller file sizes with transparency support.", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
                         }
 
                         // Quality Slider
                         Column {
-                            Text("Output Quality: ${quality.toInt()}%", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
+                            Text("Output Quality: ${quality.toInt()}%", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = AppTheme.colors.textPrimary)
                             Slider(
                                 value = quality,
                                 onValueChange = { quality = it },
@@ -160,7 +164,8 @@ fun ImageConverterScreen(
                 item {
                     Surface(
                         shape = RoundedCornerShape(20.dp),
-                        color = BentoSkyLight,
+                        color = if (AppTheme.colors.isDark) Color(0xFF1E293B) else BentoSkyLight,
+                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
@@ -170,10 +175,10 @@ fun ImageConverterScreen(
                         ) {
                             Column {
                                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                    Icon(Icons.Outlined.CheckCircle, contentDescription = null, tint = DockObsidian)
-                                    Text("Converted to ${res.format.extension.uppercase()}!", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = TextPrimary)
+                                    Icon(Icons.Outlined.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                                    Text("Converted to ${res.format.extension.uppercase()}!", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = AppTheme.colors.textPrimary)
                                 }
-                                Text("${res.outputFile.name} • ${res.sizeBytes / 1024} KB", fontSize = 12.sp, color = TextSecondary)
+                                Text("${res.outputFile.name} • ${res.sizeBytes / 1024} KB", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
                             }
 
                             Button(
@@ -186,12 +191,12 @@ fun ImageConverterScreen(
                                     }
                                     context.startActivity(Intent.createChooser(shareIntent, "Share Converted Image"))
                                 },
-                                colors = ButtonDefaults.buttonColors(containerColor = DockObsidian),
+                                colors = obsidianButtonColors(),
                                 shape = RoundedCornerShape(12.dp)
                             ) {
-                                Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
                                 Spacer(Modifier.width(6.dp))
-                                Text("Share")
+                                Text("Share", color = Color.White)
                             }
                         }
                     }
@@ -214,12 +219,13 @@ fun ImageConverterScreen(
                     enabled = selectedUri != null && !isProcessing,
                     modifier = Modifier.fillMaxWidth().height(54.dp),
                     shape = RoundedCornerShape(18.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = DockObsidian)
+                    colors = obsidianButtonColors()
                 ) {
                     Text(
                         text = if (isProcessing) "Converting..." else "Convert to ${targetFormat.extension.uppercase()}",
                         fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
+                        fontSize = 16.sp,
+                        color = Color.White
                     )
                 }
             }

@@ -67,16 +67,16 @@ fun BatchRenameScreen(
     var renameStatus by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
-        containerColor = CanvasBackground,
+        containerColor = AppTheme.colors.canvasBackground,
         topBar = {
             TopAppBar(
-                title = { Text("Batch File Renamer", fontWeight = FontWeight.Bold, color = TextPrimary) },
+                title = { Text("Batch File Renamer", fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = TextPrimary)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = AppTheme.colors.textPrimary)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = CanvasBackground)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = AppTheme.colors.canvasBackground)
             )
         }
     ) { padding ->
@@ -85,17 +85,18 @@ fun BatchRenameScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(bottom = 140.dp)
         ) {
             // 1. Rename Configuration Box
             item {
                 Surface(
                     shape = RoundedCornerShape(24.dp),
-                    color = Color.White,
-                    modifier = Modifier.fillMaxWidth().border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                    color = AppTheme.colors.cardSurface,
+                    modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(24.dp))
                 ) {
                     Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text("Pattern Replacement", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                        Text("Pattern Replacement", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
 
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                             OutlinedTextField(
@@ -136,7 +137,7 @@ fun BatchRenameScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Sequential Numbering (_001, _002)", fontSize = 14.sp, color = TextPrimary)
+                            Text("Sequential Numbering (_001, _002)", fontSize = 14.sp, color = AppTheme.colors.textPrimary)
                             Switch(checked = appendNumbering, onCheckedChange = { appendNumbering = it })
                         }
                     }
@@ -145,23 +146,23 @@ fun BatchRenameScreen(
 
             // 2. Live Preview Section
             item {
-                Text("Live Rename Preview (${previews.size} files)", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                Text("Live Rename Preview (${previews.size} files)", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
             }
 
             items(previews) { p ->
                 Surface(
                     shape = RoundedCornerShape(16.dp),
-                    color = Color.White,
-                    modifier = Modifier.fillMaxWidth().border(1.dp, BorderSubtle, RoundedCornerShape(16.dp))
+                    color = AppTheme.colors.cardSurface,
+                    modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(16.dp))
                 ) {
                     Row(
                         modifier = Modifier.padding(14.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(p.originalName, fontFamily = FontFamily.Monospace, fontSize = 13.sp, color = TextSecondary)
+                        Text(p.originalName, fontFamily = FontFamily.Monospace, fontSize = 13.sp, color = AppTheme.colors.textSecondary)
                         Icon(Icons.Default.ArrowForward, contentDescription = null, tint = BentoHoney, modifier = Modifier.size(16.dp))
-                        Text(p.newName, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = DockObsidian)
+                        Text(p.newName, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = AppTheme.colors.textPrimary)
                     }
                 }
             }
@@ -177,9 +178,9 @@ fun BatchRenameScreen(
                     },
                     modifier = Modifier.fillMaxWidth().height(54.dp),
                     shape = RoundedCornerShape(18.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = DockObsidian)
+                    colors = obsidianButtonColors()
                 ) {
-                    Text("Apply Batch Rename", fontWeight = FontWeight.Bold)
+                    Text("Apply Batch Rename", fontWeight = FontWeight.Bold, color = Color.White)
                 }
 
                 renameStatus?.let { status ->

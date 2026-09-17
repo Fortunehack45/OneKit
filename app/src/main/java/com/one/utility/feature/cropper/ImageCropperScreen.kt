@@ -2,8 +2,10 @@ package com.one.utility.feature.cropper
 
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
+import android.graphics.ImageDecoder
 import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -61,13 +63,21 @@ fun ImageCropperScreen(
     ) { uri ->
         if (uri != null) {
             selectedUri = uri
-            val stream = context.contentResolver.openInputStream(uri)
-            val bmp = BitmapFactory.decodeStream(stream)
-            originalBitmap = bmp
-            displayedBitmap = bmp
             currentRotation = 0f
             isFlippedH = false
             selectedRatio = CropAspectRatio.FREE
+            runCatching {
+                val bmp = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    ImageDecoder.decodeBitmap(ImageDecoder.createSource(context.contentResolver, uri)) { decoder, _, _ ->
+                        decoder.isMutableRequired = true
+                    }
+                } else {
+                    @Suppress("DEPRECATION")
+                    MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+                }
+                originalBitmap = bmp
+                displayedBitmap = bmp
+            }
         }
     }
 
@@ -84,16 +94,16 @@ fun ImageCropperScreen(
     }
 
     Scaffold(
-        containerColor = CanvasBackground,
+        containerColor = AppTheme.colors.canvasBackground,
         topBar = {
             TopAppBar(
-                title = { Text("Crop & Rotate", fontWeight = FontWeight.Bold, color = TextPrimary) },
+                title = { Text("Crop & Rotate", fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = TextPrimary)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = AppTheme.colors.textPrimary)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = CanvasBackground)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = AppTheme.colors.canvasBackground)
             )
         }
     ) { padding ->
@@ -102,6 +112,7 @@ fun ImageCropperScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = 20.dp),
+            contentPadding = PaddingValues(bottom = 140.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -112,8 +123,8 @@ fun ImageCropperScreen(
                         .fillMaxWidth()
                         .height(280.dp)
                         .clip(RoundedCornerShape(24.dp))
-                        .background(Color.White)
-                        .border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                        .background(AppTheme.colors.cardSurface)
+                        .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(24.dp))
                         .clickable {
                             photoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                         },
@@ -131,8 +142,8 @@ fun ImageCropperScreen(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Icon(Icons.Default.AddPhotoAlternate, contentDescription = null, tint = BentoHoney, modifier = Modifier.size(48.dp))
-                            Text("Select an Image", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
-                            Text("Tap to pick from gallery", fontSize = 12.sp, color = TextSecondary)
+                            Text("Select an Image", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
+                            Text("Tap to pick from gallery", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
                         }
                     }
                 }
@@ -142,7 +153,7 @@ fun ImageCropperScreen(
                 // 2. Aspect Ratio Chips
                 item {
                     Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("Aspect Ratio", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = TextPrimary)
+                        Text("Aspect Ratio", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = AppTheme.colors.textPrimary)
                         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             items(CropAspectRatio.values().size) { idx ->
                                 val ratio = CropAspectRatio.values()[idx]
@@ -155,8 +166,15 @@ fun ImageCropperScreen(
                                     },
                                     label = { Text(ratio.label) },
                                     colors = FilterChipDefaults.filterChipColors(
-                                        selectedContainerColor = DockObsidian,
-                                        selectedLabelColor = Color.White
+                                        selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                                        containerColor = AppTheme.colors.cardSurface,
+                                        labelColor = AppTheme.colors.textSecondary
+                                    ),
+                                    border = FilterChipDefaults.filterChipBorder(
+                                        enabled = true,
+                                        selected = isSelected,
+                                        borderColor = if (isSelected) Color.Transparent else AppTheme.colors.borderSubtle
                                     )
                                 )
                             }
@@ -177,11 +195,11 @@ fun ImageCropperScreen(
                             },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(14.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = DockObsidian)
+                            colors = obsidianButtonColors()
                         ) {
-                            Icon(Icons.Default.RotateRight, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Default.RotateRight, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(6.dp))
-                            Text("Rotate 90°")
+                            Text("Rotate 90°", color = Color.White, fontWeight = FontWeight.Bold)
                         }
 
                         Button(
@@ -191,11 +209,11 @@ fun ImageCropperScreen(
                             },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(14.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = BentoSky)
+                            colors = accentButtonColors(BentoSky)
                         ) {
                             Icon(Icons.Default.Flip, contentDescription = null, tint = TextPrimary, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(6.dp))
-                            Text("Flip Horizontal", color = TextPrimary)
+                            Text("Flip Horizontal", color = TextPrimary, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -219,7 +237,7 @@ fun ImageCropperScreen(
                         },
                         modifier = Modifier.fillMaxWidth().height(54.dp),
                         shape = RoundedCornerShape(18.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = BentoHoney)
+                        colors = accentButtonColors(BentoHoney)
                     ) {
                         Icon(Icons.Default.Share, contentDescription = null, tint = TextPrimary, modifier = Modifier.size(18.dp))
                         Spacer(Modifier.width(8.dp))

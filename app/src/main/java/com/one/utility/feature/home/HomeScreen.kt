@@ -34,6 +34,7 @@ import com.one.utility.core.data.PreferencesManager
 import com.one.utility.core.designsystem.*
 import com.one.utility.core.designsystem.components.BentoBadge
 import com.one.utility.core.designsystem.components.BentoCard
+import com.one.utility.core.designsystem.components.FrostedGlassBox
 import com.one.utility.core.router.ToolCategory
 import com.one.utility.core.router.ToolDefinition
 import com.one.utility.core.router.ToolIntent
@@ -95,7 +96,7 @@ fun HomeScreen(
                         tool.category.title.lowercase().contains(q)
             }
             if (matches.isNotEmpty()) {
-                listOf(ToolSection("search", "Search Results", "🔍", matches.map { it.id }))
+                listOf(ToolSection("search", "Search Results", Icons.Outlined.Search, matches.map { it.id }))
             } else {
                 emptyList()
             }
@@ -307,10 +308,10 @@ fun HomeScreen(
 
             // 2. High-End Frosted Search Bar & Action Hub
             item {
-                Surface(
+                FrostedGlassBox(
                     shape = RoundedCornerShape(24.dp),
-                    color = AppTheme.colors.surfaceCard,
-                    border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle),
+                    elevation = 10.dp,
+                    borderWidth = 1.dp,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(
@@ -457,11 +458,11 @@ fun HomeScreen(
                                         )
                                         Text(
                                             text = when (val intent = intentResult) {
-                                                is ToolIntent.PercentageCalculation -> "${intent.percent}% of ${intent.currencyPrefix}${formatNumber(intent.total)} • Tap to open in Calculator ⚡"
-                                                is ToolIntent.MathCalculation -> "${intent.expression} • Tap to open in Calculator ⚡"
-                                                is ToolIntent.UnitConversion -> "${formatNumber(intent.value)} ${intent.fromUnit.uppercase()} = ${intent.formattedResult} • Tap to open Unit Converter ⚡"
-                                                is ToolIntent.ChainedWorkflow -> "Smart Automated Pipeline • Tap to execute ⚡"
-                                                else -> "Tap to open instantly ⚡"
+                                                is ToolIntent.PercentageCalculation -> "${intent.percent}% of ${intent.currencyPrefix}${formatNumber(intent.total)} • Tap to open in Calculator"
+                                                is ToolIntent.MathCalculation -> "${intent.expression} • Tap to open in Calculator"
+                                                is ToolIntent.UnitConversion -> "${formatNumber(intent.value)} ${intent.fromUnit.uppercase()} = ${intent.formattedResult} • Tap to open Unit Converter"
+                                                is ToolIntent.ChainedWorkflow -> "Smart Automated Pipeline • Tap to execute"
+                                                else -> "Tap to open instantly"
                                             },
                                             color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f),
                                             fontSize = 12.sp
@@ -737,21 +738,41 @@ fun HomeScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(top = 10.dp, bottom = 4.dp),
+                                .padding(top = 14.dp, bottom = 6.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = "${section.emoji} ${section.title.uppercase()} (${sectionTools.size})",
-                                style = AppTheme.typography.labelSmall,
-                                color = AppTheme.colors.textTertiary,
-                                letterSpacing = 1.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = section.icon,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(14.dp),
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                                Text(
+                                    text = "${section.title.uppercase()} (${sectionTools.size})",
+                                    style = AppTheme.typography.labelSmall,
+                                    color = AppTheme.colors.textTertiary,
+                                    letterSpacing = 1.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                             if (section.id == activeSections.firstOrNull()?.id) {
                                 Text(
                                     text = "100% On-Device",
                                     fontSize = 11.sp,
+                                    fontWeight = FontWeight.SemiBold,
                                     color = MaterialTheme.colorScheme.primary
                                 )
                             }

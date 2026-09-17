@@ -73,16 +73,16 @@ fun ImageToPdfScreen(
     }
 
     Scaffold(
-        containerColor = CanvasBackground,
+        containerColor = AppTheme.colors.canvasBackground,
         topBar = {
             TopAppBar(
-                title = { Text("Image → PDF", fontWeight = FontWeight.Bold, color = TextPrimary) },
+                title = { Text("Image → PDF", fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = TextPrimary)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = AppTheme.colors.textPrimary)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = CanvasBackground)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = AppTheme.colors.canvasBackground)
             )
         }
     ) { padding ->
@@ -91,7 +91,8 @@ fun ImageToPdfScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(18.dp)
+            verticalArrangement = Arrangement.spacedBy(18.dp),
+            contentPadding = PaddingValues(bottom = 140.dp)
         ) {
             // 1. Image Selection Box / Carousel
             item {
@@ -101,8 +102,8 @@ fun ImageToPdfScreen(
                             .fillMaxWidth()
                             .height(180.dp)
                             .clip(RoundedCornerShape(24.dp))
-                            .background(Color.White)
-                            .border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                            .background(AppTheme.colors.cardSurface)
+                            .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(24.dp))
                             .clickable {
                                 photoPickerLauncher.launch(
                                     PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
@@ -120,8 +121,8 @@ fun ImageToPdfScreen(
                                 tint = BentoHoney,
                                 modifier = Modifier.size(48.dp)
                             )
-                            Text("Select Photos", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
-                            Text("Supports JPG, PNG, WEBP", fontSize = 12.sp, color = TextSecondary)
+                            Text("Select Photos", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
+                            Text("Supports JPG, PNG, WEBP", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
                         }
                     }
                 } else {
@@ -134,7 +135,7 @@ fun ImageToPdfScreen(
                             Text(
                                 text = "${selectedUris.size} Images Selected",
                                 fontWeight = FontWeight.Bold,
-                                color = TextPrimary
+                                color = AppTheme.colors.textPrimary
                             )
                             TextButton(onClick = {
                                 photoPickerLauncher.launch(
@@ -151,7 +152,7 @@ fun ImageToPdfScreen(
                                     modifier = Modifier
                                         .size(100.dp)
                                         .clip(RoundedCornerShape(16.dp))
-                                        .background(Color.White)
+                                        .background(AppTheme.colors.cardSurface)
                                 ) {
                                     AsyncImage(
                                         model = uri,
@@ -181,11 +182,11 @@ fun ImageToPdfScreen(
             item {
                 Surface(
                     shape = RoundedCornerShape(24.dp),
-                    color = Color.White,
-                    modifier = Modifier.fillMaxWidth().border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                    color = AppTheme.colors.cardSurface,
+                    modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(24.dp))
                 ) {
                     Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                        Text("PDF Page Options", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                        Text("PDF Page Options", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
 
                         // Page Size Selection Chips
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -195,8 +196,10 @@ fun ImageToPdfScreen(
                                     onClick = { pageSize = size },
                                     label = { Text(if (size == PageSize.ORIGINAL) "Original" else size.name) },
                                     colors = FilterChipDefaults.filterChipColors(
-                                        selectedContainerColor = DockObsidian,
-                                        selectedLabelColor = Color.White
+                                        selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                                        containerColor = AppTheme.colors.cardSurface,
+                                        labelColor = AppTheme.colors.textSecondary
                                     )
                                 )
                             }
@@ -208,7 +211,7 @@ fun ImageToPdfScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Landscape Orientation", fontSize = 14.sp, color = TextPrimary)
+                            Text("Landscape Orientation", fontSize = 14.sp, color = AppTheme.colors.textPrimary)
                             Switch(checked = isLandscape, onCheckedChange = { isLandscape = it })
                         }
 
@@ -218,7 +221,7 @@ fun ImageToPdfScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Fit Image to Page (Preserve Aspect)", fontSize = 14.sp, color = TextPrimary)
+                            Text("Fit Image to Page (Preserve Aspect)", fontSize = 14.sp, color = AppTheme.colors.textPrimary)
                             Switch(checked = fitPage, onCheckedChange = { fitPage = it })
                         }
 
@@ -228,7 +231,7 @@ fun ImageToPdfScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Add Page Numbers", fontSize = 14.sp, color = TextPrimary)
+                            Text("Add Page Numbers", fontSize = 14.sp, color = AppTheme.colors.textPrimary)
                             Switch(checked = addPageNumbers, onCheckedChange = { addPageNumbers = it })
                         }
                     }
@@ -240,7 +243,7 @@ fun ImageToPdfScreen(
                 if (isProcessing) {
                     Surface(
                         shape = RoundedCornerShape(20.dp),
-                        color = BentoHoneyLight,
+                        color = AppTheme.colors.bentoHoneySubtle,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(
@@ -251,13 +254,13 @@ fun ImageToPdfScreen(
                             LinearProgressIndicator(
                                 progress = { if (totalPages > 0) currentProgress.toFloat() / totalPages else 0f },
                                 modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
-                                color = DockObsidian
+                                color = BentoHoney
                             )
                             Text(
                                 "Generating Page $currentProgress of $totalPages...",
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = TextPrimary
+                                color = AppTheme.colors.textPrimary
                             )
                         }
                     }
@@ -266,7 +269,7 @@ fun ImageToPdfScreen(
                 generatedPdfFile?.let { pdfFile ->
                     Surface(
                         shape = RoundedCornerShape(20.dp),
-                        color = Color.White,
+                        color = AppTheme.colors.cardSurface,
                         modifier = Modifier.fillMaxWidth().border(1.dp, BentoHoney, RoundedCornerShape(20.dp))
                     ) {
                         Row(
@@ -280,8 +283,8 @@ fun ImageToPdfScreen(
                             ) {
                                 Icon(Icons.Outlined.CheckCircle, contentDescription = null, tint = BentoHoney)
                                 Column {
-                                    Text("PDF Created Successfully", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = TextPrimary)
-                                    Text("${pdfFile.name} • ${(pdfFile.length() / 1024)} KB", fontSize = 12.sp, color = TextSecondary)
+                                    Text("PDF Created Successfully", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = AppTheme.colors.textPrimary)
+                                    Text("${pdfFile.name} • ${(pdfFile.length() / 1024)} KB", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
                                 }
                             }
 
@@ -299,12 +302,12 @@ fun ImageToPdfScreen(
                                     }
                                     context.startActivity(Intent.createChooser(shareIntent, "Share PDF"))
                                 },
-                                colors = ButtonDefaults.buttonColors(containerColor = DockObsidian),
+                                colors = obsidianButtonColors(),
                                 shape = RoundedCornerShape(12.dp)
                             ) {
-                                Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
                                 Spacer(Modifier.width(6.dp))
-                                Text("Share")
+                                Text("Share", color = Color.White, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -345,7 +348,7 @@ fun ImageToPdfScreen(
                     enabled = selectedUris.isNotEmpty() && !isProcessing,
                     modifier = Modifier.fillMaxWidth().height(56.dp),
                     shape = RoundedCornerShape(20.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = DockObsidian)
+                    colors = obsidianButtonColors()
                 ) {
                     Text(
                         text = if (isProcessing) "Converting..." else "Create PDF",

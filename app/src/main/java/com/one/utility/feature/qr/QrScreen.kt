@@ -67,16 +67,16 @@ fun QrScreen(
     }
 
     Scaffold(
-        containerColor = CanvasBackground,
+        containerColor = AppTheme.colors.canvasBackground,
         topBar = {
             TopAppBar(
-                title = { Text("QR Code Generator", fontWeight = FontWeight.Bold, color = TextPrimary) },
+                title = { Text("QR Code Generator", fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = TextPrimary)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = AppTheme.colors.textPrimary)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = CanvasBackground)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = AppTheme.colors.canvasBackground)
             )
         }
     ) { padding ->
@@ -86,16 +86,17 @@ fun QrScreen(
                 .padding(padding)
                 .padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            contentPadding = PaddingValues(bottom = 140.dp)
         ) {
-            // 1. QR Preview Box
+            // 1. QR Preview Box (White surface so QR code is scannable)
             item {
                 Box(
                     modifier = Modifier
                         .size(240.dp)
                         .clip(RoundedCornerShape(24.dp))
                         .background(Color.White)
-                        .border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                        .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(24.dp))
                         .padding(20.dp),
                     contentAlignment = Alignment.Center
                 ) {
@@ -117,11 +118,11 @@ fun QrScreen(
             item {
                 Surface(
                     shape = RoundedCornerShape(24.dp),
-                    color = Color.White,
-                    modifier = Modifier.fillMaxWidth().border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                    color = AppTheme.colors.cardSurface,
+                    modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(24.dp))
                 ) {
                     Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                        Text("QR Content Type", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                        Text("QR Content Type", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
 
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             listOf("URL / Text", "Wi-Fi").forEach { type ->
@@ -133,8 +134,10 @@ fun QrScreen(
                                     },
                                     label = { Text(type) },
                                     colors = FilterChipDefaults.filterChipColors(
-                                        selectedContainerColor = DockObsidian,
-                                        selectedLabelColor = Color.White
+                                        selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                                        containerColor = AppTheme.colors.cardSurface,
+                                        labelColor = AppTheme.colors.textSecondary
                                     )
                                 )
                             }
@@ -201,11 +204,11 @@ fun QrScreen(
                     enabled = generatedBitmap != null,
                     modifier = Modifier.fillMaxWidth().height(56.dp),
                     shape = RoundedCornerShape(20.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = DockObsidian)
+                    colors = obsidianButtonColors()
                 ) {
-                    Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(18.dp), tint = Color.White)
                     Spacer(Modifier.width(8.dp))
-                    Text("Share QR Code", fontWeight = FontWeight.Bold)
+                    Text("Share QR Code", fontWeight = FontWeight.Bold, color = Color.White)
                 }
             }
         }

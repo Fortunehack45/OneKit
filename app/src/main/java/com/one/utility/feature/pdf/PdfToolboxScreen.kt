@@ -171,16 +171,16 @@ fun PdfToolboxScreen(
     }
 
     Scaffold(
-        containerColor = CanvasBackground,
+        containerColor = AppTheme.colors.canvasBackground,
         topBar = {
             TopAppBar(
-                title = { Text("PDF Toolbox", fontWeight = FontWeight.Bold, color = TextPrimary) },
+                title = { Text("PDF Toolbox", fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = TextPrimary)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = AppTheme.colors.textPrimary)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = CanvasBackground)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = AppTheme.colors.canvasBackground)
             )
         }
     ) { padding ->
@@ -190,7 +190,7 @@ fun PdfToolboxScreen(
                 .padding(padding)
                 .padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(bottom = 40.dp)
+            contentPadding = PaddingValues(bottom = 140.dp)
         ) {
             // Mode Selectors
             item {
@@ -204,8 +204,8 @@ fun PdfToolboxScreen(
                             modifier = Modifier
                                 .weight(1f)
                                 .clip(RoundedCornerShape(16.dp))
-                                .background(if (isSelected) DockObsidian else Color.White)
-                                .border(1.dp, if (isSelected) Color.Transparent else BorderSubtle, RoundedCornerShape(16.dp))
+                                .background(if (isSelected) MaterialTheme.colorScheme.primary else AppTheme.colors.cardSurface)
+                                .border(1.dp, if (isSelected) Color.Transparent else AppTheme.colors.borderSubtle, RoundedCornerShape(16.dp))
                                 .clickable {
                                     selectedMode = mode
                                     outputPdf = null
@@ -218,7 +218,7 @@ fun PdfToolboxScreen(
                         ) {
                             Text(
                                 text = mode.label,
-                                color = if (isSelected) Color.White else TextPrimary,
+                                color = if (isSelected) MaterialTheme.colorScheme.onPrimary else AppTheme.colors.textPrimary,
                                 fontSize = 12.sp,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                             )
@@ -231,7 +231,7 @@ fun PdfToolboxScreen(
                 item {
                     Surface(
                         shape = RoundedCornerShape(14.dp),
-                        color = BentoPinkLight,
+                        color = AppTheme.colors.bentoPinkSubtle,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(msg, color = Color.Red, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(14.dp))
@@ -244,16 +244,16 @@ fun PdfToolboxScreen(
                     item {
                         Surface(
                             shape = RoundedCornerShape(24.dp),
-                            color = Color.White,
-                            modifier = Modifier.fillMaxWidth().border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                            color = AppTheme.colors.cardSurface,
+                            modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(24.dp))
                         ) {
                             Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                                Text("Merge Multiple PDFs", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
-                                Text("Combine multiple PDF documents into a single organized file.", fontSize = 12.sp, color = TextSecondary)
+                                Text("Merge Multiple PDFs", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
+                                Text("Combine multiple PDF documents into a single organized file.", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
 
                                 Button(
                                     onClick = { multiPdfPicker.launch(arrayOf("application/pdf")) },
-                                    colors = ButtonDefaults.buttonColors(containerColor = BentoHoney),
+                                    colors = accentButtonColors(BentoHoney),
                                     shape = RoundedCornerShape(14.dp),
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
@@ -263,20 +263,20 @@ fun PdfToolboxScreen(
                                 }
 
                                 if (selectedPdfUris.isNotEmpty()) {
-                                    Text("${selectedPdfUris.size} documents in merge queue:", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                                    Text("${selectedPdfUris.size} documents in merge queue:", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = AppTheme.colors.textPrimary)
                                     selectedPdfUris.forEachIndexed { i, uri ->
                                         Row(
                                             modifier = Modifier
                                                 .fillMaxWidth()
                                                 .clip(RoundedCornerShape(12.dp))
-                                                .background(BentoHoneyLight)
+                                                .background(AppTheme.colors.bentoHoneySubtle)
                                                 .padding(horizontal = 12.dp, vertical = 8.dp),
                                             horizontalArrangement = Arrangement.SpaceBetween,
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
-                                                Text("${i + 1}. ", fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                                                Text(getFileName(uri), fontSize = 13.sp, fontWeight = FontWeight.Medium, maxLines = 1)
+                                                Text("${i + 1}. ", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary)
+                                                Text(getFileName(uri), fontSize = 13.sp, fontWeight = FontWeight.Medium, maxLines = 1, color = AppTheme.colors.textPrimary)
                                             }
                                             IconButton(
                                                 onClick = {
@@ -284,7 +284,7 @@ fun PdfToolboxScreen(
                                                 },
                                                 modifier = Modifier.size(24.dp)
                                             ) {
-                                                Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(16.dp))
+                                                Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(16.dp), tint = AppTheme.colors.textSecondary)
                                             }
                                         }
                                     }
@@ -305,11 +305,12 @@ fun PdfToolboxScreen(
                                         enabled = !isProcessing && selectedPdfUris.size >= 2,
                                         modifier = Modifier.fillMaxWidth().height(50.dp),
                                         shape = RoundedCornerShape(14.dp),
-                                        colors = ButtonDefaults.buttonColors(containerColor = DockObsidian)
+                                        colors = obsidianButtonColors()
                                     ) {
                                         Text(
                                             if (isProcessing) progressStatus else if (selectedPdfUris.size < 2) "Add at least 2 PDFs" else "Merge ${selectedPdfUris.size} PDFs",
-                                            fontWeight = FontWeight.Bold
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.White
                                         )
                                     }
                                 }
@@ -322,16 +323,16 @@ fun PdfToolboxScreen(
                     item {
                         Surface(
                             shape = RoundedCornerShape(24.dp),
-                            color = Color.White,
-                            modifier = Modifier.fillMaxWidth().border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                            color = AppTheme.colors.cardSurface,
+                            modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(24.dp))
                         ) {
                             Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                                Text("Convert PDF Pages to Images", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
-                                Text("Extract each page of your PDF into crisp, standalone high-res images.", fontSize = 12.sp, color = TextSecondary)
+                                Text("Convert PDF Pages to Images", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
+                                Text("Extract each page of your PDF into crisp, standalone high-res images.", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
 
                                 Button(
                                     onClick = { singlePdfPicker.launch(arrayOf("application/pdf")) },
-                                    colors = ButtonDefaults.buttonColors(containerColor = BentoSky),
+                                    colors = accentButtonColors(BentoSky),
                                     shape = RoundedCornerShape(14.dp),
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
@@ -343,7 +344,7 @@ fun PdfToolboxScreen(
                                 singlePdfUri?.let { uri ->
                                     Surface(
                                         shape = RoundedCornerShape(14.dp),
-                                        color = BentoSkyLight,
+                                        color = AppTheme.colors.bentoSkySubtle,
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
                                         Row(
@@ -352,8 +353,8 @@ fun PdfToolboxScreen(
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             Column {
-                                                Text(singlePdfName, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                                Text("$singlePdfPageCount pages detected", fontSize = 12.sp, color = TextSecondary)
+                                                Text(singlePdfName, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = AppTheme.colors.textPrimary)
+                                                Text("$singlePdfPageCount pages detected", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
                                             }
                                         }
                                     }
@@ -364,7 +365,7 @@ fun PdfToolboxScreen(
                                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Text("Output format:", fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                                        Text("Output format:", fontSize = 13.sp, fontWeight = FontWeight.Medium, color = AppTheme.colors.textPrimary)
                                         FilterChip(
                                             selected = !isJpgFormat,
                                             onClick = { isJpgFormat = false },
@@ -396,9 +397,9 @@ fun PdfToolboxScreen(
                                         enabled = !isProcessing,
                                         modifier = Modifier.fillMaxWidth().height(50.dp),
                                         shape = RoundedCornerShape(14.dp),
-                                        colors = ButtonDefaults.buttonColors(containerColor = DockObsidian)
+                                        colors = obsidianButtonColors()
                                     ) {
-                                        Text(if (isProcessing) progressStatus else "Extract $singlePdfPageCount Pages to Images", fontWeight = FontWeight.Bold)
+                                        Text(if (isProcessing) progressStatus else "Extract $singlePdfPageCount Pages to Images", fontWeight = FontWeight.Bold, color = Color.White)
                                     }
                                 }
                             }
@@ -410,16 +411,16 @@ fun PdfToolboxScreen(
                     item {
                         Surface(
                             shape = RoundedCornerShape(24.dp),
-                            color = Color.White,
-                            modifier = Modifier.fillMaxWidth().border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                            color = AppTheme.colors.cardSurface,
+                            modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(24.dp))
                         ) {
                             Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                                Text("Split & Extract PDF Pages", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
-                                Text("Choose specific pages to separate and compile into a brand-new PDF document.", fontSize = 12.sp, color = TextSecondary)
+                                Text("Split & Extract PDF Pages", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
+                                Text("Choose specific pages to separate and compile into a brand-new PDF document.", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
 
                                 Button(
                                     onClick = { singlePdfPicker.launch(arrayOf("application/pdf")) },
-                                    colors = ButtonDefaults.buttonColors(containerColor = BentoPink),
+                                    colors = accentButtonColors(BentoPink),
                                     shape = RoundedCornerShape(14.dp),
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
@@ -431,7 +432,7 @@ fun PdfToolboxScreen(
                                 singlePdfUri?.let { uri ->
                                     Surface(
                                         shape = RoundedCornerShape(14.dp),
-                                        color = BentoPinkLight,
+                                        color = AppTheme.colors.bentoPinkSubtle,
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
                                         Row(
@@ -440,8 +441,8 @@ fun PdfToolboxScreen(
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             Column {
-                                                Text(singlePdfName, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                                Text("Total $singlePdfPageCount pages • ${selectedPages.size} selected", fontSize = 12.sp, color = TextSecondary)
+                                                Text(singlePdfName, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = AppTheme.colors.textPrimary)
+                                                Text("Total $singlePdfPageCount pages • ${selectedPages.size} selected", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
                                             }
                                         }
                                     }
@@ -458,13 +459,13 @@ fun PdfToolboxScreen(
                                             selectedPages = emptyList()
                                             customRangeText = ""
                                         }) {
-                                            Text("Clear", fontSize = 12.sp, color = TextSecondary)
+                                            Text("Clear", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
                                         }
                                     }
 
                                     // Visual Page Chips
                                     if (singlePdfPageCount > 0) {
-                                        Text("Tap pages to include:", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
+                                        Text("Tap pages to include:", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = AppTheme.colors.textPrimary)
                                         LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                             items(singlePdfPageCount) { idx ->
                                                 val isPageSelected = selectedPages.contains(idx)
@@ -516,11 +517,12 @@ fun PdfToolboxScreen(
                                         enabled = !isProcessing && selectedPages.isNotEmpty(),
                                         modifier = Modifier.fillMaxWidth().height(50.dp),
                                         shape = RoundedCornerShape(14.dp),
-                                        colors = ButtonDefaults.buttonColors(containerColor = DockObsidian)
+                                        colors = obsidianButtonColors()
                                     ) {
                                         Text(
                                             if (isProcessing) "Splitting..." else "Extract ${selectedPages.size} Pages into New PDF",
-                                            fontWeight = FontWeight.Bold
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.White
                                         )
                                     }
                                 }
@@ -535,7 +537,7 @@ fun PdfToolboxScreen(
                 item {
                     Surface(
                         shape = RoundedCornerShape(20.dp),
-                        color = BentoHoneyLight,
+                        color = AppTheme.colors.bentoHoneySubtle,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -545,10 +547,10 @@ fun PdfToolboxScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column {
-                                    Text("Merged PDF Ready!", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = TextPrimary)
-                                    Text("${pdfFile.name} • ${pdfFile.length() / 1024} KB", fontSize = 12.sp, color = TextSecondary)
+                                    Text("Merged PDF Ready!", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = AppTheme.colors.textPrimary)
+                                    Text("${pdfFile.name} • ${pdfFile.length() / 1024} KB", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
                                 }
-                                Icon(Icons.Outlined.CheckCircle, contentDescription = null, tint = DockObsidian)
+                                Icon(Icons.Outlined.CheckCircle, contentDescription = null, tint = BentoHoney)
                             }
 
                             Row(
@@ -567,13 +569,13 @@ fun PdfToolboxScreen(
 
                                 Button(
                                     onClick = { shareFile(pdfFile, "application/pdf", "Share Merged PDF") },
-                                    colors = ButtonDefaults.buttonColors(containerColor = DockObsidian),
+                                    colors = obsidianButtonColors(),
                                     shape = RoundedCornerShape(12.dp),
                                     modifier = Modifier.weight(1f)
                                 ) {
-                                    Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
+                                    Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
                                     Spacer(Modifier.width(4.dp))
-                                    Text("Share")
+                                    Text("Share", color = Color.White, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -586,7 +588,7 @@ fun PdfToolboxScreen(
                 item {
                     Surface(
                         shape = RoundedCornerShape(20.dp),
-                        color = BentoPinkLight,
+                        color = AppTheme.colors.bentoPinkSubtle,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -596,10 +598,10 @@ fun PdfToolboxScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column {
-                                    Text("Split PDF Created!", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = TextPrimary)
-                                    Text("${pdfFile.name} • ${pdfFile.length() / 1024} KB", fontSize = 12.sp, color = TextSecondary)
+                                    Text("Split PDF Created!", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = AppTheme.colors.textPrimary)
+                                    Text("${pdfFile.name} • ${pdfFile.length() / 1024} KB", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
                                 }
-                                Icon(Icons.Outlined.CheckCircle, contentDescription = null, tint = DockObsidian)
+                                Icon(Icons.Outlined.CheckCircle, contentDescription = null, tint = BentoPink)
                             }
 
                             Row(
@@ -618,13 +620,13 @@ fun PdfToolboxScreen(
 
                                 Button(
                                     onClick = { shareFile(pdfFile, "application/pdf", "Share Split PDF") },
-                                    colors = ButtonDefaults.buttonColors(containerColor = DockObsidian),
+                                    colors = obsidianButtonColors(),
                                     shape = RoundedCornerShape(12.dp),
                                     modifier = Modifier.weight(1f)
                                 ) {
-                                    Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
+                                    Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
                                     Spacer(Modifier.width(4.dp))
-                                    Text("Share")
+                                    Text("Share", color = Color.White, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -637,7 +639,7 @@ fun PdfToolboxScreen(
                 item {
                     Surface(
                         shape = RoundedCornerShape(20.dp),
-                        color = BentoSkyLight,
+                        color = AppTheme.colors.bentoSkySubtle,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -647,8 +649,8 @@ fun PdfToolboxScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column {
-                                    Text("Extracted ${outputImages.size} pages successfully!", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = TextPrimary)
-                                    Text("Saved locally to cache", fontSize = 12.sp, color = TextSecondary)
+                                    Text("Extracted ${outputImages.size} pages successfully!", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = AppTheme.colors.textPrimary)
+                                    Text("Saved locally to cache", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
                                 }
                                 Button(
                                     onClick = {
@@ -662,12 +664,12 @@ fun PdfToolboxScreen(
                                         }
                                         context.startActivity(Intent.createChooser(shareIntent, "Share All Pages"))
                                     },
-                                    colors = ButtonDefaults.buttonColors(containerColor = DockObsidian),
+                                    colors = obsidianButtonColors(),
                                     shape = RoundedCornerShape(12.dp)
                                 ) {
-                                    Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
+                                    Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
                                     Spacer(Modifier.width(4.dp))
-                                    Text("Share All")
+                                    Text("Share All", color = Color.White, fontWeight = FontWeight.Bold)
                                 }
                             }
 
@@ -676,10 +678,10 @@ fun PdfToolboxScreen(
                                 itemsIndexed(outputImages) { idx, imgFile ->
                                     Surface(
                                         shape = RoundedCornerShape(14.dp),
-                                        color = Color.White,
+                                        color = AppTheme.colors.cardSurface,
                                         modifier = Modifier
                                             .width(130.dp)
-                                            .border(1.dp, BorderSubtle, RoundedCornerShape(14.dp))
+                                            .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(14.dp))
                                     ) {
                                         Column(modifier = Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                                             Box(
@@ -687,7 +689,7 @@ fun PdfToolboxScreen(
                                                     .fillMaxWidth()
                                                     .height(140.dp)
                                                     .clip(RoundedCornerShape(8.dp))
-                                                    .background(CanvasBackground)
+                                                    .background(AppTheme.colors.canvasBackground)
                                             ) {
                                                 AsyncImage(
                                                     model = imgFile,
@@ -708,7 +710,7 @@ fun PdfToolboxScreen(
 
                                             Button(
                                                 onClick = { shareFile(imgFile, if (isJpgFormat) "image/jpeg" else "image/png", "Share Page ${idx + 1}") },
-                                                colors = ButtonDefaults.buttonColors(containerColor = BentoSky),
+                                                colors = accentButtonColors(BentoSky),
                                                 shape = RoundedCornerShape(8.dp),
                                                 contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
                                                 modifier = Modifier.fillMaxWidth().height(32.dp)
