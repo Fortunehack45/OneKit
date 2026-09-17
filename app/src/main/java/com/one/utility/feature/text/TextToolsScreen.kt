@@ -36,6 +36,11 @@ fun TextToolsScreen(
     val stats = remember(inputText) { engine.analyze(inputText) }
     var copiedMessage by remember { mutableStateOf<String?>(null) }
 
+    // Find & replace state
+    var showFindReplace by remember { mutableStateOf(false) }
+    var findQuery by remember { mutableStateOf("") }
+    var replaceQuery by remember { mutableStateOf("") }
+
     fun copyToClipboard(text: String) {
         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         clipboard.setPrimaryClip(ClipData.newPlainText("ONE Text", text))
@@ -46,7 +51,7 @@ fun TextToolsScreen(
         containerColor = AppTheme.colors.canvasBackground,
         topBar = {
             TopAppBar(
-                title = { Text("Text Tools", fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary) },
+                title = { Text("Text Analyzer & Tools", fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = AppTheme.colors.textPrimary)
@@ -64,33 +69,53 @@ fun TextToolsScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(bottom = 140.dp)
         ) {
-            // 1. Live Stats Banner
+            // 1. Live Stats Banner (Words, Characters, Lines, Sentences, Reading Time)
             item {
                 Surface(
-                    shape = RoundedCornerShape(24.dp),
+                    shape = RoundedCornerShape(20.dp),
                     color = AppTheme.colors.surfaceCard,
                     border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Row(
-                        modifier = Modifier.padding(18.dp).fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceAround
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("${stats.words}", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = AppTheme.colors.textPrimary)
-                            Text("Words", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
+                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceAround
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("${stats.words}", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = AppTheme.colors.textPrimary)
+                                Text("Words", fontSize = 11.sp, color = AppTheme.colors.textSecondary)
+                            }
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("${stats.charactersWithSpaces}", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = AppTheme.colors.textPrimary)
+                                Text("Characters", fontSize = 11.sp, color = AppTheme.colors.textSecondary)
+                            }
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("${stats.lines}", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = AppTheme.colors.textPrimary)
+                                Text("Lines", fontSize = 11.sp, color = AppTheme.colors.textSecondary)
+                            }
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("${stats.sentences}", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = AppTheme.colors.textPrimary)
+                                Text("Sentences", fontSize = 11.sp, color = AppTheme.colors.textSecondary)
+                            }
                         }
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("${stats.charactersWithSpaces}", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = AppTheme.colors.textPrimary)
-                            Text("Characters", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
-                        }
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("${stats.lines}", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = AppTheme.colors.textPrimary)
-                            Text("Lines", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
-                        }
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("${stats.sentences}", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = AppTheme.colors.textPrimary)
-                            Text("Sentences", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
+                        Divider(color = AppTheme.colors.borderSubtle)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Estimated Reading Time: ~${stats.estimatedReadingTimeMinutes} min",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = "Without Spaces: ${stats.charactersWithoutSpaces}",
+                                fontSize = 11.sp,
+                                color = AppTheme.colors.textSecondary
+                            )
                         }
                     }
                 }
@@ -99,12 +124,12 @@ fun TextToolsScreen(
             // 2. Input Text Area
             item {
                 Surface(
-                    shape = RoundedCornerShape(24.dp),
+                    shape = RoundedCornerShape(20.dp),
                     color = AppTheme.colors.surfaceCard,
                     border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         OutlinedTextField(
                             value = inputText,
                             onValueChange = {
@@ -113,7 +138,7 @@ fun TextToolsScreen(
                             },
                             placeholder = { Text("Paste or type your text here...", color = AppTheme.colors.textMuted) },
                             modifier = Modifier.fillMaxWidth().height(160.dp),
-                            shape = RoundedCornerShape(16.dp),
+                            shape = RoundedCornerShape(14.dp),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedTextColor = AppTheme.colors.textPrimary,
                                 unfocusedTextColor = AppTheme.colors.textPrimary,
@@ -133,67 +158,130 @@ fun TextToolsScreen(
 
             // 3. Transformation Actions
             item {
-                Text("Quick Text Actions", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
+                Text("Text Formatting & Actions", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
 
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
+                    // Row 1: Case transformations (single line guaranteed)
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Button(
                             onClick = { inputText = engine.toUpperCase(inputText) },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
                             colors = obsidianButtonColors()
-                        ) { Text("UPPERCASE", fontSize = 12.sp, fontWeight = FontWeight.SemiBold) }
+                        ) { Text("UPPERCASE", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false) }
 
                         Button(
                             onClick = { inputText = engine.toLowerCase(inputText) },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
                             colors = obsidianButtonColors()
-                        ) { Text("lowercase", fontSize = 12.sp, fontWeight = FontWeight.SemiBold) }
+                        ) { Text("lowercase", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false) }
 
                         Button(
                             onClick = { inputText = engine.toTitleCase(inputText) },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
                             colors = obsidianButtonColors()
-                        ) { Text("Title Case", fontSize = 12.sp, fontWeight = FontWeight.SemiBold) }
+                        ) { Text("Title Case", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false) }
+
+                        Button(
+                            onClick = { inputText = engine.toSentenceCase(inputText) },
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = obsidianButtonColors()
+                        ) { Text("Sentence", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false) }
                     }
 
+                    // Row 2: Cleaning & Organization
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Button(
                             onClick = { inputText = engine.removeExtraSpaces(inputText) },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = if (AppTheme.colors.isDark) Color(0xFF2B3A4A) else BentoSky,
-                                contentColor = if (AppTheme.colors.isDark) Color.White else Color(0xFF14151B)
-                            )
-                        ) { Text("Trim Spaces", fontSize = 12.sp, fontWeight = FontWeight.SemiBold) }
+                            colors = obsidianButtonColors()
+                        ) { Text("Trim Spaces", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false) }
 
                         Button(
                             onClick = { inputText = engine.removeDuplicateLines(inputText) },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = if (AppTheme.colors.isDark) Color(0xFF3D253A) else BentoPink,
-                                contentColor = if (AppTheme.colors.isDark) Color.White else Color(0xFF14151B)
-                            )
-                        ) { Text("Deduplicate", fontSize = 12.sp, fontWeight = FontWeight.SemiBold) }
+                            colors = obsidianButtonColors()
+                        ) { Text("Deduplicate", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false) }
 
                         Button(
                             onClick = { inputText = engine.sortLinesAlphabetically(inputText) },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = if (AppTheme.colors.isDark) Color(0xFF3D3520) else BentoHoney,
-                                contentColor = if (AppTheme.colors.isDark) Color.White else Color(0xFF14151B)
-                            )
-                        ) { Text("Sort Lines", fontSize = 12.sp, fontWeight = FontWeight.SemiBold) }
+                            colors = obsidianButtonColors()
+                        ) { Text("Sort Lines", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false) }
+
+                        Button(
+                            onClick = { inputText = engine.reverseText(inputText) },
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = obsidianButtonColors()
+                        ) { Text("Reverse", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false) }
+                    }
+
+                    // Row 3: Generators & Helpers
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Button(
+                            onClick = { inputText = engine.cleanText(inputText) },
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = obsidianButtonColors()
+                        ) { Text("Clean Text", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false) }
+
+                        Button(
+                            onClick = { inputText = engine.generateLoremIpsum(2) },
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = obsidianButtonColors()
+                        ) { Text("Lorem Ipsum", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false) }
+
+                        Button(
+                            onClick = { showFindReplace = !showFindReplace },
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = obsidianButtonColors()
+                        ) { Text(if (showFindReplace) "Close" else "Find/Replace", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false) }
+                    }
+
+                    if (showFindReplace) {
+                        Surface(
+                            shape = RoundedCornerShape(14.dp),
+                            color = AppTheme.colors.surfaceCard,
+                            border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle),
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                OutlinedTextField(
+                                    value = findQuery,
+                                    onValueChange = { findQuery = it },
+                                    label = { Text("Find Text") },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(10.dp)
+                                )
+                                OutlinedTextField(
+                                    value = replaceQuery,
+                                    onValueChange = { replaceQuery = it },
+                                    label = { Text("Replace With") },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(10.dp)
+                                )
+                                Button(
+                                    onClick = { inputText = engine.findAndReplace(inputText, findQuery, replaceQuery) },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(10.dp),
+                                    colors = obsidianButtonColors()
+                                ) { Text("Replace All", fontWeight = FontWeight.Bold) }
+                            }
+                        }
                     }
 
                     Button(
                         onClick = { copyToClipboard(inputText) },
-                        modifier = Modifier.fillMaxWidth().height(50.dp).padding(top = 8.dp),
+                        modifier = Modifier.fillMaxWidth().height(50.dp).padding(top = 6.dp),
                         shape = RoundedCornerShape(14.dp),
                         colors = obsidianButtonColors()
                     ) {

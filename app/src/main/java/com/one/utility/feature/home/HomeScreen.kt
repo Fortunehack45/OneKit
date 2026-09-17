@@ -72,16 +72,17 @@ fun HomeScreen(
         onNavigateToTool(route)
     }
 
-    // 10 Clear Utility Categories matching user expectations
+    // 10 Clear Utility Categories matching user specifications
     val categories = listOf(
         "All",
         "Images",
-        "PDFs",
+        "PDF",
         "Scanner",
         "Files",
         "Calculators",
         "Converters",
-        "Money & Time",
+        "Money",
+        "Date & Time",
         "Text",
         "Privacy & Tech"
     )
@@ -104,13 +105,14 @@ fun HomeScreen(
         } else when (selectedCategory) {
             "All" -> ToolRegistry.sections
             "Images" -> listOfNotNull(ToolRegistry.findSectionById("images"))
-            "PDFs" -> listOfNotNull(ToolRegistry.findSectionById("pdfs"))
+            "PDF", "PDFs" -> listOfNotNull(ToolRegistry.findSectionById("pdfs"))
             "Scanner" -> listOfNotNull(ToolRegistry.findSectionById("scanner"))
-            "Files" -> listOfNotNull(ToolRegistry.findSectionById("files"))
+            "Files", "Storage & Files" -> listOfNotNull(ToolRegistry.findSectionById("files"))
             "Calculators" -> listOfNotNull(ToolRegistry.findSectionById("calculators"))
             "Converters" -> listOfNotNull(ToolRegistry.findSectionById("converters"))
-            "Money & Time" -> listOfNotNull(ToolRegistry.findSectionById("money_time"))
-            "Text" -> listOfNotNull(ToolRegistry.findSectionById("text"))
+            "Money" -> listOfNotNull(ToolRegistry.findSectionById("money"))
+            "Date & Time" -> listOfNotNull(ToolRegistry.findSectionById("date_time"))
+            "Text", "Text Tools" -> listOfNotNull(ToolRegistry.findSectionById("text"))
             "Privacy & Tech" -> listOfNotNull(ToolRegistry.findSectionById("tech"))
             else -> ToolRegistry.sections
         }
@@ -183,10 +185,13 @@ fun HomeScreen(
             ToolCategory.IMAGES -> BentoSky
             ToolCategory.PDF -> BentoHoney
             ToolCategory.CALCULATOR -> BentoMint
-            ToolCategory.SCAN_QR -> BentoPink
+            ToolCategory.SCANNER -> BentoPink
             ToolCategory.TEXT -> HeroLavender
             ToolCategory.TECH -> Color(0xFFE0D8FF)
             ToolCategory.FILES -> Color(0xFFFFD5D5)
+            ToolCategory.CONVERTER -> Color(0xFFE2F0D9)
+            ToolCategory.MONEY -> Color(0xFFFFF2CC)
+            ToolCategory.DATE_TIME -> Color(0xFFD9E1F2)
         }
     }
 
