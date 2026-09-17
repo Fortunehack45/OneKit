@@ -2069,6 +2069,7 @@ object ToolRegistry {
     )
 
     fun findSectionById(id: String): ToolSection? = sections.find { it.id == id }
+    fun findTool(id: String): ToolDefinition? = tools.find { it.id == id }
 }
 
 data class ToolSection(

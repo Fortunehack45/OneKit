@@ -41,6 +41,9 @@ val BentoPinkLight = Color(0xFFFFE0F0)
 val BentoMint = Color(0xFF9DE0C6)           // Fresh Mint Green
 val BentoMintLight = Color(0xFFE0F7ED)
 
+val BentoEmerald = Color(0xFF10B981)        // Emerald Accent
+val BentoCoral = Color(0xFFEF4444)          // Coral Red Accent
+
 // Navigation & Pill High-Contrast Elements
 val DockObsidian = Color(0xFF14151B)
 val DockIconInactive = Color(0xFF8E90A2)

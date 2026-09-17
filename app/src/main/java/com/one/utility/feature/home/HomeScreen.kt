@@ -67,9 +67,14 @@ fun HomeScreen(
     var showLayoutSheet by remember { mutableStateOf(false) }
 
     fun launchTool(id: String, title: String, route: String) {
-        prefs.addRecentTool(id, title, route)
+        val targetRoute = if (route in listOf("image_to_pdf", "compressor", "background_remover", "document_scanner", "cool_fonts", "qr", "storage_cleaner", "batch_rename", "pdf_toolbox")) {
+            route
+        } else {
+            "tool/$id"
+        }
+        prefs.addRecentTool(id, title, targetRoute)
         recentTools = prefs.getRecentTools()
-        onNavigateToTool(route)
+        onNavigateToTool(targetRoute)
     }
 
     // 10 Clear Utility Categories matching user specifications

@@ -47,6 +47,8 @@ import com.one.utility.feature.storage.StorageCleanerScreen
 import com.one.utility.feature.text.TextToolsScreen
 import com.one.utility.feature.tools.ToolsListScreen
 import com.one.utility.feature.workflow.ChainedWorkflowScreen
+import com.one.utility.core.designsystem.ScreenTransitions
+import com.one.utility.feature.tools.DedicatedToolScreen
 import java.net.URLDecoder
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -89,7 +91,11 @@ fun OneAppNavigation(
         NavHost(
             navController = navController,
             startDestination = "home",
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            enterTransition = { ScreenTransitions.enterTransition },
+            exitTransition = { ScreenTransitions.exitTransition },
+            popEnterTransition = { ScreenTransitions.popEnterTransition },
+            popExitTransition = { ScreenTransitions.popExitTransition }
         ) {
             composable("home") {
                 HomeScreen(
@@ -249,6 +255,18 @@ fun OneAppNavigation(
                 ChainedWorkflowScreen(
                     stepNames = stepNames,
                     onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(
+                route = "tool/{toolId}",
+                arguments = listOf(navArgument("toolId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val toolId = backStackEntry.arguments?.getString("toolId") ?: ""
+                DedicatedToolScreen(
+                    toolId = toolId,
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToRoute = { route -> navController.navigate(route) }
                 )
             }
         }

@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.one.utility.core.designsystem.AppTheme
 import com.one.utility.core.designsystem.DockObsidian
+import com.one.utility.core.designsystem.pressFeedback
 
 enum class NavigationTab(val icon: ImageVector, val label: String, val route: String) {
     HOME(Icons.Outlined.Home, "Home", "home"),
@@ -90,10 +91,7 @@ fun FloatingDock(
                             .size(52.dp)
                             .clip(CircleShape)
                             .background(badgeBg)
-                            .clickable(
-                                interactionSource = interactionSource,
-                                indication = null
-                            ) { onTabSelected(tab) },
+                            .pressFeedback { onTabSelected(tab) },
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
