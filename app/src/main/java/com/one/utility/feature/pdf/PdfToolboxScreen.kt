@@ -309,7 +309,8 @@ fun PdfToolboxScreen(
                                     ) {
                                         Text(
                                             if (isProcessing) progressStatus else if (selectedPdfUris.size < 2) "Add at least 2 PDFs" else "Merge ${selectedPdfUris.size} PDFs",
-                                            fontWeight = FontWeight.Bold
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.White
                                         )
                                     }
                                 }
@@ -398,7 +399,7 @@ fun PdfToolboxScreen(
                                         shape = RoundedCornerShape(14.dp),
                                         colors = obsidianButtonColors()
                                     ) {
-                                        Text(if (isProcessing) progressStatus else "Extract $singlePdfPageCount Pages to Images", fontWeight = FontWeight.Bold)
+                                        Text(if (isProcessing) progressStatus else "Extract $singlePdfPageCount Pages to Images", fontWeight = FontWeight.Bold, color = Color.White)
                                     }
                                 }
                             }
@@ -515,7 +516,8 @@ fun PdfToolboxScreen(
                                     ) {
                                         Text(
                                             if (isProcessing) "Splitting..." else "Extract ${selectedPages.size} Pages into New PDF",
-                                            fontWeight = FontWeight.Bold
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.White
                                         )
                                     }
                                 }
@@ -566,9 +568,9 @@ fun PdfToolboxScreen(
                                     shape = RoundedCornerShape(12.dp),
                                     modifier = Modifier.weight(1f)
                                 ) {
-                                    Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
+                                    Icon(Icons.Default.Share, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
                                     Spacer(Modifier.width(4.dp))
-                                    Text("Share", fontWeight = FontWeight.Bold)
+                                    Text("Share", fontWeight = FontWeight.Bold, color = Color.White)
                                 }
                             }
                         }
@@ -617,9 +619,9 @@ fun PdfToolboxScreen(
                                     shape = RoundedCornerShape(12.dp),
                                     modifier = Modifier.weight(1f)
                                 ) {
-                                    Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
+                                    Icon(Icons.Default.Share, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
                                     Spacer(Modifier.width(4.dp))
-                                    Text("Share", fontWeight = FontWeight.Bold)
+                                    Text("Share", fontWeight = FontWeight.Bold, color = Color.White)
                                 }
                             }
                         }
@@ -660,9 +662,9 @@ fun PdfToolboxScreen(
                                     colors = obsidianButtonColors(),
                                     shape = RoundedCornerShape(12.dp)
                                 ) {
-                                    Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
+                                    Icon(Icons.Default.Share, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
                                     Spacer(Modifier.width(4.dp))
-                                    Text("Share All", fontWeight = FontWeight.Bold)
+                                    Text("Share All", fontWeight = FontWeight.Bold, color = Color.White)
                                 }
                             }
 

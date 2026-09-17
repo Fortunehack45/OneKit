@@ -103,7 +103,7 @@ fun primaryButtonColors(): androidx.compose.material3.ButtonColors = androidx.co
 @Composable
 fun accentButtonColors(accentColor: Color): androidx.compose.material3.ButtonColors = androidx.compose.material3.ButtonDefaults.buttonColors(
     containerColor = accentColor,
-    contentColor = TextPrimary,
+    contentColor = Color(0xFF14151B),
     disabledContainerColor = if (AppTheme.colors.isDark) Color(0xFF252834) else Color(0xFFE4E6ED),
     disabledContentColor = if (AppTheme.colors.isDark) Color(0xFF686D80) else Color(0xFF888D9E)
 )
@@ -156,7 +156,10 @@ fun ONETheme(
     val colorScheme = if (isDark) DarkColorScheme else LightColorScheme
     val appColors = if (isDark) DarkAppColors else LightAppColors
 
-    CompositionLocalProvider(LocalAppColors provides appColors) {
+    CompositionLocalProvider(
+        LocalAppColors provides appColors,
+        androidx.compose.material3.LocalContentColor provides appColors.textPrimary
+    ) {
         MaterialTheme(
             colorScheme = colorScheme,
             typography = Typography,

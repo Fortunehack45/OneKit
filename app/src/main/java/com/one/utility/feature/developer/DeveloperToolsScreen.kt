@@ -173,13 +173,13 @@ fun DeveloperToolsScreen(
                                         modifier = Modifier.weight(1f),
                                         colors = obsidianButtonColors(),
                                         shape = RoundedCornerShape(12.dp)
-                                    ) { Text("Pretty (2 spaces)", maxLines = 1, softWrap = false) }
+                                    ) { Text("Pretty (2 spaces)", maxLines = 1, softWrap = false, color = Color.White) }
                                     Button(
                                         onClick = { jsonOutput = runCatching { engine.minifyJson(jsonInput) }.getOrElse { "Invalid JSON: ${it.localizedMessage}" } },
                                         modifier = Modifier.weight(1f),
                                         colors = obsidianButtonColors(),
                                         shape = RoundedCornerShape(12.dp)
-                                    ) { Text("Minify", maxLines = 1, softWrap = false) }
+                                    ) { Text("Minify", maxLines = 1, softWrap = false, color = Color.White) }
                                 }
                                 if (jsonOutput.isNotEmpty()) {
                                     Box(
@@ -223,13 +223,13 @@ fun DeveloperToolsScreen(
                                         modifier = Modifier.weight(1f),
                                         colors = obsidianButtonColors(),
                                         shape = RoundedCornerShape(12.dp)
-                                    ) { Text("Encode", maxLines = 1, softWrap = false) }
+                                    ) { Text("Encode", maxLines = 1, softWrap = false, color = Color.White) }
                                     Button(
                                         onClick = { base64Output = runCatching { engine.base64Decode(base64Input) }.getOrElse { "Decode Error: ${it.localizedMessage}" } },
                                         modifier = Modifier.weight(1f),
                                         colors = obsidianButtonColors(),
                                         shape = RoundedCornerShape(12.dp)
-                                    ) { Text("Decode", maxLines = 1, softWrap = false) }
+                                    ) { Text("Decode", maxLines = 1, softWrap = false, color = Color.White) }
                                 }
                                 if (base64Output.isNotEmpty()) {
                                     Box(
@@ -270,13 +270,13 @@ fun DeveloperToolsScreen(
                                         modifier = Modifier.weight(1f),
                                         colors = obsidianButtonColors(),
                                         shape = RoundedCornerShape(12.dp)
-                                    ) { Text("Encode URL", maxLines = 1, softWrap = false) }
+                                    ) { Text("Encode URL", maxLines = 1, softWrap = false, color = Color.White) }
                                     Button(
                                         onClick = { urlOutput = runCatching { engine.urlDecode(urlInput) }.getOrElse { "Decode Error" } },
                                         modifier = Modifier.weight(1f),
                                         colors = obsidianButtonColors(),
                                         shape = RoundedCornerShape(12.dp)
-                                    ) { Text("Decode URL", maxLines = 1, softWrap = false) }
+                                    ) { Text("Decode URL", maxLines = 1, softWrap = false, color = Color.White) }
                                 }
                                 if (urlOutput.isNotEmpty()) {
                                     Box(
@@ -317,13 +317,13 @@ fun DeveloperToolsScreen(
                                         modifier = Modifier.weight(1f),
                                         colors = obsidianButtonColors(),
                                         shape = RoundedCornerShape(12.dp)
-                                    ) { Text("Escape", maxLines = 1, softWrap = false) }
+                                    ) { Text("Escape", maxLines = 1, softWrap = false, color = Color.White) }
                                     Button(
                                         onClick = { htmlOutput = engine.htmlUnescape(htmlInput) },
                                         modifier = Modifier.weight(1f),
                                         colors = obsidianButtonColors(),
                                         shape = RoundedCornerShape(12.dp)
-                                    ) { Text("Unescape", maxLines = 1, softWrap = false) }
+                                    ) { Text("Unescape", maxLines = 1, softWrap = false, color = Color.White) }
                                 }
                                 if (htmlOutput.isNotEmpty()) {
                                     Box(
@@ -368,7 +368,7 @@ fun DeveloperToolsScreen(
                                     modifier = Modifier.fillMaxWidth(),
                                     colors = obsidianButtonColors(),
                                     shape = RoundedCornerShape(12.dp)
-                                ) { Text("Decode Token", maxLines = 1, softWrap = false) }
+                                ) { Text("Decode Token", maxLines = 1, softWrap = false, color = Color.White) }
                                 if (jwtOutput.isNotEmpty()) {
                                     Box(
                                         modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(AppTheme.colors.canvasBackground).padding(12.dp)
@@ -409,7 +409,7 @@ fun DeveloperToolsScreen(
                                             modifier = Modifier.weight(1f),
                                             colors = obsidianButtonColors(),
                                             shape = RoundedCornerShape(12.dp)
-                                        ) { Text(algo, maxLines = 1, softWrap = false, fontSize = 11.sp) }
+                                        ) { Text(algo, maxLines = 1, softWrap = false, fontSize = 11.sp, color = Color.White) }
                                     }
                                 }
                                 if (hashOutput.isNotEmpty()) {
@@ -576,7 +576,7 @@ fun DeveloperToolsScreen(
                                         modifier = Modifier.weight(1f),
                                         colors = obsidianButtonColors(),
                                         shape = RoundedCornerShape(12.dp)
-                                    ) { Text("Convert Date", maxLines = 1, softWrap = false) }
+                                    ) { Text("Convert Date", maxLines = 1, softWrap = false, color = Color.White) }
                                     Button(
                                         onClick = {
                                             val now = System.currentTimeMillis() / 1000
@@ -586,7 +586,7 @@ fun DeveloperToolsScreen(
                                         modifier = Modifier.weight(1f),
                                         colors = obsidianButtonColors(),
                                         shape = RoundedCornerShape(12.dp)
-                                    ) { Text("Now", maxLines = 1, softWrap = false) }
+                                    ) { Text("Now", maxLines = 1, softWrap = false, color = Color.White) }
                                 }
                                 if (dateOutput.isNotEmpty()) {
                                     Box(

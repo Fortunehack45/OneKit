@@ -197,9 +197,9 @@ fun ImageConverterScreen(
                                 colors = obsidianButtonColors(),
                                 shape = RoundedCornerShape(12.dp)
                             ) {
-                                Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Icon(Icons.Default.Share, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
                                 Spacer(Modifier.width(6.dp))
-                                Text("Share", fontWeight = FontWeight.Bold)
+                                Text("Share", fontWeight = FontWeight.Bold, color = Color.White)
                             }
                         }
                     }
@@ -227,7 +227,8 @@ fun ImageConverterScreen(
                     Text(
                         text = if (isProcessing) "Converting..." else "Convert to ${targetFormat.extension.uppercase()}",
                         fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
+                        fontSize = 16.sp,
+                        color = Color.White
                     )
                 }
             }

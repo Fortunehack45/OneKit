@@ -167,29 +167,33 @@ fun TextToolsScreen(
                             onClick = { inputText = engine.toUpperCase(inputText) },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
+                            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 6.dp),
                             colors = obsidianButtonColors()
-                        ) { Text("UPPERCASE", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false) }
+                        ) { Text("UPPER", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = Color.White, maxLines = 1, softWrap = false) }
 
                         Button(
                             onClick = { inputText = engine.toLowerCase(inputText) },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
+                            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 6.dp),
                             colors = obsidianButtonColors()
-                        ) { Text("lowercase", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false) }
+                        ) { Text("lower", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = Color.White, maxLines = 1, softWrap = false) }
 
                         Button(
                             onClick = { inputText = engine.toTitleCase(inputText) },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
+                            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 6.dp),
                             colors = obsidianButtonColors()
-                        ) { Text("Title Case", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false) }
+                        ) { Text("Title", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = Color.White, maxLines = 1, softWrap = false) }
 
                         Button(
                             onClick = { inputText = engine.toSentenceCase(inputText) },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
+                            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 6.dp),
                             colors = obsidianButtonColors()
-                        ) { Text("Sentence", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false) }
+                        ) { Text("Sentence", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = Color.White, maxLines = 1, softWrap = false) }
                     }
 
                     // Row 2: Cleaning & Organization
@@ -198,29 +202,33 @@ fun TextToolsScreen(
                             onClick = { inputText = engine.removeExtraSpaces(inputText) },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
+                            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 6.dp),
                             colors = obsidianButtonColors()
-                        ) { Text("Trim Spaces", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false) }
+                        ) { Text("Trim", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = Color.White, maxLines = 1, softWrap = false) }
 
                         Button(
                             onClick = { inputText = engine.removeDuplicateLines(inputText) },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
+                            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 6.dp),
                             colors = obsidianButtonColors()
-                        ) { Text("Deduplicate", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false) }
+                        ) { Text("Dedupe", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = Color.White, maxLines = 1, softWrap = false) }
 
                         Button(
                             onClick = { inputText = engine.sortLinesAlphabetically(inputText) },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
+                            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 6.dp),
                             colors = obsidianButtonColors()
-                        ) { Text("Sort Lines", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false) }
+                        ) { Text("Sort", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = Color.White, maxLines = 1, softWrap = false) }
 
                         Button(
                             onClick = { inputText = engine.reverseText(inputText) },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
+                            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 6.dp),
                             colors = obsidianButtonColors()
-                        ) { Text("Reverse", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false) }
+                        ) { Text("Reverse", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = Color.White, maxLines = 1, softWrap = false) }
                     }
 
                     // Row 3: Generators & Helpers
@@ -229,22 +237,25 @@ fun TextToolsScreen(
                             onClick = { inputText = engine.cleanText(inputText) },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
+                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 6.dp),
                             colors = obsidianButtonColors()
-                        ) { Text("Clean Text", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false) }
+                        ) { Text("Clean", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = Color.White, maxLines = 1, softWrap = false) }
 
                         Button(
                             onClick = { inputText = engine.generateLoremIpsum(2) },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
+                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 6.dp),
                             colors = obsidianButtonColors()
-                        ) { Text("Lorem Ipsum", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false) }
+                        ) { Text("Lorem", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = Color.White, maxLines = 1, softWrap = false) }
 
                         Button(
                             onClick = { showFindReplace = !showFindReplace },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
+                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 6.dp),
                             colors = obsidianButtonColors()
-                        ) { Text(if (showFindReplace) "Close" else "Find/Replace", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false) }
+                        ) { Text(if (showFindReplace) "Close" else "Find/Rep", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = Color.White, maxLines = 1, softWrap = false) }
                     }
 
                     if (showFindReplace) {
@@ -274,7 +285,7 @@ fun TextToolsScreen(
                                     modifier = Modifier.fillMaxWidth(),
                                     shape = RoundedCornerShape(10.dp),
                                     colors = obsidianButtonColors()
-                                ) { Text("Replace All", fontWeight = FontWeight.Bold) }
+                                ) { Text("Replace All", fontWeight = FontWeight.Bold, color = Color.White) }
                             }
                         }
                     }
@@ -285,9 +296,9 @@ fun TextToolsScreen(
                         shape = RoundedCornerShape(14.dp),
                         colors = obsidianButtonColors()
                     ) {
-                        Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Icon(Icons.Default.ContentCopy, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
                         Spacer(Modifier.width(8.dp))
-                        Text("Copy Transformed Text", fontWeight = FontWeight.Bold)
+                        Text("Copy Transformed Text", fontWeight = FontWeight.Bold, color = Color.White)
                     }
                 }
             }

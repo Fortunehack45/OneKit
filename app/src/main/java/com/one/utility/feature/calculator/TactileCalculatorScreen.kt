@@ -263,8 +263,7 @@ fun TactileCalculatorScreen(
                     .fillMaxWidth()
                     .padding(vertical = 4.dp)
                     .clip(RoundedCornerShape(14.dp))
-                    .background(AppTheme.colors.cardSurface)
-                    .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(14.dp))
+                    .background(AppTheme.colors.surfaceVariant)
                     .padding(3.dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
@@ -420,9 +419,10 @@ fun KeyButton(
 ) {
     Surface(
         onClick = onClick,
-        shape = RoundedCornerShape(18.dp),
+        shape = RoundedCornerShape(16.dp),
         color = containerColor,
-        modifier = modifier.border(0.75.dp, AppTheme.colors.borderSubtle.copy(alpha = 0.6f), RoundedCornerShape(18.dp))
+        border = androidx.compose.foundation.BorderStroke(0.5.dp, AppTheme.colors.borderSubtle.copy(alpha = 0.45f)),
+        modifier = modifier
     ) {
         Box(contentAlignment = Alignment.Center) {
             if (label == "⌫") {

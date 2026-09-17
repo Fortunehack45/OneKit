@@ -340,27 +340,39 @@ fun PasswordGeneratorScreen(
 
                         // Crack Time Breakdown
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(IntrinsicSize.Max),
                             horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             Surface(
                                 shape = RoundedCornerShape(14.dp),
                                 color = AppTheme.colors.canvasBackground,
                                 border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle),
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight()
                             ) {
-                                Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                        Icon(Icons.Outlined.Speed, contentDescription = null, tint = analysis.strengthColor, modifier = Modifier.size(14.dp))
-                                        Text("GPU Cluster Crack", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = AppTheme.colors.textTertiary)
+                                Column(
+                                    modifier = Modifier
+                                        .padding(12.dp)
+                                        .fillMaxHeight(),
+                                    verticalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                            Icon(Icons.Outlined.Speed, contentDescription = null, tint = analysis.strengthColor, modifier = Modifier.size(14.dp))
+                                            Text("GPU Cluster Crack", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = AppTheme.colors.textTertiary, maxLines = 1, softWrap = false)
+                                        }
+                                        Text(
+                                            text = analysis.crackTimeOffline,
+                                            fontSize = 13.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = AppTheme.colors.textPrimary,
+                                            maxLines = 2
+                                        )
                                     }
-                                    Text(
-                                        text = analysis.crackTimeOffline,
-                                        fontSize = 13.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = AppTheme.colors.textPrimary
-                                    )
-                                    Text("At 10B guesses/sec", fontSize = 10.sp, color = AppTheme.colors.textTertiary)
+                                    Text("At 10B guesses/sec", fontSize = 10.sp, color = AppTheme.colors.textTertiary, maxLines = 1, softWrap = false)
                                 }
                             }
 
@@ -368,20 +380,31 @@ fun PasswordGeneratorScreen(
                                 shape = RoundedCornerShape(14.dp),
                                 color = AppTheme.colors.canvasBackground,
                                 border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle),
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight()
                             ) {
-                                Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                        Icon(Icons.Outlined.Lock, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(14.dp))
-                                        Text("Entropy", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = AppTheme.colors.textTertiary)
+                                Column(
+                                    modifier = Modifier
+                                        .padding(12.dp)
+                                        .fillMaxHeight(),
+                                    verticalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                            Icon(Icons.Outlined.Lock, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(14.dp))
+                                            Text("Entropy", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = AppTheme.colors.textTertiary, maxLines = 1, softWrap = false)
+                                        }
+                                        Text(
+                                            text = "${"%.1f".format(analysis.entropyBits)} Bits",
+                                            fontSize = 13.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = AppTheme.colors.textPrimary,
+                                            maxLines = 1,
+                                            softWrap = false
+                                        )
                                     }
-                                    Text(
-                                        text = "${"%.1f".format(analysis.entropyBits)} Bits",
-                                        fontSize = 13.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = AppTheme.colors.textPrimary
-                                    )
-                                    Text("Information density", fontSize = 10.sp, color = AppTheme.colors.textTertiary)
+                                    Text("Information density", fontSize = 10.sp, color = AppTheme.colors.textTertiary, maxLines = 1, softWrap = false)
                                 }
                             }
                         }

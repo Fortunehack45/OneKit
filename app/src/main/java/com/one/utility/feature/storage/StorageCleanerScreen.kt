@@ -281,7 +281,7 @@ fun StorageCleanerScreen(
                                     shape = RoundedCornerShape(10.dp),
                                     contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
                                 ) {
-                                    Text("Keep 1, Clean", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                    Text("Keep 1, Clean", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
                                 }
                             }
 

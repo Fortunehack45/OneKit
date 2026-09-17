@@ -192,9 +192,9 @@ fun DocumentScannerScreen(
                             shape = RoundedCornerShape(16.dp),
                             colors = obsidianButtonColors()
                         ) {
-                            Icon(Icons.Default.PictureAsPdf, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Default.PictureAsPdf, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(6.dp))
-                            Text(if (isProcessing) "Exporting..." else "Save as PDF", fontWeight = FontWeight.Bold)
+                            Text(if (isProcessing) "Exporting..." else "Save as PDF", fontWeight = FontWeight.Bold, color = Color.White)
                         }
 
                         Button(

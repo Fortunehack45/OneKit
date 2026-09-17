@@ -717,9 +717,9 @@ fun BackgroundRemoverScreen(
                             shape = RoundedCornerShape(16.dp),
                             colors = obsidianButtonColors()
                         ) {
-                            Icon(Icons.Outlined.Download, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Icon(Icons.Outlined.Download, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(8.dp))
-                            Text("Save Image", fontWeight = FontWeight.Bold)
+                            Text("Save Image", fontWeight = FontWeight.Bold, color = Color.White)
                         }
 
                         OutlinedButton(

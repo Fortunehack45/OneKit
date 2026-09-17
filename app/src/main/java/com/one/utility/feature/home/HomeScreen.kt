@@ -1184,7 +1184,7 @@ fun HomeScreen(
                                 },
                                 shape = RoundedCornerShape(12.dp)
                             ) {
-                                Text("Show All Tools")
+                                Text("Show All Tools", color = AppTheme.colors.textPrimary)
                             }
                         }
                     }

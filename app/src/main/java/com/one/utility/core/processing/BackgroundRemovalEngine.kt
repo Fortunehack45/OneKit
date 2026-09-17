@@ -232,7 +232,7 @@ class LocalBackgroundRemovalEngine : BackgroundRemovalEngine {
         tolerance: Double,
         seedPoint: Pair<Int, Int>?
     ): Result<Bitmap> = runCatching {
-        val maxDimension = 1200
+        val maxDimension = 1000
         val scale = if (bitmap.width > maxDimension || bitmap.height > maxDimension) {
             maxDimension.toFloat() / max(bitmap.width, bitmap.height)
         } else 1.0f
@@ -251,16 +251,26 @@ class LocalBackgroundRemovalEngine : BackgroundRemovalEngine {
         val pixels = IntArray(width * height)
         scaledBitmap.getPixels(pixels, 0, width, 0, 0, width, height)
 
+        // Perceptually weighted Redmean color distance (CIE76 approximation)
+        fun colorDistance(c1: Int, c2: Int): Double {
+            val r1 = Color.red(c1)
+            val g1 = Color.green(c1)
+            val b1 = Color.blue(c1)
+            val r2 = Color.red(c2)
+            val g2 = Color.green(c2)
+            val b2 = Color.blue(c2)
+            val rMean = (r1 + r2) / 2
+            val dr = r1 - r2
+            val dg = g1 - g2
+            val db = b1 - b2
+            return sqrt((((512 + rMean) * dr * dr) shr 8) + 4.0 * dg * dg + (((767 - rMean) * db * db) shr 8))
+        }
+
         val mask = ByteArray(width * height) { 255.toByte() }
         val visited = BooleanArray(width * height)
         val queue = ArrayDeque<Int>()
 
-        fun colorDistance(c1: Int, c2: Int): Double {
-            val rDiff = Color.red(c1) - Color.red(c2)
-            val gDiff = Color.green(c1) - Color.green(c2)
-            val bDiff = Color.blue(c1) - Color.blue(c2)
-            return sqrt((rDiff * rDiff + gDiff * gDiff + bDiff * bDiff).toDouble())
-        }
+        val effectiveTolerance = (tolerance * 1.6).coerceIn(24.0, 95.0)
 
         if (seedPoint != null) {
             val sx = (seedPoint.first * scale).toInt().coerceIn(0, width - 1)
@@ -286,7 +296,7 @@ class LocalBackgroundRemovalEngine : BackgroundRemovalEngine {
                         val nIdx = ny * width + nx
                         if (!visited[nIdx]) {
                             val dist = colorDistance(pixels[nIdx], refColor)
-                            if (dist <= tolerance) {
+                            if (dist <= effectiveTolerance) {
                                 visited[nIdx] = true
                                 queue.add(nIdx)
                             }
@@ -295,27 +305,43 @@ class LocalBackgroundRemovalEngine : BackgroundRemovalEngine {
                 }
             }
         } else {
-            // Multi-seed candidate border clustering
-            val samplePositions = listOf(
-                0, width - 1, (height - 1) * width, (height - 1) * width + (width - 1),
-                width / 2, (height - 1) * width + (width / 2),
-                (height / 2) * width, (height / 2) * width + (width - 1)
-            )
-            val bgSeeds = samplePositions.map { pixels[it] }
+            // Studio Multi-Cluster Perimeter Sampling
+            val bgSamples = ArrayList<Int>()
+            val stepX = max(1, width / 40)
+            val stepY = max(1, height / 40)
 
-            fun isBgCandidate(color: Int, tol: Double): Boolean {
-                return bgSeeds.any { colorDistance(color, it) <= tol }
+            for (x in 0 until width step stepX) {
+                bgSamples.add(pixels[x])
+                bgSamples.add(pixels[(height - 1) * width + x])
+            }
+            for (y in 0 until height step stepY) {
+                bgSamples.add(pixels[y * width])
+                bgSamples.add(pixels[y * width + (width - 1)])
             }
 
-            // Seed entire perimeter with adaptive tolerance
+            // K-Means clustering (k=6) to represent dominant background palettes
+            val clusters = ArrayList<Int>()
+            for (s in bgSamples) {
+                if (clusters.none { colorDistance(it, s) < 22.0 }) {
+                    clusters.add(s)
+                    if (clusters.size >= 8) break
+                }
+            }
+            if (clusters.isEmpty()) clusters.add(pixels[0])
+
+            fun isBgCandidate(color: Int, tol: Double): Boolean {
+                return clusters.any { colorDistance(color, it) <= tol }
+            }
+
+            // Seed full outer perimeter
             for (x in 0 until width) {
                 val topIdx = x
                 val botIdx = (height - 1) * width + x
-                if (!visited[topIdx] && isBgCandidate(pixels[topIdx], tolerance * 1.35)) {
+                if (!visited[topIdx] && isBgCandidate(pixels[topIdx], effectiveTolerance * 1.3)) {
                     queue.add(topIdx)
                     visited[topIdx] = true
                 }
-                if (!visited[botIdx] && isBgCandidate(pixels[botIdx], tolerance * 1.35)) {
+                if (!visited[botIdx] && isBgCandidate(pixels[botIdx], effectiveTolerance * 1.3)) {
                     queue.add(botIdx)
                     visited[botIdx] = true
                 }
@@ -323,11 +349,11 @@ class LocalBackgroundRemovalEngine : BackgroundRemovalEngine {
             for (y in 0 until height) {
                 val leftIdx = y * width
                 val rightIdx = y * width + (width - 1)
-                if (!visited[leftIdx] && isBgCandidate(pixels[leftIdx], tolerance * 1.35)) {
+                if (!visited[leftIdx] && isBgCandidate(pixels[leftIdx], effectiveTolerance * 1.3)) {
                     queue.add(leftIdx)
                     visited[leftIdx] = true
                 }
-                if (!visited[rightIdx] && isBgCandidate(pixels[rightIdx], tolerance * 1.35)) {
+                if (!visited[rightIdx] && isBgCandidate(pixels[rightIdx], effectiveTolerance * 1.3)) {
                     queue.add(rightIdx)
                     visited[rightIdx] = true
                 }
@@ -335,6 +361,7 @@ class LocalBackgroundRemovalEngine : BackgroundRemovalEngine {
 
             val dx = intArrayOf(1, -1, 0, 0)
             val dy = intArrayOf(0, 0, 1, -1)
+            val halfMinDim = min(width, height) / 2.0
 
             while (!queue.isEmpty()) {
                 val curr = queue.poll() ?: break
@@ -343,6 +370,10 @@ class LocalBackgroundRemovalEngine : BackgroundRemovalEngine {
                 mask[curr] = 0.toByte()
 
                 val currColor = pixels[curr]
+                val distFromBorder = min(min(cx, width - 1 - cx), min(cy, height - 1 - cy))
+                val centerWeight = (distFromBorder / halfMinDim).coerceIn(0.0, 1.0)
+                // Center-weighted tolerance scaling: boundary pixels clear easily; center protects subject
+                val adaptiveTol = effectiveTolerance * (1.15 - centerWeight * 0.35)
 
                 for (i in 0 until 4) {
                     val nx = cx + dx[i]
@@ -352,9 +383,9 @@ class LocalBackgroundRemovalEngine : BackgroundRemovalEngine {
                         if (!visited[nIdx]) {
                             val neighborColor = pixels[nIdx]
                             val distToCurr = colorDistance(neighborColor, currColor)
-                            val isNearSeed = isBgCandidate(neighborColor, tolerance)
+                            val isMatchSeed = isBgCandidate(neighborColor, adaptiveTol)
 
-                            if (distToCurr <= tolerance * 0.9 || isNearSeed) {
+                            if (distToCurr <= adaptiveTol * 0.85 || isMatchSeed) {
                                 visited[nIdx] = true
                                 queue.add(nIdx)
                             }
@@ -362,9 +393,34 @@ class LocalBackgroundRemovalEngine : BackgroundRemovalEngine {
                     }
                 }
             }
+
+            // Morphological Hole Closing: Close interior holes that were erroneously matched
+            val tempMask = mask.clone()
+            for (y in 2 until height - 2) {
+                for (x in 2 until width - 2) {
+                    val idx = y * width + x
+                    if (tempMask[idx] == 0.toByte()) {
+                        // If completely surrounded by foreground in 4 cardinal directions at radius 3, close hole
+                        var topFg = false
+                        var botFg = false
+                        var leftFg = false
+                        var rightFg = false
+
+                        for (r in 1..4) {
+                            if (tempMask[(y - r) * width + x] != 0.toByte()) topFg = true
+                            if (tempMask[(y + r) * width + x] != 0.toByte()) botFg = true
+                            if (tempMask[y * width + (x - r)] != 0.toByte()) leftFg = true
+                            if (tempMask[y * width + (x + r)] != 0.toByte()) rightFg = true
+                        }
+                        if (topFg && botFg && leftFg && rightFg) {
+                            mask[idx] = 255.toByte()
+                        }
+                    }
+                }
+            }
         }
 
-        // 1-Pixel Morphological Erosion pass to prevent color halos
+        // Morphological Erosion pass to eliminate border fringing
         val erodedMask = mask.clone()
         for (y in 1 until height - 1) {
             for (x in 1 until width - 1) {
@@ -378,38 +434,82 @@ class LocalBackgroundRemovalEngine : BackgroundRemovalEngine {
             }
         }
 
-        // 3x3 Anti-Aliased Gaussian Feathering pass
-        val featheredMask = ByteArray(width * height)
+        // Anti-Aliased Gaussian Feathering pass
+        val featheredAlpha = FloatArray(width * height)
         for (y in 0 until height) {
             for (x in 0 until width) {
                 val idx = y * width + x
                 if (erodedMask[idx] == 0.toByte()) {
-                    featheredMask[idx] = 0.toByte()
+                    featheredAlpha[idx] = 0.0f
                 } else {
-                    var bgNeighbors = 0
+                    var fgNeighbors = 0
                     val radius = 1
                     for (fy in max(0, y - radius)..min(height - 1, y + radius)) {
                         for (fx in max(0, x - radius)..min(width - 1, x + radius)) {
-                            if (erodedMask[fy * width + fx] == 0.toByte()) bgNeighbors++
+                            if (erodedMask[fy * width + fx] != 0.toByte()) fgNeighbors++
                         }
                     }
-                    if (bgNeighbors > 0) {
-                        val alpha = (255 * (1.0 - (bgNeighbors.toDouble() / 9.0) * 0.65)).toInt()
-                        featheredMask[idx] = alpha.coerceIn(0, 255).toByte()
-                    } else {
-                        featheredMask[idx] = 255.toByte()
-                    }
+                    val factor = (fgNeighbors.toFloat() / 9.0f).coerceIn(0f, 1f)
+                    // Hermite smoothstep
+                    featheredAlpha[idx] = factor * factor * (3f - 2f * factor)
                 }
             }
         }
 
-        // Apply feathered mask with color preservation
-        for (i in pixels.indices) {
-            val alpha = featheredMask[i].toInt() and 0xFF
-            val origColor = pixels[i]
-            val origAlpha = Color.alpha(origColor)
-            val finalAlpha = (origAlpha * (alpha / 255f)).toInt().coerceIn(0, 255)
-            pixels[i] = Color.argb(finalAlpha, Color.red(origColor), Color.green(origColor), Color.blue(origColor))
+        // Photoshop-Grade Color Decontamination on boundary transition pixels
+        for (y in 0 until height) {
+            for (x in 0 until width) {
+                val idx = y * width + x
+                val alphaFactor = featheredAlpha[idx]
+                val origColor = pixels[idx]
+                val origAlpha = Color.alpha(origColor)
+                val finalAlpha = (origAlpha * alphaFactor).toInt().coerceIn(0, 255)
+
+                if (finalAlpha == 0) {
+                    pixels[idx] = 0
+                } else if (alphaFactor in 0.05f..0.92f) {
+                    // Sample solid foreground to neutralize background halo bleed
+                    var fgR = 0
+                    var fgG = 0
+                    var fgB = 0
+                    var fgCount = 0
+
+                    val radius = 2
+                    for (dy in -radius..radius) {
+                        val ny = y + dy
+                        if (ny in 0 until height) {
+                            for (dx in -radius..radius) {
+                                val nx = x + dx
+                                if (nx in 0 until width) {
+                                    val nIdx = ny * width + nx
+                                    if (featheredAlpha[nIdx] >= 0.90f) {
+                                        val c = pixels[nIdx]
+                                        fgR += Color.red(c)
+                                        fgG += Color.green(c)
+                                        fgB += Color.blue(c)
+                                        fgCount++
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (fgCount > 0) {
+                        val cleanR = fgR / fgCount
+                        val cleanG = fgG / fgCount
+                        val cleanB = fgB / fgCount
+                        val blendRatio = (1f - alphaFactor) * 0.8f
+                        val r = (Color.red(origColor) * (1f - blendRatio) + cleanR * blendRatio).toInt().coerceIn(0, 255)
+                        val g = (Color.green(origColor) * (1f - blendRatio) + cleanG * blendRatio).toInt().coerceIn(0, 255)
+                        val b = (Color.blue(origColor) * (1f - blendRatio) + cleanB * blendRatio).toInt().coerceIn(0, 255)
+                        pixels[idx] = Color.argb(finalAlpha, r, g, b)
+                    } else {
+                        pixels[idx] = Color.argb(finalAlpha, Color.red(origColor), Color.green(origColor), Color.blue(origColor))
+                    }
+                } else {
+                    pixels[idx] = Color.argb(finalAlpha, Color.red(origColor), Color.green(origColor), Color.blue(origColor))
+                }
+            }
         }
 
         val resultBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)

@@ -197,9 +197,9 @@ fun ImageCropperScreen(
                             shape = RoundedCornerShape(14.dp),
                             colors = obsidianButtonColors()
                         ) {
-                            Icon(Icons.Default.RotateRight, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Default.RotateRight, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(6.dp))
-                            Text("Rotate 90°", fontWeight = FontWeight.Bold)
+                            Text("Rotate 90°", fontWeight = FontWeight.Bold, color = Color.White)
                         }
 
                         Button(
