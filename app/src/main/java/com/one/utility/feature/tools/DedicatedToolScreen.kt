@@ -1385,7 +1385,7 @@ fun DedicatedToolBody(
                     }
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text("Application Version:", fontSize = 13.sp, color = AppTheme.colors.textSecondary)
-                        Text("ONE Utility OS v1.1.5", fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary)
+                        Text("ONE Utility OS v1.1.6", fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary)
                     }
                     if (batteryLevel >= 0) {
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {

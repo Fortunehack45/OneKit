@@ -1,5 +1,6 @@
 package com.one.utility.feature.tools
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -81,8 +82,8 @@ fun ToolsListScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(10.dp))
-                                .clickable {
+                                .clip(AppTheme.shapes.Chip)
+                                .pressFeedback {
                                     collapsedSections[section.id] = !isCollapsed
                                 }
                                 .padding(top = 16.dp, bottom = 6.dp)
@@ -94,7 +95,7 @@ fun ToolsListScreen(
                                 Box(
                                     modifier = Modifier
                                         .size(30.dp)
-                                        .clip(RoundedCornerShape(8.dp))
+                                        .clip(AppTheme.shapes.Badge)
                                         .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
                                     contentAlignment = Alignment.Center
                                 ) {
@@ -121,47 +122,58 @@ fun ToolsListScreen(
                         }
                     }
 
-                    if (!isCollapsed) {
-                        items(sectionTools, key = { "tool_${section.id}_${it.id}" }) { tool ->
-                        Surface(
-                            shape = RoundedCornerShape(20.dp),
-                            color = AppTheme.colors.cardSurface,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(20.dp))
-                                .pressFeedback {
-                                    val targetRoute = if (tool.route.isNotBlank()) tool.route else "tool/${tool.id}"
-                                    onNavigateToTool(targetRoute)
-                                }
+                    item(key = "section_content_${section.id}") {
+                        AnimatedVisibility(
+                            visible = !isCollapsed,
+                            enter = AccordionTransitions.expand,
+                            exit = AccordionTransitions.collapse
                         ) {
-                            Row(
-                                modifier = Modifier.padding(18.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                    ) {
-                                        Text(tool.title, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
-                                        tool.badge?.let { badgeText ->
-                                            Box(
-                                                modifier = Modifier
-                                                    .clip(RoundedCornerShape(8.dp))
-                                                    .background(HeroLavender)
-                                                    .padding(horizontal = 8.dp, vertical = 2.dp)
-                                            ) {
-                                                Text(badgeText, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = DockObsidian)
+                                sectionTools.forEach { tool ->
+                                    Surface(
+                                        shape = AppTheme.shapes.Card,
+                                        color = AppTheme.colors.cardSurface,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .border(1.dp, AppTheme.colors.borderSubtle, AppTheme.shapes.Card)
+                                            .pressFeedback {
+                                                val targetRoute = if (tool.route.isNotBlank()) tool.route else "tool/${tool.id}"
+                                                onNavigateToTool(targetRoute)
                                             }
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(18.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Column(modifier = Modifier.weight(1f)) {
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                                ) {
+                                                    Text(tool.title, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
+                                                    tool.badge?.let { badgeText ->
+                                                        Box(
+                                                            modifier = Modifier
+                                                                .clip(AppTheme.shapes.Badge)
+                                                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
+                                                                .padding(horizontal = 8.dp, vertical = 2.dp)
+                                                        ) {
+                                                            Text(badgeText, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                                                        }
+                                                    }
+                                                }
+                                                Text(tool.description, fontSize = 12.sp, color = AppTheme.colors.textSecondary, modifier = Modifier.padding(top = 4.dp))
+                                            }
+                                            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = AppTheme.colors.textSecondary, modifier = Modifier.size(18.dp))
                                         }
                                     }
-                                    Text(tool.description, fontSize = 12.sp, color = AppTheme.colors.textSecondary, modifier = Modifier.padding(top = 4.dp))
                                 }
-                                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = AppTheme.colors.textSecondary, modifier = Modifier.size(18.dp))
                             }
                         }
-                    }
                     }
                 }
             }

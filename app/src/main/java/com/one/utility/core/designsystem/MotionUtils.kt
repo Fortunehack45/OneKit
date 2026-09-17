@@ -23,17 +23,24 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+
 enum class ButtonPressState { Pressed, Idle }
 
 /**
  * Adds an ultra-smooth, high-precision tactile press scale feedback with spring damping.
- * Gives cards and buttons a natural, physical, tactile feel at 60/120fps.
+ * Gives cards and buttons a natural, physical, tactile feel at 60/120fps with haptic click.
  */
 fun Modifier.pressFeedback(
     pressedScale: Float = 0.965f,
     onClick: (() -> Unit)? = null
 ): Modifier = composed {
     var buttonState by remember { mutableStateOf(ButtonPressState.Idle) }
+    val haptic = LocalHapticFeedback.current
+
     val scale by animateFloatAsState(
         targetValue = if (buttonState == ButtonPressState.Pressed) pressedScale else 1f,
         animationSpec = spring(
@@ -64,10 +71,34 @@ fun Modifier.pressFeedback(
                 Modifier.clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
-                    onClick = onClick
+                    onClick = {
+                        try {
+                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        } catch (_: Exception) {}
+                        onClick()
+                    }
                 )
             } else Modifier
         )
+}
+
+/**
+ * Standard professional accordion expand/collapse specifications for lists & sections
+ */
+object AccordionTransitions {
+    val expand = expandVertically(
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioNoBouncy,
+            stiffness = Spring.StiffnessMediumLow
+        )
+    ) + fadeIn(animationSpec = tween(durationMillis = 200))
+
+    val collapse = shrinkVertically(
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioNoBouncy,
+            stiffness = Spring.StiffnessMediumLow
+        )
+    ) + fadeOut(animationSpec = tween(durationMillis = 160))
 }
 
 /**
@@ -94,3 +125,4 @@ object ScreenTransitions {
         animationSpec = tween(durationMillis = 280, easing = FastOutSlowInEasing)
     ) + fadeOut(animationSpec = tween(durationMillis = 220))
 }
+

@@ -10,6 +10,10 @@ import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.unit.dp
+
 data class AppColors(
     val isDark: Boolean,
     val canvasBackground: Color,
@@ -23,6 +27,8 @@ data class AppColors(
     val dockBackground: Color,
     val primaryButton: Color,
     val onPrimaryButton: Color,
+    val accentPrimary: Color,
+    val accentContainer: Color,
     val bentoHoneySubtle: Color,
     val bentoSkySubtle: Color,
     val bentoPinkSubtle: Color,
@@ -30,6 +36,24 @@ data class AppColors(
 ) {
     val surfaceCard: Color get() = cardSurface
     val textTertiary: Color get() = textMuted
+}
+
+/**
+ * Enforced 4-Tier Shape Lock (Appllama Law):
+ * - Large Containers & Hero Cards: 22.dp
+ * - Interactive Cards & Sheets: 18.dp
+ * - Sub-Cards & Grouped Rows: 14.dp
+ * - Control Chips & Form Fields: 12.dp
+ * - Badges & Micro Tags: 8.dp
+ * - Action Pills & Navigation Docks: CircleShape (pure pill)
+ */
+object AppShapes {
+    val Hero = RoundedCornerShape(22.dp)
+    val Card = RoundedCornerShape(18.dp)
+    val SubCard = RoundedCornerShape(14.dp)
+    val Chip = RoundedCornerShape(12.dp)
+    val Badge = RoundedCornerShape(8.dp)
+    val Pill = CircleShape
 }
 
 private val LightAppColors = AppColors(
@@ -45,6 +69,8 @@ private val LightAppColors = AppColors(
     dockBackground = FrostedGlassLight,
     primaryButton = DockObsidian,
     onPrimaryButton = Color.White,
+    accentPrimary = AccentIndigo,
+    accentContainer = AccentIndigoContainerLight,
     bentoHoneySubtle = BentoHoneyLight,
     bentoSkySubtle = BentoSkyLight,
     bentoPinkSubtle = BentoPinkLight,
@@ -64,6 +90,8 @@ private val DarkAppColors = AppColors(
     dockBackground = FrostedGlassDark,
     primaryButton = Color(0xFF2E313D),
     onPrimaryButton = Color.White,
+    accentPrimary = AccentIndigoDark,
+    accentContainer = AccentIndigoContainerDark,
     bentoHoneySubtle = BentoHoney.copy(alpha = 0.18f),
     bentoSkySubtle = BentoSky.copy(alpha = 0.18f),
     bentoPinkSubtle = BentoPink.copy(alpha = 0.18f),
@@ -82,6 +110,9 @@ object AppTheme {
         @Composable
         @ReadOnlyComposable
         get() = MaterialTheme.typography
+
+    val shapes: AppShapes
+        get() = AppShapes
 }
 
 @Composable
@@ -119,10 +150,10 @@ fun accentButtonColors(accentColor: Color): androidx.compose.material3.ButtonCol
 }
 
 private val LightColorScheme = lightColorScheme(
-    primary = DockObsidian,
+    primary = AccentIndigo,
     onPrimary = Color.White,
-    primaryContainer = HeroLavender,
-    onPrimaryContainer = TextPrimary,
+    primaryContainer = AccentIndigoContainerLight,
+    onPrimaryContainer = AccentIndigo,
     secondary = BentoHoney,
     onSecondary = TextPrimary,
     background = CanvasBackground,
@@ -134,12 +165,12 @@ private val LightColorScheme = lightColorScheme(
     outline = BorderSubtle
 )
 
-// Matte Slate Grey Palette (Refined charcoal/slate, NOT pitch black)
+// Matte Slate Grey Palette (Refined charcoal/slate with Electric Indigo accent)
 private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFF818CF8),
+    primary = AccentIndigoDark,
     onPrimary = Color.White,
-    primaryContainer = Color(0xFF2E313D),
-    onPrimaryContainer = Color.White,
+    primaryContainer = AccentIndigoContainerDark,
+    onPrimaryContainer = AccentIndigoTextDark,
     secondary = BentoHoney,
     onSecondary = Color.White,
     background = DarkCanvasBackground,

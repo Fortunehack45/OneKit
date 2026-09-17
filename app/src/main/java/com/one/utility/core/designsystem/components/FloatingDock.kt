@@ -78,9 +78,10 @@ fun FloatingDock(
                     val isSelected = tab == selectedTab
                     val isDark = AppTheme.colors.isDark
 
+                    val activeAccent = MaterialTheme.colorScheme.primary
                     val iconColor by animateColorAsState(
                         targetValue = when {
-                            isSelected -> if (isDark) Color.White else DockObsidian
+                            isSelected -> activeAccent
                             else -> if (isDark) Color(0xFF888B9E) else Color(0xFF717588)
                         },
                         animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
@@ -89,7 +90,7 @@ fun FloatingDock(
 
                     val labelColor by animateColorAsState(
                         targetValue = when {
-                            isSelected -> if (isDark) Color.White else DockObsidian
+                            isSelected -> activeAccent
                             else -> if (isDark) Color(0xFF888B9E) else Color(0xFF717588)
                         },
                         animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
@@ -98,7 +99,7 @@ fun FloatingDock(
 
                     val pillBg by animateColorAsState(
                         targetValue = when {
-                            isSelected -> if (isDark) Color.White.copy(alpha = 0.12f) else DockObsidian.copy(alpha = 0.08f)
+                            isSelected -> if (isDark) activeAccent.copy(alpha = 0.18f) else activeAccent.copy(alpha = 0.10f)
                             else -> Color.Transparent
                         },
                         animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
@@ -106,7 +107,7 @@ fun FloatingDock(
                     )
 
                     val indicatorWidth by animateDpAsState(
-                        targetValue = if (isSelected) 12.dp else 0.dp,
+                        targetValue = if (isSelected) 14.dp else 0.dp,
                         animationSpec = spring(
                             dampingRatio = Spring.DampingRatioMediumBouncy,
                             stiffness = Spring.StiffnessLow
@@ -115,7 +116,7 @@ fun FloatingDock(
                     )
 
                     val iconScale by animateFloatAsState(
-                        targetValue = if (isSelected) 1.12f else 1.0f,
+                        targetValue = if (isSelected) 1.10f else 1.0f,
                         animationSpec = spring(
                             dampingRatio = Spring.DampingRatioMediumBouncy,
                             stiffness = Spring.StiffnessLow
@@ -159,7 +160,7 @@ fun FloatingDock(
                                     .height(2.5.dp)
                                     .width(indicatorWidth)
                                     .clip(CircleShape)
-                                    .background(if (isDark) MaterialTheme.colorScheme.primary else DockObsidian)
+                                    .background(activeAccent)
                             )
                         }
                     }

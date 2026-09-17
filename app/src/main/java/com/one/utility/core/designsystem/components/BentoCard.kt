@@ -13,21 +13,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.one.utility.core.designsystem.AppTheme
 import com.one.utility.core.designsystem.TextPrimary
+import com.one.utility.core.designsystem.pressFeedback
 
 @Composable
 fun BentoCard(
     backgroundColor: Color,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    cornerRadius: Dp = 28.dp,
+    cornerRadius: Dp = 22.dp,
     content: @Composable BoxScope.() -> Unit
 ) {
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(cornerRadius))
             .background(backgroundColor)
-            .clickable(onClick = onClick)
+            .pressFeedback(pressedScale = 0.97f) { onClick() }
             .padding(18.dp),
         content = content
     )

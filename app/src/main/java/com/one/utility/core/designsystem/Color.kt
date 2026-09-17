@@ -23,6 +23,13 @@ val DarkTextPrimary = Color(0xFFF4F5F8)
 val DarkTextSecondary = Color(0xFF9EA3B2)
 val DarkTextMuted = Color(0xFF727685)
 
+// Unified Brand Accent ("One accent, locked" - Appllama law)
+val AccentIndigo = Color(0xFF4F46E5)              // Primary Electric Indigo for Light Mode
+val AccentIndigoDark = Color(0xFF6366F1)          // Calibrated Electric Indigo for Dark Mode
+val AccentIndigoContainerLight = Color(0xFFEEF2FF)
+val AccentIndigoContainerDark = Color(0xFF25283C)
+val AccentIndigoTextDark = Color(0xFFA5B4FC)
+
 // Hero Banner (Soft lavender card from reference)
 val HeroLavender = Color(0xFFD4C7FF)
 val HeroLavenderDark = Color(0xFF8B72E8)
@@ -57,3 +64,4 @@ val PillInactiveBackground = Color(0xFFFFFFFF)
 val PillInactiveText = Color(0xFF636372)
 
 val BorderSubtle = Color(0xFFE9E7F2)
+

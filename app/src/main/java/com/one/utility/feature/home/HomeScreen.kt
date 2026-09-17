@@ -316,7 +316,7 @@ fun HomeScreen(
             // 2. Spotlight Minimalist Search Bar & Action Hub
             item {
                 Surface(
-                    shape = RoundedCornerShape(18.dp),
+                    shape = AppTheme.shapes.Card,
                     color = AppTheme.colors.cardSurface,
                     border = BorderStroke(1.dp, AppTheme.colors.borderSubtle),
                     shadowElevation = 2.dp,
@@ -386,11 +386,11 @@ fun HomeScreen(
                             exit = fadeOut()
                         ) {
                             Surface(
-                                shape = RoundedCornerShape(16.dp),
+                                shape = AppTheme.shapes.SubCard,
                                 color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable {
+                                    .pressFeedback {
                                         when (val intent = intentResult) {
                                             is ToolIntent.PercentageCalculation -> onNavigateToCalcWithExpression("${intent.percent}% of ${intent.total}")
                                             is ToolIntent.MathCalculation -> onNavigateToCalcWithExpression(intent.expression)
@@ -509,7 +509,7 @@ fun HomeScreen(
                                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                                     )
                                 },
-                                shape = RoundedCornerShape(14.dp),
+                                shape = AppTheme.shapes.Chip,
                                 colors = FilterChipDefaults.filterChipColors(
                                     selectedContainerColor = MaterialTheme.colorScheme.primary,
                                     selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
@@ -532,7 +532,7 @@ fun HomeScreen(
                         border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle),
                         modifier = Modifier
                             .size(36.dp)
-                            .clickable {
+                            .pressFeedback {
                                 val nextLayout = when (currentLayout) {
                                     "BENTO" -> "GRID"
                                     "GRID" -> "COMPACT"
@@ -565,7 +565,7 @@ fun HomeScreen(
                         border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle),
                         modifier = Modifier
                             .size(36.dp)
-                            .clickable {
+                            .pressFeedback {
                                 val allCollapsed = activeSections.isNotEmpty() && activeSections.all { collapsedSections[it.id] == true }
                                 activeSections.forEach { sec ->
                                     collapsedSections[sec.id] = !allCollapsed
@@ -598,11 +598,11 @@ fun HomeScreen(
                         LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                             items(recentTools) { tool ->
                                 Surface(
-                                    shape = RoundedCornerShape(14.dp),
+                                    shape = AppTheme.shapes.SubCard,
                                     color = AppTheme.colors.surfaceCard,
                                     modifier = Modifier
-                                        .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(14.dp))
-                                        .clickable { launchTool(tool.toolId, tool.title, tool.route) }
+                                        .border(1.dp, AppTheme.colors.borderSubtle, AppTheme.shapes.SubCard)
+                                        .pressFeedback { launchTool(tool.toolId, tool.title, tool.route) }
                                 ) {
                                     Row(
                                         modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
@@ -770,8 +770,8 @@ fun HomeScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(10.dp))
-                                .clickable {
+                                .clip(AppTheme.shapes.Chip)
+                                .pressFeedback {
                                     collapsedSections[section.id] = !isCollapsed
                                 }
                                 .padding(vertical = 8.dp, horizontal = 4.dp),
@@ -784,15 +784,15 @@ fun HomeScreen(
                             ) {
                                 Box(
                                     modifier = Modifier
-                                        .size(24.dp)
-                                        .clip(RoundedCornerShape(6.dp))
+                                        .size(26.dp)
+                                        .clip(AppTheme.shapes.Badge)
                                         .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(
                                         imageVector = section.icon,
                                         contentDescription = null,
-                                        modifier = Modifier.size(14.dp),
+                                        modifier = Modifier.size(15.dp),
                                         tint = MaterialTheme.colorScheme.primary
                                     )
                                 }
@@ -826,40 +826,321 @@ fun HomeScreen(
                         }
                     }
 
-                    if (!isCollapsed) {
-                        // Section Tools according to currentLayout
-                        when (currentLayout) {
-                        "GRID" -> {
-                            sectionTools.chunked(2).forEachIndexed { chunkIndex, rowTools ->
-                                item(key = "grid_${section.id}_$chunkIndex") {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                                    ) {
-                                        rowTools.forEach { tool ->
+                    // Section Tools with Fluid Animated Accordion Transition & Tactile Cards
+                    item(key = "section_body_${section.id}") {
+                        AnimatedVisibility(
+                            visible = !isCollapsed,
+                            enter = AccordionTransitions.expand,
+                            exit = AccordionTransitions.collapse
+                        ) {
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                when (currentLayout) {
+                                    "GRID" -> {
+                                        sectionTools.chunked(2).forEach { rowTools ->
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                            ) {
+                                                rowTools.forEach { tool ->
+                                                    Surface(
+                                                        shape = AppTheme.shapes.Card,
+                                                        color = AppTheme.colors.surfaceCard,
+                                                        modifier = Modifier
+                                                            .weight(1f)
+                                                            .border(1.dp, AppTheme.colors.borderSubtle, AppTheme.shapes.Card)
+                                                            .pressFeedback { launchTool(tool.id, tool.title, tool.route) }
+                                                    ) {
+                                                        Column(
+                                                            modifier = Modifier
+                                                                .fillMaxWidth()
+                                                                .padding(densityPadding),
+                                                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                                                        ) {
+                                                            Row(
+                                                                modifier = Modifier.fillMaxWidth(),
+                                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                                verticalAlignment = Alignment.CenterVertically
+                                                            ) {
+                                                                Box(
+                                                                    modifier = Modifier
+                                                                        .size(densityIconBoxSize)
+                                                                        .clip(AppTheme.shapes.Chip)
+                                                                        .background(getBadgeColorForCategory(tool.category).copy(alpha = 0.35f)),
+                                                                    contentAlignment = Alignment.Center
+                                                                ) {
+                                                                    Icon(
+                                                                        imageVector = getIconForTool(tool.route),
+                                                                        contentDescription = null,
+                                                                        tint = AppTheme.colors.textPrimary,
+                                                                        modifier = Modifier.size(densityIconSize)
+                                                                    )
+                                                                }
+                                                                tool.badge?.let { badge ->
+                                                                    Box(
+                                                                        modifier = Modifier
+                                                                            .clip(AppTheme.shapes.Badge)
+                                                                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
+                                                                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                                                                    ) {
+                                                                        Text(
+                                                                            text = badge,
+                                                                            fontSize = 9.sp,
+                                                                            fontWeight = FontWeight.Bold,
+                                                                            color = MaterialTheme.colorScheme.primary
+                                                                        )
+                                                                    }
+                                                                }
+                                                            }
+                                                            Text(
+                                                                text = tool.title,
+                                                                fontWeight = FontWeight.Bold,
+                                                                fontSize = densityTitleSize,
+                                                                color = AppTheme.colors.textPrimary,
+                                                                maxLines = 1,
+                                                                overflow = TextOverflow.Ellipsis
+                                                            )
+                                                            Text(
+                                                                text = tool.description,
+                                                                fontSize = densityDescSize,
+                                                                color = AppTheme.colors.textSecondary,
+                                                                maxLines = 2,
+                                                                overflow = TextOverflow.Ellipsis
+                                                            )
+                                                        }
+                                                    }
+                                                }
+                                                if (rowTools.size == 1) {
+                                                    Spacer(modifier = Modifier.weight(1f))
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    "COMPACT" -> {
+                                        sectionTools.forEach { tool ->
                                             Surface(
-                                                shape = RoundedCornerShape(20.dp),
+                                                shape = AppTheme.shapes.SubCard,
                                                 color = AppTheme.colors.surfaceCard,
                                                 modifier = Modifier
-                                                    .weight(1f)
-                                                    .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(20.dp))
-                                                    .clickable { launchTool(tool.id, tool.title, tool.route) }
+                                                    .fillMaxWidth()
+                                                    .border(1.dp, AppTheme.colors.borderSubtle, AppTheme.shapes.SubCard)
+                                                    .pressFeedback { launchTool(tool.id, tool.title, tool.route) }
+                                            ) {
+                                                Row(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .padding(horizontal = 14.dp, vertical = densityPadding * 0.75f),
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.SpaceBetween
+                                                ) {
+                                                    Row(
+                                                        modifier = Modifier.weight(1f),
+                                                        verticalAlignment = Alignment.CenterVertically,
+                                                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                                    ) {
+                                                        Box(
+                                                            modifier = Modifier
+                                                                .size(densityIconBoxSize * 0.85f)
+                                                                .clip(AppTheme.shapes.Badge)
+                                                                .background(getBadgeColorForCategory(tool.category).copy(alpha = 0.35f)),
+                                                            contentAlignment = Alignment.Center
+                                                        ) {
+                                                            Icon(
+                                                                imageVector = getIconForTool(tool.route),
+                                                                contentDescription = null,
+                                                                tint = AppTheme.colors.textPrimary,
+                                                                modifier = Modifier.size(densityIconSize * 0.85f)
+                                                            )
+                                                        }
+
+                                                        Column(modifier = Modifier.weight(1f)) {
+                                                            Row(
+                                                                verticalAlignment = Alignment.CenterVertically,
+                                                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                                            ) {
+                                                                Text(
+                                                                    text = tool.title,
+                                                                    fontWeight = FontWeight.Bold,
+                                                                    fontSize = densityTitleSize,
+                                                                    color = AppTheme.colors.textPrimary
+                                                                )
+                                                                tool.badge?.let { badge ->
+                                                                    Box(
+                                                                        modifier = Modifier
+                                                                            .clip(AppTheme.shapes.Badge)
+                                                                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
+                                                                            .padding(horizontal = 4.dp, vertical = 1.dp)
+                                                                    ) {
+                                                                        Text(
+                                                                            text = badge,
+                                                                            fontSize = 8.sp,
+                                                                            fontWeight = FontWeight.Bold,
+                                                                            color = MaterialTheme.colorScheme.primary
+                                                                        )
+                                                                    }
+                                                                }
+                                                            }
+                                                            Text(
+                                                                text = tool.description,
+                                                                fontSize = densityDescSize,
+                                                                color = AppTheme.colors.textSecondary,
+                                                                maxLines = 1,
+                                                                overflow = TextOverflow.Ellipsis
+                                                            )
+                                                        }
+                                                    }
+                                                    Icon(
+                                                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                                        contentDescription = "Open",
+                                                        tint = AppTheme.colors.textTertiary,
+                                                        modifier = Modifier.size(14.dp)
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    "COMFORT" -> {
+                                        sectionTools.forEach { tool ->
+                                            Surface(
+                                                shape = AppTheme.shapes.Hero,
+                                                color = AppTheme.colors.surfaceCard,
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .border(1.dp, AppTheme.colors.borderSubtle, AppTheme.shapes.Hero)
+                                                    .pressFeedback { launchTool(tool.id, tool.title, tool.route) }
                                             ) {
                                                 Column(
                                                     modifier = Modifier
                                                         .fillMaxWidth()
-                                                        .padding(densityPadding),
-                                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                                        .padding(densityPadding * 1.15f),
+                                                    verticalArrangement = Arrangement.spacedBy(10.dp)
                                                 ) {
                                                     Row(
                                                         modifier = Modifier.fillMaxWidth(),
                                                         horizontalArrangement = Arrangement.SpaceBetween,
                                                         verticalAlignment = Alignment.CenterVertically
                                                     ) {
+                                                        Row(
+                                                            verticalAlignment = Alignment.CenterVertically,
+                                                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                                        ) {
+                                                            Box(
+                                                                modifier = Modifier
+                                                                    .size(densityIconBoxSize)
+                                                                    .clip(AppTheme.shapes.SubCard)
+                                                                    .background(getBadgeColorForCategory(tool.category).copy(alpha = 0.35f)),
+                                                                contentAlignment = Alignment.Center
+                                                            ) {
+                                                                Icon(
+                                                                    imageVector = getIconForTool(tool.route),
+                                                                    contentDescription = null,
+                                                                    tint = AppTheme.colors.textPrimary,
+                                                                    modifier = Modifier.size(densityIconSize)
+                                                                )
+                                                            }
+                                                            Text(
+                                                                text = tool.category.title.uppercase(),
+                                                                fontSize = 11.sp,
+                                                                fontWeight = FontWeight.Bold,
+                                                                color = AppTheme.colors.textTertiary,
+                                                                letterSpacing = 0.8.sp
+                                                            )
+                                                        }
+                                                        tool.badge?.let { badge ->
+                                                            Box(
+                                                                modifier = Modifier
+                                                                    .clip(AppTheme.shapes.Badge)
+                                                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f))
+                                                                    .padding(horizontal = 8.dp, vertical = 3.dp)
+                                                            ) {
+                                                                Text(
+                                                                    text = badge,
+                                                                    fontSize = 10.sp,
+                                                                    fontWeight = FontWeight.Bold,
+                                                                    color = MaterialTheme.colorScheme.primary
+                                                                )
+                                                            }
+                                                        }
+                                                    }
+
+                                                    Text(
+                                                        text = tool.title,
+                                                        fontWeight = FontWeight.Bold,
+                                                        fontSize = (densityTitleSize.value + 2).sp,
+                                                        color = AppTheme.colors.textPrimary
+                                                    )
+
+                                                    Text(
+                                                        text = tool.description,
+                                                        fontSize = densityDescSize,
+                                                        color = AppTheme.colors.textSecondary,
+                                                        lineHeight = 18.sp
+                                                    )
+
+                                                    Row(
+                                                        modifier = Modifier.fillMaxWidth(),
+                                                        horizontalArrangement = Arrangement.End
+                                                    ) {
+                                                        Surface(
+                                                            shape = AppTheme.shapes.Chip,
+                                                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+                                                        ) {
+                                                            Row(
+                                                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                                                verticalAlignment = Alignment.CenterVertically,
+                                                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                                            ) {
+                                                                Text(
+                                                                    text = "Open Tool",
+                                                                    fontSize = 12.sp,
+                                                                    fontWeight = FontWeight.Bold,
+                                                                    color = MaterialTheme.colorScheme.primary
+                                                                )
+                                                                Icon(
+                                                                    Icons.AutoMirrored.Filled.ArrowForward,
+                                                                    contentDescription = null,
+                                                                    tint = MaterialTheme.colorScheme.primary,
+                                                                    modifier = Modifier.size(13.dp)
+                                                                )
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    else -> {
+                                        // Standard BENTO tool list per section
+                                        sectionTools.forEach { tool ->
+                                            Surface(
+                                                shape = AppTheme.shapes.Card,
+                                                color = AppTheme.colors.surfaceCard,
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .border(1.dp, AppTheme.colors.borderSubtle, AppTheme.shapes.Card)
+                                                    .pressFeedback { launchTool(tool.id, tool.title, tool.route) }
+                                            ) {
+                                                Row(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .padding(densityPadding),
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.SpaceBetween
+                                                ) {
+                                                    Row(
+                                                        modifier = Modifier.weight(1f),
+                                                        verticalAlignment = Alignment.CenterVertically,
+                                                        horizontalArrangement = Arrangement.spacedBy(14.dp)
+                                                    ) {
                                                         Box(
                                                             modifier = Modifier
                                                                 .size(densityIconBoxSize)
-                                                                .clip(RoundedCornerShape(12.dp))
+                                                                .clip(AppTheme.shapes.SubCard)
                                                                 .background(getBadgeColorForCategory(tool.category).copy(alpha = 0.35f)),
                                                             contentAlignment = Alignment.Center
                                                         ) {
@@ -870,233 +1151,49 @@ fun HomeScreen(
                                                                 modifier = Modifier.size(densityIconSize)
                                                             )
                                                         }
-                                                        tool.badge?.let { badge ->
-                                                            Box(
-                                                                modifier = Modifier
-                                                                    .clip(RoundedCornerShape(6.dp))
-                                                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
-                                                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+
+                                                        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                                            Row(
+                                                                verticalAlignment = Alignment.CenterVertically,
+                                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                                                             ) {
                                                                 Text(
-                                                                    text = badge,
-                                                                    fontSize = 9.sp,
+                                                                    text = tool.title,
                                                                     fontWeight = FontWeight.Bold,
-                                                                    color = MaterialTheme.colorScheme.primary
+                                                                    fontSize = densityTitleSize,
+                                                                    color = AppTheme.colors.textPrimary
                                                                 )
+                                                                tool.badge?.let { badge ->
+                                                                    Box(
+                                                                        modifier = Modifier
+                                                                            .clip(AppTheme.shapes.Badge)
+                                                                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
+                                                                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                                                                    ) {
+                                                                        Text(
+                                                                            text = badge,
+                                                                            fontSize = 9.sp,
+                                                                            fontWeight = FontWeight.Bold,
+                                                                            color = MaterialTheme.colorScheme.primary
+                                                                        )
+                                                                    }
+                                                                }
                                                             }
-                                                        }
-                                                    }
-                                                    Text(
-                                                        text = tool.title,
-                                                        fontWeight = FontWeight.Bold,
-                                                        fontSize = densityTitleSize,
-                                                        color = AppTheme.colors.textPrimary,
-                                                        maxLines = 1,
-                                                        overflow = TextOverflow.Ellipsis
-                                                    )
-                                                    Text(
-                                                        text = tool.description,
-                                                        fontSize = densityDescSize,
-                                                        color = AppTheme.colors.textSecondary,
-                                                        maxLines = 2,
-                                                        overflow = TextOverflow.Ellipsis
-                                                    )
-                                                }
-                                            }
-                                        }
-                                        if (rowTools.size == 1) {
-                                            Spacer(modifier = Modifier.weight(1f))
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        "COMPACT" -> {
-                            items(sectionTools, key = { "compact_${section.id}_${it.id}" }) { tool ->
-                                Surface(
-                                    shape = RoundedCornerShape(14.dp),
-                                    color = AppTheme.colors.surfaceCard,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(14.dp))
-                                        .clickable { launchTool(tool.id, tool.title, tool.route) }
-                                ) {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(horizontal = 14.dp, vertical = densityPadding * 0.75f),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ) {
-                                        Row(
-                                            modifier = Modifier.weight(1f),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                                        ) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(densityIconBoxSize * 0.85f)
-                                                    .clip(RoundedCornerShape(10.dp))
-                                                    .background(getBadgeColorForCategory(tool.category).copy(alpha = 0.35f)),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Icon(
-                                                    imageVector = getIconForTool(tool.route),
-                                                    contentDescription = null,
-                                                    tint = AppTheme.colors.textPrimary,
-                                                    modifier = Modifier.size(densityIconSize * 0.85f)
-                                                )
-                                            }
-                                            Column(modifier = Modifier.weight(1f)) {
-                                                Row(
-                                                    verticalAlignment = Alignment.CenterVertically,
-                                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                                                ) {
-                                                    Text(
-                                                        text = tool.title,
-                                                        fontWeight = FontWeight.Bold,
-                                                        fontSize = densityTitleSize,
-                                                        color = AppTheme.colors.textPrimary
-                                                    )
-                                                    tool.badge?.let { badge ->
-                                                        Box(
-                                                            modifier = Modifier
-                                                                .clip(RoundedCornerShape(4.dp))
-                                                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
-                                                                .padding(horizontal = 4.dp, vertical = 1.dp)
-                                                        ) {
                                                             Text(
-                                                                text = badge,
-                                                                fontSize = 8.sp,
-                                                                fontWeight = FontWeight.Bold,
-                                                                color = MaterialTheme.colorScheme.primary
+                                                                text = tool.description,
+                                                                fontSize = densityDescSize,
+                                                                color = AppTheme.colors.textSecondary,
+                                                                maxLines = 2,
+                                                                overflow = TextOverflow.Ellipsis
                                                             )
                                                         }
                                                     }
-                                                }
-                                                Text(
-                                                    text = tool.description,
-                                                    fontSize = densityDescSize,
-                                                    color = AppTheme.colors.textSecondary,
-                                                    maxLines = 1,
-                                                    overflow = TextOverflow.Ellipsis
-                                                )
-                                            }
-                                        }
-                                        Icon(
-                                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                                            contentDescription = "Open",
-                                            tint = AppTheme.colors.textTertiary,
-                                            modifier = Modifier.size(14.dp)
-                                        )
-                                    }
-                                }
-                            }
-                        }
 
-                        "COMFORT" -> {
-                            items(sectionTools, key = { "comfort_${section.id}_${it.id}" }) { tool ->
-                                Surface(
-                                    shape = RoundedCornerShape(22.dp),
-                                    color = AppTheme.colors.surfaceCard,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(22.dp))
-                                        .clickable { launchTool(tool.id, tool.title, tool.route) }
-                                ) {
-                                    Column(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(densityPadding * 1.15f),
-                                        verticalArrangement = Arrangement.spacedBy(10.dp)
-                                    ) {
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            horizontalArrangement = Arrangement.SpaceBetween,
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Row(
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.spacedBy(10.dp)
-                                            ) {
-                                                Box(
-                                                    modifier = Modifier
-                                                        .size(densityIconBoxSize)
-                                                        .clip(RoundedCornerShape(14.dp))
-                                                        .background(getBadgeColorForCategory(tool.category).copy(alpha = 0.35f)),
-                                                    contentAlignment = Alignment.Center
-                                                ) {
                                                     Icon(
-                                                        imageVector = getIconForTool(tool.route),
-                                                        contentDescription = null,
-                                                        tint = AppTheme.colors.textPrimary,
-                                                        modifier = Modifier.size(densityIconSize)
-                                                    )
-                                                }
-                                                Text(
-                                                    text = tool.category.title.uppercase(),
-                                                    fontSize = 11.sp,
-                                                    fontWeight = FontWeight.Bold,
-                                                    color = AppTheme.colors.textTertiary,
-                                                    letterSpacing = 0.8.sp
-                                                )
-                                            }
-                                            tool.badge?.let { badge ->
-                                                Box(
-                                                    modifier = Modifier
-                                                        .clip(RoundedCornerShape(8.dp))
-                                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f))
-                                                        .padding(horizontal = 8.dp, vertical = 3.dp)
-                                                ) {
-                                                    Text(
-                                                        text = badge,
-                                                        fontSize = 10.sp,
-                                                        fontWeight = FontWeight.Bold,
-                                                        color = MaterialTheme.colorScheme.primary
-                                                    )
-                                                }
-                                            }
-                                        }
-
-                                        Text(
-                                            text = tool.title,
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = (densityTitleSize.value + 2).sp,
-                                            color = AppTheme.colors.textPrimary
-                                        )
-
-                                        Text(
-                                            text = tool.description,
-                                            fontSize = densityDescSize,
-                                            color = AppTheme.colors.textSecondary,
-                                            lineHeight = 18.sp
-                                        )
-
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            horizontalArrangement = Arrangement.End
-                                        ) {
-                                            Surface(
-                                                shape = RoundedCornerShape(12.dp),
-                                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
-                                            ) {
-                                                Row(
-                                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                                    verticalAlignment = Alignment.CenterVertically,
-                                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                                ) {
-                                                    Text(
-                                                        text = "Open Tool",
-                                                        fontSize = 12.sp,
-                                                        fontWeight = FontWeight.Bold,
-                                                        color = MaterialTheme.colorScheme.primary
-                                                    )
-                                                    Icon(
-                                                        Icons.AutoMirrored.Filled.ArrowForward,
-                                                        contentDescription = null,
-                                                        tint = MaterialTheme.colorScheme.primary,
-                                                        modifier = Modifier.size(13.dp)
+                                                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                                        contentDescription = "Open",
+                                                        tint = AppTheme.colors.textTertiary,
+                                                        modifier = Modifier.size(16.dp)
                                                     )
                                                 }
                                             }
@@ -1105,131 +1202,72 @@ fun HomeScreen(
                                 }
                             }
                         }
-
-                        else -> {
-                            // Standard BENTO tool list per section
-                            items(sectionTools, key = { "bento_${section.id}_${it.id}" }) { tool ->
-                                Surface(
-                                    shape = RoundedCornerShape(20.dp),
-                                    color = AppTheme.colors.surfaceCard,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(20.dp))
-                                        .clickable { launchTool(tool.id, tool.title, tool.route) }
-                                ) {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(densityPadding),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ) {
-                                        Row(
-                                            modifier = Modifier.weight(1f),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(14.dp)
-                                        ) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(densityIconBoxSize)
-                                                    .clip(RoundedCornerShape(14.dp))
-                                                    .background(getBadgeColorForCategory(tool.category).copy(alpha = 0.35f)),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Icon(
-                                                    imageVector = getIconForTool(tool.route),
-                                                    contentDescription = null,
-                                                    tint = AppTheme.colors.textPrimary,
-                                                    modifier = Modifier.size(densityIconSize)
-                                                )
-                                            }
-
-                                            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                                                Row(
-                                                    verticalAlignment = Alignment.CenterVertically,
-                                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                                ) {
-                                                    Text(
-                                                        text = tool.title,
-                                                        fontWeight = FontWeight.Bold,
-                                                        fontSize = densityTitleSize,
-                                                        color = AppTheme.colors.textPrimary
-                                                    )
-                                                    tool.badge?.let { badge ->
-                                                        Box(
-                                                            modifier = Modifier
-                                                                .clip(RoundedCornerShape(6.dp))
-                                                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
-                                                                .padding(horizontal = 6.dp, vertical = 2.dp)
-                                                        ) {
-                                                            Text(
-                                                                text = badge,
-                                                                fontSize = 9.sp,
-                                                                fontWeight = FontWeight.Bold,
-                                                                color = MaterialTheme.colorScheme.primary
-                                                            )
-                                                        }
-                                                    }
-                                                }
-                                                Text(
-                                                    text = tool.description,
-                                                    fontSize = densityDescSize,
-                                                    color = AppTheme.colors.textSecondary,
-                                                    maxLines = 2,
-                                                    overflow = TextOverflow.Ellipsis
-                                                )
-                                            }
-                                        }
-
-                                        Icon(
-                                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                                            contentDescription = "Open",
-                                            tint = AppTheme.colors.textTertiary,
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
                     }
                 }
             }
 
+            // High-polish Zero-Match Empty State (Appllama Law: Composed empty states)
             if (displayedTools.isEmpty()) {
                 item {
                     Surface(
-                        shape = RoundedCornerShape(20.dp),
+                        shape = AppTheme.shapes.Card,
                         color = AppTheme.colors.surfaceCard,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 16.dp)
-                            .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(20.dp))
+                            .border(1.dp, AppTheme.colors.borderSubtle, AppTheme.shapes.Card)
                     ) {
                         Column(
-                            modifier = Modifier.padding(24.dp),
+                            modifier = Modifier.padding(28.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(52.dp)
+                                    .clip(AppTheme.shapes.Chip)
+                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.SearchOff,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(26.dp)
+                                )
+                            }
                             Text(
-                                text = "No tools matching \"${if (searchQuery.isNotBlank()) searchQuery else selectedCategory}\"",
+                                text = "No utilities found",
                                 color = AppTheme.colors.textPrimary,
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 15.sp
+                                fontSize = 16.sp
                             )
                             Text(
-                                text = "Try adjusting your search or switching to \"All\"",
+                                text = if (searchQuery.isNotBlank()) {
+                                    "No tools matched \"$searchQuery\". Try checking the spelling or browse all categories."
+                                } else {
+                                    "No tools found in \"$selectedCategory\". Switch back to view all tools."
+                                },
                                 color = AppTheme.colors.textSecondary,
-                                fontSize = 12.sp
+                                fontSize = 13.sp,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                lineHeight = 18.sp
                             )
-                            OutlinedButton(
-                                onClick = {
+                            Surface(
+                                shape = AppTheme.shapes.Pill,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.pressFeedback {
                                     searchQuery = ""
                                     selectedCategory = "All"
-                                },
-                                shape = RoundedCornerShape(12.dp)
+                                }
                             ) {
-                                Text("Show All Tools", color = AppTheme.colors.textPrimary)
+                                Text(
+                                    text = "Show All Tools",
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(horizontal = 18.dp, vertical = 8.dp)
+                                )
                             }
                         }
                     }

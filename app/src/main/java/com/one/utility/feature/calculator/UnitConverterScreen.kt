@@ -197,7 +197,7 @@ fun UnitConverterScreen(
                                 selected = isSelected,
                                 borderColor = if (isSelected) Color.Transparent else AppTheme.colors.borderSubtle
                             ),
-                            shape = RoundedCornerShape(14.dp)
+                            shape = AppTheme.shapes.Chip
                         )
                     }
                 }
@@ -208,8 +208,8 @@ fun UnitConverterScreen(
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(22.dp)),
-                    shape = RoundedCornerShape(22.dp),
+                        .border(1.dp, AppTheme.colors.borderSubtle, AppTheme.shapes.Hero),
+                    shape = AppTheme.shapes.Hero,
                     color = AppTheme.colors.surfaceCard
                 ) {
                     Column(
@@ -243,13 +243,13 @@ fun UnitConverterScreen(
                             Surface(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clip(RoundedCornerShape(14.dp))
-                                    .clickable {
+                                    .clip(AppTheme.shapes.SubCard)
+                                    .pressFeedback {
                                         pickerSearchQuery = ""
                                         pickerTarget = "FROM"
                                     },
                                 color = AppTheme.colors.canvasBackground,
-                                shape = RoundedCornerShape(14.dp),
+                                shape = AppTheme.shapes.SubCard,
                                 border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle)
                             ) {
                                 Row(
@@ -294,7 +294,7 @@ fun UnitConverterScreen(
                                 ),
                                 keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
                                 modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(14.dp),
+                                shape = AppTheme.shapes.SubCard,
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                                     unfocusedBorderColor = AppTheme.colors.borderSubtle,
@@ -327,7 +327,7 @@ fun UnitConverterScreen(
                                     SuggestionChip(
                                         onClick = { inputValue = preset },
                                         label = { Text(preset, fontSize = 11.sp, fontWeight = FontWeight.Medium) },
-                                        shape = RoundedCornerShape(8.dp),
+                                        shape = AppTheme.shapes.Badge,
                                         colors = SuggestionChipDefaults.suggestionChipColors(
                                             containerColor = AppTheme.colors.canvasBackground,
                                             labelColor = AppTheme.colors.textSecondary
@@ -386,13 +386,13 @@ fun UnitConverterScreen(
                             Surface(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clip(RoundedCornerShape(14.dp))
-                                    .clickable {
+                                    .clip(AppTheme.shapes.SubCard)
+                                    .pressFeedback {
                                         pickerSearchQuery = ""
                                         pickerTarget = "TO"
                                     },
                                 color = AppTheme.colors.canvasBackground,
-                                shape = RoundedCornerShape(14.dp),
+                                shape = AppTheme.shapes.SubCard,
                                 border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle)
                             ) {
                                 Row(
@@ -428,7 +428,7 @@ fun UnitConverterScreen(
                             // Result Display Box
                             Surface(
                                 modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(16.dp),
+                                shape = AppTheme.shapes.SubCard,
                                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
                                 border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f))
                             ) {
@@ -522,9 +522,9 @@ fun UnitConverterScreen(
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(14.dp))
-                        .clickable { toUnit = unitDef },
-                    shape = RoundedCornerShape(14.dp),
+                        .clip(AppTheme.shapes.SubCard)
+                        .pressFeedback { toUnit = unitDef },
+                    shape = AppTheme.shapes.SubCard,
                     color = if (isCurrentTarget) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else AppTheme.colors.surfaceCard,
                     border = androidx.compose.foundation.BorderStroke(
                         1.dp,
@@ -597,6 +597,7 @@ fun UnitConverterScreen(
         AlertDialog(
             onDismissRequest = { pickerTarget = null },
             containerColor = AppTheme.colors.surfaceCard,
+            shape = AppTheme.shapes.Hero,
             title = {
                 Text(
                     text = "Select ${if (pickerTarget == "FROM") "Source" else "Target"} Unit",
@@ -628,7 +629,7 @@ fun UnitConverterScreen(
                         },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
+                        shape = AppTheme.shapes.Chip,
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
                             unfocusedBorderColor = AppTheme.colors.borderSubtle,
@@ -645,8 +646,8 @@ fun UnitConverterScreen(
                             Surface(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .clickable {
+                                    .clip(AppTheme.shapes.SubCard)
+                                    .pressFeedback {
                                         if (pickerTarget == "FROM") {
                                             fromUnit = unitDef
                                         } else {
@@ -654,7 +655,7 @@ fun UnitConverterScreen(
                                         }
                                         pickerTarget = null
                                     },
-                                shape = RoundedCornerShape(10.dp),
+                                shape = AppTheme.shapes.SubCard,
                                 color = Color.Transparent
                             ) {
                                 Row(
