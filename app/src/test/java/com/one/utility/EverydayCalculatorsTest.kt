@@ -36,4 +36,35 @@ class EverydayCalculatorsTest {
         assertEquals(40.0, res.fuelNeeded, 0.001)
         assertEquals(60.0, res.totalCost, 0.001)
     }
+
+    @Test
+    fun testDiscount() {
+        val res = engine.calculateDiscount(originalPrice = 100.0, discountPercent = 20.0)
+        assertEquals(80.0, res.finalPrice, 0.001)
+        assertEquals(20.0, res.savedAmount, 0.001)
+    }
+
+    @Test
+    fun testTipAndSplit() {
+        val res = engine.calculateTipAndSplit(billAmount = 100.0, tipPercent = 15.0, numberOfPeople = 2)
+        assertEquals(15.0, res.tipAmount, 0.001)
+        assertEquals(115.0, res.grandTotal, 0.001)
+        assertEquals(57.5, res.perPersonAmount, 0.001)
+    }
+
+    @Test
+    fun testCompoundInterest() {
+        val res = engine.calculateCompoundInterest(principal = 1000.0, annualRatePercent = 5.0, timeYears = 1.0, compoundingFrequencyPerYear = 1)
+        assertEquals(1050.0, res.totalAmount, 0.01)
+        assertEquals(50.0, res.totalInterestEarned, 0.01)
+    }
+
+    @Test
+    fun testDateDifference() {
+        val start = java.time.LocalDate.of(2023, 1, 1)
+        val end = java.time.LocalDate.of(2024, 1, 1)
+        val res = engine.calculateDateDifference(start, end)
+        assertEquals(1, res.years)
+        assertEquals(365L, res.totalDays)
+    }
 }

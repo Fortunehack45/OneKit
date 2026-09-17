@@ -69,4 +69,72 @@ class ToolRouterTest {
         assertTrue(intent is ToolIntent.MathCalculation)
         assertEquals("450000 * 0.17", (intent as ToolIntent.MathCalculation).expression)
     }
+
+    @Test
+    fun testPercentageWithCurrencySymbolAndQuestion() {
+        val intent = router.resolve("What's 15% of ₦850,000?")
+        assertTrue(intent is ToolIntent.PercentageCalculation)
+        val calc = intent as ToolIntent.PercentageCalculation
+        assertEquals(15.0, calc.percent, 0.001)
+        assertEquals(850000.0, calc.total, 0.001)
+        assertEquals("₦127,500", calc.formattedResult)
+    }
+
+    @Test
+    fun testDigitalDataUnitConversion() {
+        val intent = router.resolve("Convert 25 GB to MB")
+        assertTrue(intent is ToolIntent.UnitConversion)
+        val conv = intent as ToolIntent.UnitConversion
+        assertEquals(25.0, conv.value, 0.001)
+        assertEquals("gb", conv.fromUnit)
+        assertEquals("mb", conv.toUnit)
+        assertEquals("25,600 MB", conv.formattedResult)
+    }
+
+    @Test
+    fun testMakePhotosSmallerAndTurnIntoPdfWorkflow() {
+        val intent = router.resolve("Make these photos smaller and turn them into a PDF")
+        assertTrue(intent is ToolIntent.ChainedWorkflow)
+        val workflow = intent as ToolIntent.ChainedWorkflow
+        assertEquals(listOf("resizer", "compressor", "image_to_pdf"), workflow.stepNames)
+        assertEquals("Select photos → Resize → Compress → PDF → Share", workflow.displayPipeline)
+    }
+
+    @Test
+    fun testRemoveBackgroundAndMake1080pxWorkflow() {
+        val intent = router.resolve("Remove the background and make it 1080px")
+        assertTrue(intent is ToolIntent.ChainedWorkflow)
+        val workflow = intent as ToolIntent.ChainedWorkflow
+        assertEquals(listOf("background_remover", "resizer"), workflow.stepNames)
+        assertEquals("Select image → Background Removal → Resize → Save", workflow.displayPipeline)
+    }
+
+    @Test
+    fun testScanToPdfWorkflow() {
+        val intent = router.resolve("Scan to pdf")
+        assertTrue(intent is ToolIntent.ChainedWorkflow)
+        val workflow = intent as ToolIntent.ChainedWorkflow
+        assertEquals(listOf("document_scanner", "image_to_pdf"), workflow.stepNames)
+    }
+
+    @Test
+    fun testPdfToolboxRouting() {
+        assertEquals(ToolIntent.PdfSplitter, router.resolve("split pdf"))
+        assertEquals(ToolIntent.PdfSplitter, router.resolve("pdf to image"))
+        assertEquals(ToolIntent.PdfSplitter, router.resolve("pdf to images"))
+        assertEquals(ToolIntent.PdfMerger, router.resolve("merge pdf"))
+    }
+
+    @Test
+    fun testStorageCleanerRouting() {
+        assertEquals(ToolIntent.StorageCleaner, router.resolve("duplicate files"))
+        assertEquals(ToolIntent.StorageCleaner, router.resolve("clean cache"))
+        assertEquals(ToolIntent.StorageCleaner, router.resolve("storage cleaner"))
+    }
+
+    @Test
+    fun testCurrencyAndTimeRouting() {
+        assertEquals(ToolIntent.CurrencyAndTime, router.resolve("currency"))
+        assertEquals(ToolIntent.CurrencyAndTime, router.resolve("world clock"))
+    }
 }

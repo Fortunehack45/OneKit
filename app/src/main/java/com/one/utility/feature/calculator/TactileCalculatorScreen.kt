@@ -62,6 +62,16 @@ fun TactileCalculatorScreen(
     var isScientific by remember { mutableStateOf(false) }
     var isDeg by remember { mutableStateOf(true) }
 
+    LaunchedEffect(initialExpression) {
+        if (!initialExpression.isNullOrBlank()) {
+            displayExpression = initialExpression
+            val eval = engine.evaluate(initialExpression)
+            if (eval.isSuccess) {
+                currentResult = engine.formatResult(eval.getOrThrow())
+            }
+        }
+    }
+
     fun vibrate() {
         try {
             view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)

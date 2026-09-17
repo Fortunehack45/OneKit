@@ -11,14 +11,23 @@ class TactileCalculatorEngine {
 
     fun evaluate(expression: String): Result<Double> {
         return runCatching {
-            val sanitized = expression
+            var expr = expression
                 .replace("×", "*")
                 .replace("÷", "/")
                 .replace("−", "-")
                 .replace("π", Math.PI.toString())
                 .replace("e", Math.E.toString())
+                .replace(",", "")
 
-            val tokens = tokenize(sanitized)
+            // Handle percentage patterns: e.g. "15% of 850000", "15% * 850000", "50%"
+            expr = expr.replace(Regex("""(?i)(\d+(?:\.\d+)?)\s*%\s*(?:of|\*)\s*(\d+(?:\.\d+)?)""")) {
+                "(${it.groupValues[1]} * 0.01 * ${it.groupValues[2]})"
+            }
+            expr = expr.replace(Regex("""(\d+(?:\.\d+)?)\s*%""")) {
+                "(${it.groupValues[1]} * 0.01)"
+            }
+
+            val tokens = tokenize(expr)
             val postfix = infixToPostfix(tokens)
             evaluatePostfix(postfix)
         }

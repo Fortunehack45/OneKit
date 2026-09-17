@@ -187,4 +187,29 @@ object ToolRegistry {
 
     fun findByRoute(route: String): ToolDefinition? = tools.find { it.route == route }
     fun findByCategory(category: ToolCategory): List<ToolDefinition> = tools.filter { it.category == category }
+
+    val sections = listOf(
+        ToolSection("images", "Images", "📸", listOf("image_to_pdf", "background_remover", "image_compressor", "image_resizer", "image_cropper", "image_converter")),
+        ToolSection("pdfs", "PDF Documents", "📄", listOf("pdf_toolbox", "image_to_pdf")),
+        ToolSection("scanner", "Scanner & QR", "📷", listOf("document_scanner", "qr_generator")),
+        ToolSection("files", "Storage & Files", "🧹", listOf("storage_cleaner", "batch_rename")),
+        ToolSection("calculators", "Calculators", "🧮", listOf("calculator", "everyday_calculators")),
+        ToolSection("converters", "Converters", "🔄", listOf("unit_converter", "image_converter", "currency_time")),
+        ToolSection("money_time", "Money & Time", "💰", listOf("everyday_calculators", "currency_time")),
+        ToolSection("text", "Text Tools", "✍️", listOf("text_tools", "cool_fonts")),
+        ToolSection("tech", "Privacy & Tech", "🔐", listOf("password_generator", "dev_tools"))
+    )
+
+    fun findSectionById(id: String): ToolSection? = sections.find { it.id == id }
+}
+
+data class ToolSection(
+    val id: String,
+    val title: String,
+    val emoji: String,
+    val toolIds: List<String>
+) {
+    fun getTools(): List<ToolDefinition> {
+        return toolIds.mapNotNull { id -> ToolRegistry.tools.find { it.id == id } }
+    }
 }

@@ -9,7 +9,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -50,20 +50,20 @@ fun ToolsListScreen(
             verticalArrangement = Arrangement.spacedBy(14.dp),
             contentPadding = PaddingValues(bottom = 140.dp)
         ) {
-            ToolCategory.values().forEach { category ->
-                val categoryTools = ToolRegistry.findByCategory(category)
-                if (categoryTools.isNotEmpty()) {
+            ToolRegistry.sections.forEach { section ->
+                val sectionTools = section.getTools()
+                if (sectionTools.isNotEmpty()) {
                     item {
                         Text(
-                            text = category.title,
-                            fontSize = 18.sp,
+                            text = "${section.emoji} ${section.title} (${sectionTools.size})",
+                            fontSize = 17.sp,
                             fontWeight = FontWeight.Bold,
                             color = AppTheme.colors.textPrimary,
                             modifier = Modifier.padding(top = 10.dp, bottom = 4.dp)
                         )
                     }
 
-                    items(categoryTools) { tool ->
+                    items(sectionTools) { tool ->
                         Surface(
                             shape = RoundedCornerShape(20.dp),
                             color = AppTheme.colors.cardSurface,
@@ -96,7 +96,7 @@ fun ToolsListScreen(
                                     }
                                     Text(tool.description, fontSize = 12.sp, color = AppTheme.colors.textSecondary, modifier = Modifier.padding(top = 4.dp))
                                 }
-                                Icon(Icons.Default.ArrowForward, contentDescription = null, tint = AppTheme.colors.textSecondary, modifier = Modifier.size(18.dp))
+                                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = AppTheme.colors.textSecondary, modifier = Modifier.size(18.dp))
                             }
                         }
                     }

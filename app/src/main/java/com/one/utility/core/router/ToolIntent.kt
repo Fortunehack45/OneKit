@@ -21,14 +21,33 @@ sealed class ToolIntent {
     object Calculator : ToolIntent()
     object UnitConverter : ToolIntent()
     object EverydayCalculators : ToolIntent()
+    object CurrencyAndTime : ToolIntent()
 
     // Deterministic Math & Calculations
-    data class MathCalculation(val expression: String) : ToolIntent()
-    data class PercentageCalculation(val percent: Double, val total: Double) : ToolIntent()
-    data class UnitConversion(val value: Double, val fromUnit: String, val toUnit: String) : ToolIntent()
+    data class MathCalculation(
+        val expression: String,
+        val formattedResult: String
+    ) : ToolIntent()
+
+    data class PercentageCalculation(
+        val percent: Double,
+        val total: Double,
+        val currencyPrefix: String = "",
+        val formattedResult: String
+    ) : ToolIntent()
+
+    data class UnitConversion(
+        val value: Double,
+        val fromUnit: String,
+        val toUnit: String,
+        val formattedResult: String
+    ) : ToolIntent()
 
     // Chained Multi-Tool Workflows (e.g. "crop -> compress -> pdf")
-    data class ChainedWorkflow(val stepNames: List<String>) : ToolIntent()
+    data class ChainedWorkflow(
+        val stepNames: List<String>,
+        val displayPipeline: String
+    ) : ToolIntent()
 
     object Unknown : ToolIntent()
 }

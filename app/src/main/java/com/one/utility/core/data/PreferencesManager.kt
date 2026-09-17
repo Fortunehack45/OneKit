@@ -22,7 +22,17 @@ class PreferencesManager(context: Context) {
         private const val KEY_HAPTICS = "haptics_enabled"
         private const val KEY_THEME = "app_theme" // SYSTEM, LIGHT, DARK
         private const val KEY_AUTOSAVE = "autosave_outputs"
+        private const val KEY_HOME_LAYOUT = "home_layout_mode" // BENTO, GRID, COMPACT, COMFORT
+        private const val KEY_HOME_DENSITY = "home_card_density" // COMPACT, NORMAL, SPACIOUS
     }
+
+    var homeLayout: String
+        get() = prefs.getString(KEY_HOME_LAYOUT, "BENTO") ?: "BENTO"
+        set(value) = prefs.edit().putString(KEY_HOME_LAYOUT, value).apply()
+
+    var homeDensity: String
+        get() = prefs.getString(KEY_HOME_DENSITY, "NORMAL") ?: "NORMAL"
+        set(value) = prefs.edit().putString(KEY_HOME_DENSITY, value).apply()
 
     var isHistoryEnabled: Boolean
         get() = prefs.getBoolean(KEY_HISTORY_ENABLED, true)
