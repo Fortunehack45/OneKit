@@ -214,7 +214,7 @@ fun HomeScreen(
                 .padding(paddingValues)
                 .padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(bottom = 140.dp)
+            contentPadding = PaddingValues(bottom = 104.dp)
         ) {
             // 1. Refined Brand Header with Layout Customizer & Offline Badge
             item {
@@ -487,100 +487,37 @@ fun HomeScreen(
             }
 
             // 3. Category Filter Chips (10-category organized bar) with Quick Layout Switcher
+            // 3. Category Filter Chips (Clean, horizontal scrolling pill row)
             item {
-                Row(
+                LazyRow(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    LazyRow(
-                        modifier = Modifier.weight(1f),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(categories) { cat ->
-                            val isSelected = cat == selectedCategory
-                            FilterChip(
-                                selected = isSelected,
-                                onClick = { selectedCategory = cat },
-                                label = {
-                                    Text(
-                                        text = cat,
-                                        fontSize = 13.sp,
-                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
-                                    )
-                                },
-                                shape = AppTheme.shapes.Chip,
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = MaterialTheme.colorScheme.primary,
-                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
-                                    containerColor = AppTheme.colors.surfaceCard,
-                                    labelColor = AppTheme.colors.textSecondary
-                                ),
-                                border = FilterChipDefaults.filterChipBorder(
-                                    enabled = true,
-                                    selected = isSelected,
-                                    borderColor = if (isSelected) Color.Transparent else AppTheme.colors.borderSubtle
+                    items(categories) { cat ->
+                        val isSelected = cat == selectedCategory
+                        FilterChip(
+                            selected = isSelected,
+                            onClick = { selectedCategory = cat },
+                            label = {
+                                Text(
+                                    text = cat,
+                                    fontSize = 13.sp,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                                 )
+                            },
+                            shape = AppTheme.shapes.Chip,
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                                containerColor = AppTheme.colors.surfaceCard,
+                                labelColor = AppTheme.colors.textSecondary
+                            ),
+                            border = FilterChipDefaults.filterChipBorder(
+                                enabled = true,
+                                selected = isSelected,
+                                borderColor = if (isSelected) Color.Transparent else AppTheme.colors.borderSubtle
                             )
-                        }
-                    }
-
-                    // Quick 1-Tap Layout Cycle Button
-                    Surface(
-                        shape = CircleShape,
-                        color = AppTheme.colors.surfaceCard,
-                        border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle),
-                        modifier = Modifier
-                            .size(36.dp)
-                            .pressFeedback {
-                                val nextLayout = when (currentLayout) {
-                                    "BENTO" -> "GRID"
-                                    "GRID" -> "COMPACT"
-                                    "COMPACT" -> "COMFORT"
-                                    else -> "BENTO"
-                                }
-                                currentLayout = nextLayout
-                                prefs.homeLayout = nextLayout
-                            }
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                when (currentLayout) {
-                                    "GRID" -> Icons.Outlined.GridView
-                                    "COMPACT" -> Icons.Outlined.ViewStream
-                                    "COMFORT" -> Icons.Outlined.ViewAgenda
-                                    else -> Icons.Outlined.DashboardCustomize
-                                },
-                                contentDescription = "Quick Toggle Layout",
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(17.dp)
-                            )
-                        }
-                    }
-
-                    // Quick Collapse / Expand All Categories Button
-                    Surface(
-                        shape = CircleShape,
-                        color = AppTheme.colors.surfaceCard,
-                        border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle),
-                        modifier = Modifier
-                            .size(36.dp)
-                            .pressFeedback {
-                                val allCollapsed = activeSections.isNotEmpty() && activeSections.all { collapsedSections[it.id] == true }
-                                activeSections.forEach { sec ->
-                                    collapsedSections[sec.id] = !allCollapsed
-                                }
-                            }
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            val allCollapsed = activeSections.isNotEmpty() && activeSections.all { collapsedSections[it.id] == true }
-                            Icon(
-                                imageVector = if (allCollapsed) Icons.Default.UnfoldMore else Icons.Default.UnfoldLess,
-                                contentDescription = if (allCollapsed) "Expand All Categories" else "Collapse All Categories",
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(17.dp)
-                            )
-                        }
+                        )
                     }
                 }
             }

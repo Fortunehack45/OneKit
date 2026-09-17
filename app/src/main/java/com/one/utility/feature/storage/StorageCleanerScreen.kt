@@ -97,7 +97,7 @@ fun StorageCleanerScreen(
                 .padding(padding)
                 .padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(bottom = 140.dp)
+            contentPadding = PaddingValues(bottom = 28.dp)
         ) {
             // Action Notification Banner
             actionMessage?.let { msg ->

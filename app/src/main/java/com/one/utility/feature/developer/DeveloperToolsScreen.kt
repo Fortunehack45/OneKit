@@ -157,7 +157,7 @@ fun DeveloperToolsScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = 20.dp),
-            contentPadding = PaddingValues(bottom = 140.dp),
+            contentPadding = PaddingValues(bottom = 28.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Horizontal scrollable Tabs
@@ -166,7 +166,7 @@ fun DeveloperToolsScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    items(DevToolTab.values()) { tab ->
+                    items(DevToolTab.entries) { tab ->
                         val isSelected = selectedTab == tab
                         Surface(
                             onClick = { selectedTab = tab },

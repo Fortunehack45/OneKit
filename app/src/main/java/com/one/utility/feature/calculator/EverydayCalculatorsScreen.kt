@@ -6,7 +6,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
@@ -16,10 +18,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.one.utility.core.designsystem.*
 import com.one.utility.core.processing.EverydayCalculatorsEngine
+import com.one.utility.core.processing.parseFlexibleDouble
+import com.one.utility.core.processing.parseFlexibleInt
 import java.time.LocalDate
 
 enum class EverydayCalcTab(val label: String) {
@@ -28,6 +33,8 @@ enum class EverydayCalcTab(val label: String) {
     TIP_SPLIT("Tip & Split"),
     TAX("Sales Tax & VAT"),
     INTEREST("Interest"),
+    LOAN("Loan & EMI"),
+    SAVINGS("Savings Goal"),
     BMI("BMI Health"),
     FUEL("Fuel Trip"),
     DATE_DIFF("Date & Age")
@@ -62,6 +69,16 @@ fun EverydayCalculatorsScreen(
     var principalInput by remember { mutableStateOf("10000") }
     var interestRateInput by remember { mutableStateOf("5.5") }
     var yearsInput by remember { mutableStateOf("3") }
+
+    // State for Loan & EMI
+    var loanPrincipalInput by remember { mutableStateOf("250000") }
+    var loanRateInput by remember { mutableStateOf("6.5") }
+    var loanTermYearsInput by remember { mutableStateOf("15") }
+
+    // State for Savings Goal
+    var savingsGoalTargetInput by remember { mutableStateOf("50000") }
+    var savingsRateTargetInput by remember { mutableStateOf("7.0") }
+    var savingsYearsTargetInput by remember { mutableStateOf("5") }
 
     // State for BMI
     var weightInput by remember { mutableStateOf("70") }
@@ -100,23 +117,34 @@ fun EverydayCalculatorsScreen(
                 .padding(padding)
                 .padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(bottom = 140.dp)
+            contentPadding = PaddingValues(bottom = 28.dp)
         ) {
             // Tab Selector Chips
             item {
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    items(EverydayCalcTab.values().size) { idx ->
-                        val tab = EverydayCalcTab.values()[idx]
+                    items(EverydayCalcTab.entries) { tab ->
                         val isSelected = selectedTab == tab
                         FilterChip(
                             selected = isSelected,
                             onClick = { selectedTab = tab },
-                            label = { Text(tab.label) },
+                            label = {
+                                Text(
+                                    tab.label,
+                                    fontSize = 13.sp,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                                )
+                            },
+                            shape = AppTheme.shapes.Chip,
                             colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = if (AppTheme.colors.isDark) Color.White else DockObsidian,
-                                selectedLabelColor = if (AppTheme.colors.isDark) Color(0xFF14151B) else Color.White,
-                                containerColor = AppTheme.colors.surfaceVariant,
-                                labelColor = AppTheme.colors.textPrimary
+                                selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                                containerColor = AppTheme.colors.surfaceCard,
+                                labelColor = AppTheme.colors.textSecondary
+                            ),
+                            border = FilterChipDefaults.filterChipBorder(
+                                enabled = true,
+                                selected = isSelected,
+                                borderColor = if (isSelected) Color.Transparent else AppTheme.colors.borderSubtle
                             )
                         )
                     }
@@ -141,19 +169,21 @@ fun EverydayCalculatorsScreen(
                                         onValueChange = { costPriceInput = it },
                                         label = { Text("Cost Price ($)") },
                                         modifier = Modifier.weight(1f),
-                                        shape = RoundedCornerShape(14.dp)
+                                        shape = RoundedCornerShape(14.dp),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
                                     )
                                     OutlinedTextField(
                                         value = sellingPriceInput,
                                         onValueChange = { sellingPriceInput = it },
                                         label = { Text("Selling Price ($)") },
                                         modifier = Modifier.weight(1f),
-                                        shape = RoundedCornerShape(14.dp)
+                                        shape = RoundedCornerShape(14.dp),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
                                     )
                                 }
 
-                                val c = costPriceInput.toDoubleOrNull() ?: 0.0
-                                val s = sellingPriceInput.toDoubleOrNull() ?: 0.0
+                                val c = costPriceInput.parseFlexibleDouble() ?: 0.0
+                                val s = sellingPriceInput.parseFlexibleDouble() ?: 0.0
                                 val res = engine.calculateProfitAndMargin(c, s)
 
                                 Box(
@@ -191,14 +221,16 @@ fun EverydayCalculatorsScreen(
                                         onValueChange = { discountPriceInput = it },
                                         label = { Text("Original Price ($)") },
                                         modifier = Modifier.weight(1f),
-                                        shape = RoundedCornerShape(14.dp)
+                                        shape = RoundedCornerShape(14.dp),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
                                     )
                                     OutlinedTextField(
                                         value = discountPercentInput,
                                         onValueChange = { discountPercentInput = it },
                                         label = { Text("Discount (%)") },
                                         modifier = Modifier.weight(1f),
-                                        shape = RoundedCornerShape(14.dp)
+                                        shape = RoundedCornerShape(14.dp),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
                                     )
                                 }
 
@@ -211,8 +243,8 @@ fun EverydayCalculatorsScreen(
                                     }
                                 }
 
-                                val orig = discountPriceInput.toDoubleOrNull() ?: 0.0
-                                val disc = discountPercentInput.toDoubleOrNull() ?: 0.0
+                                val orig = discountPriceInput.parseFlexibleDouble() ?: 0.0
+                                val disc = discountPercentInput.parseFlexibleDouble() ?: 0.0
                                 val res = engine.calculateDiscount(orig, disc)
 
                                 Surface(
@@ -246,7 +278,8 @@ fun EverydayCalculatorsScreen(
                                     onValueChange = { billAmountInput = it },
                                     label = { Text("Total Bill ($)") },
                                     modifier = Modifier.fillMaxWidth(),
-                                    shape = RoundedCornerShape(14.dp)
+                                    shape = RoundedCornerShape(14.dp),
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
                                 )
 
                                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -255,14 +288,16 @@ fun EverydayCalculatorsScreen(
                                         onValueChange = { tipPercentInput = it },
                                         label = { Text("Tip (%)") },
                                         modifier = Modifier.weight(1f),
-                                        shape = RoundedCornerShape(14.dp)
+                                        shape = RoundedCornerShape(14.dp),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
                                     )
                                     OutlinedTextField(
                                         value = numberOfPeopleInput,
                                         onValueChange = { numberOfPeopleInput = it },
                                         label = { Text("People (Count)") },
                                         modifier = Modifier.weight(1f),
-                                        shape = RoundedCornerShape(14.dp)
+                                        shape = RoundedCornerShape(14.dp),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                                     )
                                 }
 
@@ -275,9 +310,9 @@ fun EverydayCalculatorsScreen(
                                     }
                                 }
 
-                                val bill = billAmountInput.toDoubleOrNull() ?: 0.0
-                                val tipPct = tipPercentInput.toDoubleOrNull() ?: 0.0
-                                val people = (numberOfPeopleInput.toIntOrNull() ?: 1).coerceAtLeast(1)
+                                val bill = billAmountInput.parseFlexibleDouble() ?: 0.0
+                                val tipPct = tipPercentInput.parseFlexibleDouble() ?: 0.0
+                                val people = (numberOfPeopleInput.parseFlexibleInt() ?: 1).coerceAtLeast(1)
                                 val splitRes = engine.calculateTipAndSplit(bill, tipPct, people)
 
                                 Surface(
@@ -312,19 +347,21 @@ fun EverydayCalculatorsScreen(
                                         onValueChange = { taxAmountInput = it },
                                         label = { Text("Base Price ($)") },
                                         modifier = Modifier.weight(1f),
-                                        shape = RoundedCornerShape(14.dp)
+                                        shape = RoundedCornerShape(14.dp),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
                                     )
                                     OutlinedTextField(
                                         value = taxRateInput,
                                         onValueChange = { taxRateInput = it },
                                         label = { Text("Tax Rate (%)") },
                                         modifier = Modifier.weight(1f),
-                                        shape = RoundedCornerShape(14.dp)
+                                        shape = RoundedCornerShape(14.dp),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
                                     )
                                 }
 
-                                val a = taxAmountInput.toDoubleOrNull() ?: 0.0
-                                val r = taxRateInput.toDoubleOrNull() ?: 0.0
+                                val a = taxAmountInput.parseFlexibleDouble() ?: 0.0
+                                val r = taxRateInput.parseFlexibleDouble() ?: 0.0
                                 val (tax, total) = engine.calculateTax(a, r)
 
                                 Box(
@@ -360,7 +397,8 @@ fun EverydayCalculatorsScreen(
                                     onValueChange = { principalInput = it },
                                     label = { Text("Principal Investment ($)") },
                                     modifier = Modifier.fillMaxWidth(),
-                                    shape = RoundedCornerShape(14.dp)
+                                    shape = RoundedCornerShape(14.dp),
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
                                 )
 
                                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -369,32 +407,161 @@ fun EverydayCalculatorsScreen(
                                         onValueChange = { interestRateInput = it },
                                         label = { Text("Annual Rate (%)") },
                                         modifier = Modifier.weight(1f),
-                                        shape = RoundedCornerShape(14.dp)
+                                        shape = RoundedCornerShape(14.dp),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
                                     )
                                     OutlinedTextField(
                                         value = yearsInput,
                                         onValueChange = { yearsInput = it },
                                         label = { Text("Time (Years)") },
                                         modifier = Modifier.weight(1f),
-                                        shape = RoundedCornerShape(14.dp)
+                                        shape = RoundedCornerShape(14.dp),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
                                     )
                                 }
 
-                                val p = principalInput.toDoubleOrNull() ?: 0.0
-                                val rate = interestRateInput.toDoubleOrNull() ?: 0.0
-                                val y = yearsInput.toDoubleOrNull() ?: 0.0
+                                val p = principalInput.parseFlexibleDouble() ?: 0.0
+                                val rate = interestRateInput.parseFlexibleDouble() ?: 0.0
+                                val y = yearsInput.parseFlexibleDouble() ?: 0.0
                                 val comp = engine.calculateCompoundInterest(p, rate, y)
 
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clip(RoundedCornerShape(16.dp))
-                                        .background(if (AppTheme.colors.isDark) Color(0xFF331E2A) else BentoPinkLight)
+                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f))
+                                        .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f), RoundedCornerShape(16.dp))
                                         .padding(16.dp)
                                 ) {
                                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                                         Text("Future Value: \$${"%,.2f".format(comp.totalAmount)}", fontWeight = FontWeight.Bold, fontSize = 22.sp, color = AppTheme.colors.textPrimary)
                                         Text("Total Interest Earned: \$${"%,.2f".format(comp.totalInterestEarned)}", fontSize = 14.sp, color = AppTheme.colors.textSecondary)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                EverydayCalcTab.LOAN -> {
+                    item {
+                        Surface(
+                            shape = RoundedCornerShape(24.dp),
+                            color = AppTheme.colors.surfaceCard,
+                            border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                Text("Loan & EMI Calculator", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
+
+                                OutlinedTextField(
+                                    value = loanPrincipalInput,
+                                    onValueChange = { loanPrincipalInput = it },
+                                    label = { Text("Loan Principal ($)") },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(14.dp),
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+                                )
+
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                    OutlinedTextField(
+                                        value = loanRateInput,
+                                        onValueChange = { loanRateInput = it },
+                                        label = { Text("Annual Rate (%)") },
+                                        modifier = Modifier.weight(1f),
+                                        shape = RoundedCornerShape(14.dp),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+                                    )
+                                    OutlinedTextField(
+                                        value = loanTermYearsInput,
+                                        onValueChange = { loanTermYearsInput = it },
+                                        label = { Text("Term (Years)") },
+                                        modifier = Modifier.weight(1f),
+                                        shape = RoundedCornerShape(14.dp),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                                    )
+                                }
+
+                                val p = loanPrincipalInput.parseFlexibleDouble() ?: 0.0
+                                val r = loanRateInput.parseFlexibleDouble() ?: 0.0
+                                val y = loanTermYearsInput.parseFlexibleInt() ?: 1
+                                val loan = engine.calculateLoan(p, r, y)
+
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(16.dp))
+                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f))
+                                        .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f), RoundedCornerShape(16.dp))
+                                        .padding(16.dp)
+                                ) {
+                                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                        Text("Monthly EMI: \$${"%,.2f".format(loan.monthlyPayment)}", fontWeight = FontWeight.Bold, fontSize = 22.sp, color = AppTheme.colors.textPrimary)
+                                        Text("Total Payment: \$${"%,.2f".format(loan.totalPayment)}", fontSize = 14.sp, color = AppTheme.colors.textSecondary)
+                                        Text("Total Interest: \$${"%,.2f".format(loan.totalInterest)}", fontSize = 13.sp, color = MaterialTheme.colorScheme.primary)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                EverydayCalcTab.SAVINGS -> {
+                    item {
+                        Surface(
+                            shape = RoundedCornerShape(24.dp),
+                            color = AppTheme.colors.surfaceCard,
+                            border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                Text("Savings Goal Target", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
+
+                                OutlinedTextField(
+                                    value = savingsGoalTargetInput,
+                                    onValueChange = { savingsGoalTargetInput = it },
+                                    label = { Text("Savings Target Goal ($)") },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(14.dp),
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+                                )
+
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                    OutlinedTextField(
+                                        value = savingsRateTargetInput,
+                                        onValueChange = { savingsRateTargetInput = it },
+                                        label = { Text("Annual Return (%)") },
+                                        modifier = Modifier.weight(1f),
+                                        shape = RoundedCornerShape(14.dp),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+                                    )
+                                    OutlinedTextField(
+                                        value = savingsYearsTargetInput,
+                                        onValueChange = { savingsYearsTargetInput = it },
+                                        label = { Text("Years to Goal") },
+                                        modifier = Modifier.weight(1f),
+                                        shape = RoundedCornerShape(14.dp),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+                                    )
+                                }
+
+                                val target = savingsGoalTargetInput.parseFlexibleDouble() ?: 0.0
+                                val rate = savingsRateTargetInput.parseFlexibleDouble() ?: 0.0
+                                val yrs = savingsYearsTargetInput.parseFlexibleDouble() ?: 1.0
+                                val savings = engine.calculateSavingsGoal(target, rate, yrs)
+
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(16.dp))
+                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f))
+                                        .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f), RoundedCornerShape(16.dp))
+                                        .padding(16.dp)
+                                ) {
+                                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                        Text("Monthly Deposit: \$${"%,.2f".format(savings.monthlyDepositNeeded)}", fontWeight = FontWeight.Bold, fontSize = 22.sp, color = AppTheme.colors.textPrimary)
+                                        Text("Total Deposited: \$${"%,.2f".format(savings.totalDeposited)}", fontSize = 14.sp, color = AppTheme.colors.textSecondary)
+                                        Text("Interest Earned: \$${"%,.2f".format(savings.totalInterestEarned)}", fontSize = 13.sp, color = MaterialTheme.colorScheme.primary)
                                     }
                                 }
                             }
@@ -419,19 +586,21 @@ fun EverydayCalculatorsScreen(
                                         onValueChange = { weightInput = it },
                                         label = { Text("Weight (kg)") },
                                         modifier = Modifier.weight(1f),
-                                        shape = RoundedCornerShape(14.dp)
+                                        shape = RoundedCornerShape(14.dp),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
                                     )
                                     OutlinedTextField(
                                         value = heightInput,
                                         onValueChange = { heightInput = it },
                                         label = { Text("Height (cm)") },
                                         modifier = Modifier.weight(1f),
-                                        shape = RoundedCornerShape(14.dp)
+                                        shape = RoundedCornerShape(14.dp),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
                                     )
                                 }
 
-                                val w = weightInput.toDoubleOrNull() ?: 0.0
-                                val h = heightInput.toDoubleOrNull() ?: 0.0
+                                val w = weightInput.parseFlexibleDouble() ?: 0.0
+                                val h = heightInput.parseFlexibleDouble() ?: 0.0
                                 val bmi = engine.calculateBmi(w, h)
 
                                 Box(
@@ -467,7 +636,8 @@ fun EverydayCalculatorsScreen(
                                     onValueChange = { distanceInput = it },
                                     label = { Text("Trip Distance (km)") },
                                     modifier = Modifier.fillMaxWidth(),
-                                    shape = RoundedCornerShape(14.dp)
+                                    shape = RoundedCornerShape(14.dp),
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
                                 )
 
                                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -476,20 +646,22 @@ fun EverydayCalculatorsScreen(
                                         onValueChange = { fuelRateInput = it },
                                         label = { Text("Liters / 100km") },
                                         modifier = Modifier.weight(1f),
-                                        shape = RoundedCornerShape(14.dp)
+                                        shape = RoundedCornerShape(14.dp),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
                                     )
                                     OutlinedTextField(
                                         value = pricePerLiterInput,
                                         onValueChange = { pricePerLiterInput = it },
                                         label = { Text("Price per Liter ($)") },
                                         modifier = Modifier.weight(1f),
-                                        shape = RoundedCornerShape(14.dp)
+                                        shape = RoundedCornerShape(14.dp),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
                                     )
                                 }
 
-                                val d = distanceInput.toDoubleOrNull() ?: 0.0
-                                val r = fuelRateInput.toDoubleOrNull() ?: 0.0
-                                val p = pricePerLiterInput.toDoubleOrNull() ?: 0.0
+                                val d = distanceInput.parseFlexibleDouble() ?: 0.0
+                                val r = fuelRateInput.parseFlexibleDouble() ?: 0.0
+                                val p = pricePerLiterInput.parseFlexibleDouble() ?: 0.0
                                 val fuel = engine.calculateFuelCost(d, r, p)
 
                                 Box(
@@ -527,21 +699,24 @@ fun EverydayCalculatorsScreen(
                                         onValueChange = { startYearInput = it },
                                         label = { Text("Year") },
                                         modifier = Modifier.weight(1.2f),
-                                        shape = RoundedCornerShape(12.dp)
+                                        shape = RoundedCornerShape(12.dp),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                                     )
                                     OutlinedTextField(
                                         value = startMonthInput,
                                         onValueChange = { startMonthInput = it },
                                         label = { Text("Month") },
                                         modifier = Modifier.weight(1f),
-                                        shape = RoundedCornerShape(12.dp)
+                                        shape = RoundedCornerShape(12.dp),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                                     )
                                     OutlinedTextField(
                                         value = startDayInput,
                                         onValueChange = { startDayInput = it },
                                         label = { Text("Day") },
                                         modifier = Modifier.weight(1f),
-                                        shape = RoundedCornerShape(12.dp)
+                                        shape = RoundedCornerShape(12.dp),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                                     )
                                 }
 
@@ -552,37 +727,40 @@ fun EverydayCalculatorsScreen(
                                         onValueChange = { endYearInput = it },
                                         label = { Text("Year") },
                                         modifier = Modifier.weight(1.2f),
-                                        shape = RoundedCornerShape(12.dp)
+                                        shape = RoundedCornerShape(12.dp),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                                     )
                                     OutlinedTextField(
                                         value = endMonthInput,
                                         onValueChange = { endMonthInput = it },
                                         label = { Text("Month") },
                                         modifier = Modifier.weight(1f),
-                                        shape = RoundedCornerShape(12.dp)
+                                        shape = RoundedCornerShape(12.dp),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                                     )
                                     OutlinedTextField(
                                         value = endDayInput,
                                         onValueChange = { endDayInput = it },
                                         label = { Text("Day") },
                                         modifier = Modifier.weight(1f),
-                                        shape = RoundedCornerShape(12.dp)
+                                        shape = RoundedCornerShape(12.dp),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                                     )
                                 }
 
                                 val startDate = runCatching {
                                     LocalDate.of(
-                                        startYearInput.toIntOrNull() ?: 2000,
-                                        (startMonthInput.toIntOrNull() ?: 1).coerceIn(1, 12),
-                                        (startDayInput.toIntOrNull() ?: 1).coerceIn(1, 28)
+                                        startYearInput.parseFlexibleInt() ?: 2000,
+                                        (startMonthInput.parseFlexibleInt() ?: 1).coerceIn(1, 12),
+                                        (startDayInput.parseFlexibleInt() ?: 1).coerceIn(1, 28)
                                     )
                                 }.getOrDefault(LocalDate.of(2000, 1, 1))
 
                                 val endDate = runCatching {
                                     LocalDate.of(
-                                        endYearInput.toIntOrNull() ?: LocalDate.now().year,
-                                        (endMonthInput.toIntOrNull() ?: 1).coerceIn(1, 12),
-                                        (endDayInput.toIntOrNull() ?: 1).coerceIn(1, 28)
+                                        endYearInput.parseFlexibleInt() ?: LocalDate.now().year,
+                                        (endMonthInput.parseFlexibleInt() ?: 1).coerceIn(1, 12),
+                                        (endDayInput.parseFlexibleInt() ?: 1).coerceIn(1, 28)
                                     )
                                 }.getOrDefault(LocalDate.now())
 

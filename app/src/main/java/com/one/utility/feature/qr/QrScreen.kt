@@ -148,7 +148,7 @@ fun QrScreen(
                 .padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            contentPadding = PaddingValues(bottom = 140.dp)
+            contentPadding = PaddingValues(bottom = 28.dp)
         ) {
             // 1. QR Code Preview Box with Custom Colors
             item {

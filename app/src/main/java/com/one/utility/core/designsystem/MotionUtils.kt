@@ -28,21 +28,25 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+
 enum class ButtonPressState { Pressed, Idle }
 
 /**
  * Adds an ultra-smooth, high-precision tactile press scale feedback with spring damping.
  * Gives cards and buttons a natural, physical, tactile feel at 60/120fps with haptic click.
+ * Fully scroll-safe: does not intercept parent LazyColumn touch gestures.
  */
 fun Modifier.pressFeedback(
     pressedScale: Float = 0.965f,
     onClick: (() -> Unit)? = null
 ): Modifier = composed {
-    var buttonState by remember { mutableStateOf(ButtonPressState.Idle) }
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
     val haptic = LocalHapticFeedback.current
 
     val scale by animateFloatAsState(
-        targetValue = if (buttonState == ButtonPressState.Pressed) pressedScale else 1f,
+        targetValue = if (isPressed) pressedScale else 1f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioLowBouncy,
             stiffness = Spring.StiffnessMediumLow
@@ -55,21 +59,10 @@ fun Modifier.pressFeedback(
             scaleX = scale
             scaleY = scale
         }
-        .pointerInput(buttonState) {
-            awaitPointerEventScope {
-                buttonState = if (buttonState == ButtonPressState.Pressed) {
-                    waitForUpOrCancellation()
-                    ButtonPressState.Idle
-                } else {
-                    awaitFirstDown(false)
-                    ButtonPressState.Pressed
-                }
-            }
-        }
         .then(
             if (onClick != null) {
                 Modifier.clickable(
-                    interactionSource = remember { MutableInteractionSource() },
+                    interactionSource = interactionSource,
                     indication = null,
                     onClick = {
                         try {
@@ -78,7 +71,9 @@ fun Modifier.pressFeedback(
                         onClick()
                     }
                 )
-            } else Modifier
+            } else {
+                Modifier
+            }
         )
 }
 

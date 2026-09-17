@@ -43,6 +43,7 @@ import com.one.utility.core.designsystem.*
 import com.one.utility.core.processing.ComprehensiveUnitsEngine
 import com.one.utility.core.processing.UnitCategory
 import com.one.utility.core.processing.UnitDefinition
+import com.one.utility.core.processing.parseFlexibleDouble
 import java.text.DecimalFormat
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -86,7 +87,7 @@ fun UnitConverterScreen(
     }
 
     // Calculation
-    val numericInput = inputValue.toDoubleOrNull() ?: 0.0
+    val numericInput = inputValue.parseFlexibleDouble() ?: 0.0
     val convertedResult = remember(numericInput, fromUnit, toUnit, selectedCategory) {
         engine.convert(
             value = numericInput,
@@ -159,7 +160,7 @@ fun UnitConverterScreen(
                 .padding(padding)
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(bottom = 140.dp)
+            contentPadding = PaddingValues(bottom = 28.dp)
         ) {
             // Category Selector Chips (Unified horizontal scrollbar)
             item {
@@ -297,7 +298,7 @@ fun UnitConverterScreen(
                                 placeholder = { Text("Enter value (e.g. 100)", color = AppTheme.colors.textTertiary) },
                                 singleLine = true,
                                 keyboardOptions = KeyboardOptions(
-                                    keyboardType = KeyboardType.Number,
+                                    keyboardType = KeyboardType.Decimal,
                                     imeAction = ImeAction.Done
                                 ),
                                 keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),

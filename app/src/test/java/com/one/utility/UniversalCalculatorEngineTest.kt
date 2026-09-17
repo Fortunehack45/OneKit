@@ -1,6 +1,8 @@
 package com.one.utility
 
 import com.one.utility.core.processing.UniversalCalculatorEngine
+import com.one.utility.core.processing.parseFlexibleDouble
+import com.one.utility.core.processing.parseFlexibleInt
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -60,5 +62,31 @@ class UniversalCalculatorEngineTest {
         assertEquals(76500.0, engine.evaluateExpression("450000 * 0.17"), 0.001)
         assertEquals(25.0, engine.evaluateExpression("(10 + 15)"), 0.001)
         assertEquals(50.0, engine.evaluateExpression("100 / 2"), 0.001)
+        // Unicode operators
+        assertEquals(50.0, engine.evaluateExpression("100 ÷ 2"), 0.001)
+        assertEquals(200.0, engine.evaluateExpression("100 × 2"), 0.001)
+        assertEquals(80.0, engine.evaluateExpression("100 − 20"), 0.001)
+        // Thousands grouping commas
+        assertEquals(3500.0, engine.evaluateExpression("1,000 + 2,500"), 0.001)
+        // European comma decimals
+        assertEquals(15.0, engine.evaluateExpression("12,5 + 2,5"), 0.001)
+    }
+
+    @Test
+    fun testFlexibleDoubleParsing() {
+        assertEquals(1234.56, "1,234.56".parseFlexibleDouble()!!, 0.001)
+        assertEquals(1234.56, "1.234,56".parseFlexibleDouble()!!, 0.001)
+        assertEquals(12.5, "12,5".parseFlexibleDouble()!!, 0.001)
+        assertEquals(12.5, "12.5".parseFlexibleDouble()!!, 0.001)
+        assertEquals(1000.0, "1,000".parseFlexibleDouble()!!, 0.001)
+        assertEquals(null, "abc".parseFlexibleDouble())
+        assertEquals(null, "".parseFlexibleDouble())
+    }
+
+    @Test
+    fun testFlexibleIntParsing() {
+        assertEquals(1000, "1,000".parseFlexibleInt())
+        assertEquals(250, "250".parseFlexibleInt())
+        assertEquals(null, "abc".parseFlexibleInt())
     }
 }

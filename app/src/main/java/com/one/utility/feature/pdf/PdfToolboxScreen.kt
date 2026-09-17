@@ -190,7 +190,7 @@ fun PdfToolboxScreen(
                 .padding(padding)
                 .padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(bottom = 140.dp)
+            contentPadding = PaddingValues(bottom = 28.dp)
         ) {
             // Mode Selectors
             item {
@@ -198,7 +198,7 @@ fun PdfToolboxScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    PdfToolMode.values().forEach { mode ->
+                    PdfToolMode.entries.forEach { mode ->
                         val isSelected = selectedMode == mode
                         Box(
                             modifier = Modifier

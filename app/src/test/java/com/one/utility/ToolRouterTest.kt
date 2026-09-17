@@ -137,4 +137,18 @@ class ToolRouterTest {
         assertEquals(ToolIntent.CurrencyAndTime, router.resolve("currency"))
         assertEquals(ToolIntent.CurrencyAndTime, router.resolve("world clock"))
     }
+
+    @Test
+    fun testFlexibleNumberRouting() {
+        val pIntent = router.resolve("15,5% of 1,000")
+        assertTrue(pIntent is ToolIntent.PercentageCalculation)
+        val p = pIntent as ToolIntent.PercentageCalculation
+        assertEquals(15.5, p.percent, 0.001)
+        assertEquals(1000.0, p.total, 0.001)
+
+        val uIntent = router.resolve("convert 12,5 kg to lbs")
+        assertTrue(uIntent is ToolIntent.UnitConversion)
+        val u = uIntent as ToolIntent.UnitConversion
+        assertEquals(12.5, u.value, 0.001)
+    }
 }

@@ -70,7 +70,7 @@ fun ToolsListScreen(
                 .padding(padding)
                 .padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
-            contentPadding = PaddingValues(bottom = 140.dp)
+            contentPadding = PaddingValues(bottom = 104.dp)
         ) {
             ToolRegistry.sections.forEach { section ->
                 val sectionTools = section.getTools()

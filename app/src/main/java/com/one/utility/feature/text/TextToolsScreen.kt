@@ -67,7 +67,7 @@ fun TextToolsScreen(
                 .padding(padding)
                 .padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(bottom = 140.dp)
+            contentPadding = PaddingValues(bottom = 28.dp)
         ) {
             // 1. Live Stats Banner (Words, Characters, Lines, Sentences, Reading Time)
             item {
@@ -99,7 +99,7 @@ fun TextToolsScreen(
                                 Text("Sentences", fontSize = 11.sp, color = AppTheme.colors.textSecondary)
                             }
                         }
-                        Divider(color = AppTheme.colors.borderSubtle)
+                        HorizontalDivider(color = AppTheme.colors.borderSubtle)
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,

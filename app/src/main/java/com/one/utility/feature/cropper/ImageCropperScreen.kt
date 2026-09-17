@@ -19,10 +19,10 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.RotateRight
 import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Flip
-import androidx.compose.material.icons.filled.RotateRight
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -144,7 +144,7 @@ fun ImageCropperScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = 20.dp),
-            contentPadding = PaddingValues(bottom = 140.dp),
+            contentPadding = PaddingValues(bottom = 28.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -221,32 +221,38 @@ fun ImageCropperScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        Button(
+                        FilledTonalButton(
                             onClick = {
                                 currentRotation = (currentRotation + 90f) % 360f
                                 applyTransforms()
                             },
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.weight(1f).pressFeedback(),
                             shape = RoundedCornerShape(14.dp),
-                            colors = obsidianButtonColors()
+                            colors = ButtonDefaults.filledTonalButtonColors(
+                                containerColor = AppTheme.colors.surfaceVariant,
+                                contentColor = AppTheme.colors.textPrimary
+                            )
                         ) {
-                            Icon(Icons.Default.RotateRight, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                            Icon(Icons.AutoMirrored.Filled.RotateRight, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(6.dp))
-                            Text("Rotate 90°", fontWeight = FontWeight.Bold, color = Color.White)
+                            Text("Rotate 90°", fontWeight = FontWeight.SemiBold)
                         }
 
-                        Button(
+                        FilledTonalButton(
                             onClick = {
                                 isFlippedH = !isFlippedH
                                 applyTransforms()
                             },
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.weight(1f).pressFeedback(),
                             shape = RoundedCornerShape(14.dp),
-                            colors = accentButtonColors(BentoSky)
+                            colors = ButtonDefaults.filledTonalButtonColors(
+                                containerColor = AppTheme.colors.surfaceVariant,
+                                contentColor = AppTheme.colors.textPrimary
+                            )
                         ) {
-                            Icon(Icons.Default.Flip, contentDescription = null, tint = TextPrimary, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Default.Flip, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(6.dp))
-                            Text("Flip Horizontal", color = TextPrimary, fontWeight = FontWeight.Bold)
+                            Text("Flip Horizontal", fontWeight = FontWeight.SemiBold)
                         }
                     }
                 }
@@ -268,13 +274,16 @@ fun ImageCropperScreen(
                                 context.startActivity(Intent.createChooser(shareIntent, "Share Cropped Image"))
                             }
                         },
-                        modifier = Modifier.fillMaxWidth().height(54.dp),
+                        modifier = Modifier.fillMaxWidth().height(54.dp).pressFeedback(),
                         shape = RoundedCornerShape(18.dp),
-                        colors = accentButtonColors(BentoHoney)
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        )
                     ) {
-                        Icon(Icons.Default.Share, contentDescription = null, tint = TextPrimary, modifier = Modifier.size(18.dp))
+                        Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(Modifier.width(8.dp))
-                        Text("Export & Share Cropped Photo", fontWeight = FontWeight.Bold, color = TextPrimary)
+                        Text("Export & Share Cropped Photo", fontWeight = FontWeight.Bold)
                     }
                 }
             }

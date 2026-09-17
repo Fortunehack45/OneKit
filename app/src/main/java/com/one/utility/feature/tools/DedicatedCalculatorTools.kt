@@ -3,6 +3,7 @@ package com.one.utility.feature.tools
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material3.*
@@ -10,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.one.utility.core.designsystem.AppTheme
@@ -24,9 +26,9 @@ fun DedicatedLoanCalcView(copyAction: (String) -> Unit) {
     var rateInput by remember { mutableStateOf("6.5") }
     var termYearsInput by remember { mutableStateOf("5") }
 
-    val principal = principalInput.toDoubleOrNull() ?: 0.0
-    val rate = rateInput.toDoubleOrNull() ?: 0.0
-    val termMonths = (termYearsInput.toIntOrNull() ?: 1) * 12
+    val principal = principalInput.parseFlexibleDouble() ?: 0.0
+    val rate = rateInput.parseFlexibleDouble() ?: 0.0
+    val termMonths = (termYearsInput.parseFlexibleInt() ?: 1) * 12
     val result = engine.calculateLoan(principal, rate, termMonths)
 
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -34,6 +36,7 @@ fun DedicatedLoanCalcView(copyAction: (String) -> Unit) {
             value = principalInput,
             onValueChange = { principalInput = it },
             label = { Text("Loan Principal ($)") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(14.dp)
         )
@@ -43,6 +46,7 @@ fun DedicatedLoanCalcView(copyAction: (String) -> Unit) {
                 value = rateInput,
                 onValueChange = { rateInput = it },
                 label = { Text("Interest Rate (%)") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(14.dp)
             )
@@ -50,6 +54,7 @@ fun DedicatedLoanCalcView(copyAction: (String) -> Unit) {
                 value = termYearsInput,
                 onValueChange = { termYearsInput = it },
                 label = { Text("Term (Years)") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(14.dp)
             )
@@ -91,10 +96,10 @@ fun DedicatedMortgageCalcView(copyAction: (String) -> Unit) {
     var rateInput by remember { mutableStateOf("5.8") }
     var termYearsInput by remember { mutableStateOf("30") }
 
-    val homeVal = homeValueInput.toDoubleOrNull() ?: 0.0
-    val downPay = downPaymentInput.toDoubleOrNull() ?: 0.0
-    val rate = rateInput.toDoubleOrNull() ?: 0.0
-    val termYears = termYearsInput.toIntOrNull() ?: 30
+    val homeVal = homeValueInput.parseFlexibleDouble() ?: 0.0
+    val downPay = downPaymentInput.parseFlexibleDouble() ?: 0.0
+    val rate = rateInput.parseFlexibleDouble() ?: 0.0
+    val termYears = termYearsInput.parseFlexibleInt() ?: 30
     val result = engine.calculateMortgage(homeVal, downPay, rate, termYears)
 
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -103,6 +108,7 @@ fun DedicatedMortgageCalcView(copyAction: (String) -> Unit) {
                 value = homeValueInput,
                 onValueChange = { homeValueInput = it },
                 label = { Text("Home Value ($)") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(14.dp)
             )
@@ -110,6 +116,7 @@ fun DedicatedMortgageCalcView(copyAction: (String) -> Unit) {
                 value = downPaymentInput,
                 onValueChange = { downPaymentInput = it },
                 label = { Text("Down Payment ($)") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(14.dp)
             )
@@ -120,6 +127,7 @@ fun DedicatedMortgageCalcView(copyAction: (String) -> Unit) {
                 value = rateInput,
                 onValueChange = { rateInput = it },
                 label = { Text("Interest Rate (%)") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(14.dp)
             )
@@ -127,6 +135,7 @@ fun DedicatedMortgageCalcView(copyAction: (String) -> Unit) {
                 value = termYearsInput,
                 onValueChange = { termYearsInput = it },
                 label = { Text("Loan Term (Years)") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(14.dp)
             )
@@ -167,9 +176,9 @@ fun DedicatedSavingsGoalCalcView(copyAction: (String) -> Unit) {
     var monthsInput by remember { mutableStateOf("24") }
     var annualRateInput by remember { mutableStateOf("4.0") }
 
-    val target = targetInput.toDoubleOrNull() ?: 0.0
-    val months = monthsInput.toDoubleOrNull() ?: 24.0
-    val rate = annualRateInput.toDoubleOrNull() ?: 0.0
+    val target = targetInput.parseFlexibleDouble() ?: 0.0
+    val months = monthsInput.parseFlexibleDouble() ?: 24.0
+    val rate = annualRateInput.parseFlexibleDouble() ?: 0.0
     val years = (months / 12.0).coerceAtLeast(0.01)
     val result = engine.calculateSavingsGoal(target, rate, years)
 
@@ -178,6 +187,7 @@ fun DedicatedSavingsGoalCalcView(copyAction: (String) -> Unit) {
             value = targetInput,
             onValueChange = { targetInput = it },
             label = { Text("Savings Target Goal ($)") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(14.dp)
         )
@@ -187,6 +197,7 @@ fun DedicatedSavingsGoalCalcView(copyAction: (String) -> Unit) {
                 value = monthsInput,
                 onValueChange = { monthsInput = it },
                 label = { Text("Timeline (Months)") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(14.dp)
             )
@@ -194,6 +205,7 @@ fun DedicatedSavingsGoalCalcView(copyAction: (String) -> Unit) {
                 value = annualRateInput,
                 onValueChange = { annualRateInput = it },
                 label = { Text("Interest Rate (%)") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(14.dp)
             )
@@ -234,9 +246,9 @@ fun DedicatedCompoundInterestCalcView(copyAction: (String) -> Unit) {
     var annualReturnInput by remember { mutableStateOf("7.5") }
     var yearsInput by remember { mutableStateOf("10") }
 
-    val principal = principalInput.toDoubleOrNull() ?: 0.0
-    val rate = annualReturnInput.toDoubleOrNull() ?: 0.0
-    val years = yearsInput.toDoubleOrNull() ?: 5.0
+    val principal = principalInput.parseFlexibleDouble() ?: 0.0
+    val rate = annualReturnInput.parseFlexibleDouble() ?: 0.0
+    val years = yearsInput.parseFlexibleDouble() ?: 5.0
     val result = engine.calculateCompoundInterest(principal, rate, years)
 
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -244,6 +256,7 @@ fun DedicatedCompoundInterestCalcView(copyAction: (String) -> Unit) {
             value = principalInput,
             onValueChange = { principalInput = it },
             label = { Text("Initial Investment ($)") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(14.dp)
         )
@@ -253,6 +266,7 @@ fun DedicatedCompoundInterestCalcView(copyAction: (String) -> Unit) {
                 value = annualReturnInput,
                 onValueChange = { annualReturnInput = it },
                 label = { Text("Annual Return (%)") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(14.dp)
             )
@@ -260,6 +274,7 @@ fun DedicatedCompoundInterestCalcView(copyAction: (String) -> Unit) {
                 value = yearsInput,
                 onValueChange = { yearsInput = it },
                 label = { Text("Years") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(14.dp)
             )
@@ -301,9 +316,9 @@ fun DedicatedRatioCalcView(copyAction: (String) -> Unit) {
     var bInput by remember { mutableStateOf("9") }
     var cInput by remember { mutableStateOf("1920") }
 
-    val a = aInput.toDoubleOrNull() ?: 1.0
-    val b = bInput.toDoubleOrNull() ?: 1.0
-    val c = cInput.toDoubleOrNull() ?: 1.0
+    val a = aInput.parseFlexibleDouble() ?: 1.0
+    val b = bInput.parseFlexibleDouble() ?: 1.0
+    val c = cInput.parseFlexibleDouble() ?: 1.0
     val xVal = engine.calculateRatio(a, b, c)
 
     fun gcd(n1: Long, n2: Long): Long {
@@ -323,9 +338,9 @@ fun DedicatedRatioCalcView(copyAction: (String) -> Unit) {
         Text("Solve Proportion (A : B = C : X):", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary)
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-            OutlinedTextField(value = aInput, onValueChange = { aInput = it }, label = { Text("A") }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(12.dp))
-            OutlinedTextField(value = bInput, onValueChange = { bInput = it }, label = { Text("B") }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(12.dp))
-            OutlinedTextField(value = cInput, onValueChange = { cInput = it }, label = { Text("C") }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(12.dp))
+            OutlinedTextField(value = aInput, onValueChange = { aInput = it }, label = { Text("A") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), modifier = Modifier.weight(1f), shape = RoundedCornerShape(12.dp))
+            OutlinedTextField(value = bInput, onValueChange = { bInput = it }, label = { Text("B") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), modifier = Modifier.weight(1f), shape = RoundedCornerShape(12.dp))
+            OutlinedTextField(value = cInput, onValueChange = { cInput = it }, label = { Text("C") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), modifier = Modifier.weight(1f), shape = RoundedCornerShape(12.dp))
         }
 
         Surface(
@@ -357,7 +372,7 @@ fun DedicatedAverageCalcView(copyAction: (String) -> Unit) {
     val engine = remember { EverydayCalculatorsEngine() }
     var numbersInput by remember { mutableStateOf("12, 18, 25, 30, 42, 18, 55") }
 
-    val numbers = numbersInput.split(",", " ", "\n").mapNotNull { it.trim().toDoubleOrNull() }
+    val numbers = numbersInput.split(",", " ", "\n").mapNotNull { it.trim().parseFlexibleDouble() }
     val result = engine.calculateAverage(numbers)
 
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -407,8 +422,8 @@ fun DedicatedProfitMarginView(copyAction: (String) -> Unit) {
     var costInput by remember { mutableStateOf("120") }
     var sellInput by remember { mutableStateOf("180") }
 
-    val cost = costInput.toDoubleOrNull() ?: 0.0
-    val sell = sellInput.toDoubleOrNull() ?: 0.0
+    val cost = costInput.parseFlexibleDouble() ?: 0.0
+    val sell = sellInput.parseFlexibleDouble() ?: 0.0
     val result = engine.calculateProfitAndMargin(cost, sell)
 
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -417,6 +432,7 @@ fun DedicatedProfitMarginView(copyAction: (String) -> Unit) {
                 value = costInput,
                 onValueChange = { costInput = it },
                 label = { Text("Cost Price ($)") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(14.dp)
             )
@@ -424,6 +440,7 @@ fun DedicatedProfitMarginView(copyAction: (String) -> Unit) {
                 value = sellInput,
                 onValueChange = { sellInput = it },
                 label = { Text("Selling Price ($)") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(14.dp)
             )
@@ -463,9 +480,9 @@ fun DedicatedSimpleInterestView(copyAction: (String) -> Unit) {
     var rateInput by remember { mutableStateOf("7.5") }
     var yearsInput by remember { mutableStateOf("3") }
 
-    val p = principalInput.toDoubleOrNull() ?: 0.0
-    val r = rateInput.toDoubleOrNull() ?: 0.0
-    val t = yearsInput.toDoubleOrNull() ?: 0.0
+    val p = principalInput.parseFlexibleDouble() ?: 0.0
+    val r = rateInput.parseFlexibleDouble() ?: 0.0
+    val t = yearsInput.parseFlexibleDouble() ?: 0.0
     val interest = p * (r / 100.0) * t
     val total = p + interest
 
@@ -474,6 +491,7 @@ fun DedicatedSimpleInterestView(copyAction: (String) -> Unit) {
             value = principalInput,
             onValueChange = { principalInput = it },
             label = { Text("Principal Amount ($)") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(14.dp)
         )
@@ -483,6 +501,7 @@ fun DedicatedSimpleInterestView(copyAction: (String) -> Unit) {
                 value = rateInput,
                 onValueChange = { rateInput = it },
                 label = { Text("Annual Rate (%)") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(14.dp)
             )
@@ -490,6 +509,7 @@ fun DedicatedSimpleInterestView(copyAction: (String) -> Unit) {
                 value = yearsInput,
                 onValueChange = { yearsInput = it },
                 label = { Text("Term (Years)") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(14.dp)
             )
@@ -526,9 +546,9 @@ fun DedicatedInvestmentReturnView(copyAction: (String) -> Unit) {
     var finalInput by remember { mutableStateOf("95000") }
     var yearsInput by remember { mutableStateOf("5") }
 
-    val initial = initialInput.toDoubleOrNull() ?: 0.0
-    val finalVal = finalInput.toDoubleOrNull() ?: 0.0
-    val years = yearsInput.toDoubleOrNull() ?: 1.0
+    val initial = initialInput.parseFlexibleDouble() ?: 0.0
+    val finalVal = finalInput.parseFlexibleDouble() ?: 0.0
+    val years = yearsInput.parseFlexibleDouble() ?: 1.0
     val result = engine.calculateInvestmentReturn(initial, finalVal, years)
 
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -536,6 +556,7 @@ fun DedicatedInvestmentReturnView(copyAction: (String) -> Unit) {
             value = initialInput,
             onValueChange = { initialInput = it },
             label = { Text("Initial Investment ($)") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(14.dp)
         )
@@ -545,6 +566,7 @@ fun DedicatedInvestmentReturnView(copyAction: (String) -> Unit) {
                 value = finalInput,
                 onValueChange = { finalInput = it },
                 label = { Text("Final Value ($)") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(14.dp)
             )
@@ -552,6 +574,7 @@ fun DedicatedInvestmentReturnView(copyAction: (String) -> Unit) {
                 value = yearsInput,
                 onValueChange = { yearsInput = it },
                 label = { Text("Years") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(14.dp)
             )
@@ -592,9 +615,9 @@ fun DedicatedFuelCostView(copyAction: (String) -> Unit) {
     var consumptionInput by remember { mutableStateOf("7.8") }
     var priceInput by remember { mutableStateOf("1.65") }
 
-    val dist = distanceInput.toDoubleOrNull() ?: 0.0
-    val cons = consumptionInput.toDoubleOrNull() ?: 0.0
-    val price = priceInput.toDoubleOrNull() ?: 0.0
+    val dist = distanceInput.parseFlexibleDouble() ?: 0.0
+    val cons = consumptionInput.parseFlexibleDouble() ?: 0.0
+    val price = priceInput.parseFlexibleDouble() ?: 0.0
     val result = engine.calculateFuelCost(dist, cons, price)
 
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -602,6 +625,7 @@ fun DedicatedFuelCostView(copyAction: (String) -> Unit) {
             value = distanceInput,
             onValueChange = { distanceInput = it },
             label = { Text("Trip Distance (km)") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(14.dp)
         )
@@ -611,6 +635,7 @@ fun DedicatedFuelCostView(copyAction: (String) -> Unit) {
                 value = consumptionInput,
                 onValueChange = { consumptionInput = it },
                 label = { Text("Liters / 100km") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(14.dp)
             )
@@ -618,6 +643,7 @@ fun DedicatedFuelCostView(copyAction: (String) -> Unit) {
                 value = priceInput,
                 onValueChange = { priceInput = it },
                 label = { Text("Price per Liter ($)") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(14.dp)
             )
@@ -652,8 +678,8 @@ fun DedicatedSpeedDistanceTimeView(copyAction: (String) -> Unit) {
     var distanceKmInput by remember { mutableStateOf("120") }
     var timeHoursInput by remember { mutableStateOf("1.5") }
 
-    val dist = distanceKmInput.toDoubleOrNull() ?: 0.0
-    val time = timeHoursInput.toDoubleOrNull() ?: 1.0
+    val dist = distanceKmInput.parseFlexibleDouble() ?: 0.0
+    val time = timeHoursInput.parseFlexibleDouble() ?: 1.0
     val speedKmh = if (time > 0) dist / time else 0.0
     val speedMph = speedKmh * 0.621371
 
@@ -663,6 +689,7 @@ fun DedicatedSpeedDistanceTimeView(copyAction: (String) -> Unit) {
                 value = distanceKmInput,
                 onValueChange = { distanceKmInput = it },
                 label = { Text("Distance (km)") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(14.dp)
             )
@@ -670,6 +697,7 @@ fun DedicatedSpeedDistanceTimeView(copyAction: (String) -> Unit) {
                 value = timeHoursInput,
                 onValueChange = { timeHoursInput = it },
                 label = { Text("Time (hours)") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(14.dp)
             )
@@ -708,18 +736,18 @@ fun DedicatedFractionView(copyAction: (String) -> Unit) {
     var n2 by remember { mutableStateOf("2") }
     var d2 by remember { mutableStateOf("5") }
 
-    val num1 = n1.toLongOrNull() ?: 0L
-    val den1 = d1.toLongOrNull() ?: 1L
-    val num2 = n2.toLongOrNull() ?: 0L
-    val den2 = d2.toLongOrNull() ?: 1L
+    val num1 = n1.parseFlexibleInt()?.toLong() ?: 0L
+    val den1 = (d1.parseFlexibleInt()?.toLong() ?: 1L).coerceAtLeast(1L)
+    val num2 = n2.parseFlexibleInt()?.toLong() ?: 0L
+    val den2 = (d2.parseFlexibleInt()?.toLong() ?: 1L).coerceAtLeast(1L)
     val result: FractionCalculationResult? = runCatching { engine.calculateFraction(num1, den1, num2, den2, op) }.getOrNull()
 
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.weight(1f)) {
-                OutlinedTextField(value = n1, onValueChange = { n1 = it }, label = { Text("Num 1") }, shape = RoundedCornerShape(12.dp))
+                OutlinedTextField(value = n1, onValueChange = { n1 = it }, label = { Text("Num 1") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), shape = RoundedCornerShape(12.dp))
                 Spacer(Modifier.height(4.dp))
-                OutlinedTextField(value = d1, onValueChange = { d1 = it }, label = { Text("Den 1") }, shape = RoundedCornerShape(12.dp))
+                OutlinedTextField(value = d1, onValueChange = { d1 = it }, label = { Text("Den 1") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), shape = RoundedCornerShape(12.dp))
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -729,9 +757,9 @@ fun DedicatedFractionView(copyAction: (String) -> Unit) {
             }
 
             Column(modifier = Modifier.weight(1f)) {
-                OutlinedTextField(value = n2, onValueChange = { n2 = it }, label = { Text("Num 2") }, shape = RoundedCornerShape(12.dp))
+                OutlinedTextField(value = n2, onValueChange = { n2 = it }, label = { Text("Num 2") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), shape = RoundedCornerShape(12.dp))
                 Spacer(Modifier.height(4.dp))
-                OutlinedTextField(value = d2, onValueChange = { d2 = it }, label = { Text("Den 2") }, shape = RoundedCornerShape(12.dp))
+                OutlinedTextField(value = d2, onValueChange = { d2 = it }, label = { Text("Den 2") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), shape = RoundedCornerShape(12.dp))
             }
         }
 

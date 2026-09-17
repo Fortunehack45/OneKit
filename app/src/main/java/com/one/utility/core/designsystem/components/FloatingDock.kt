@@ -2,10 +2,10 @@ package com.one.utility.core.designsystem.components
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -29,22 +30,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.one.utility.core.designsystem.AppTheme
-import com.one.utility.core.designsystem.DockObsidian
 import com.one.utility.core.designsystem.pressFeedback
 
 enum class NavigationTab(val icon: ImageVector, val label: String, val route: String) {
     HOME(Icons.Outlined.Home, "Home", "home"),
     TOOLS(Icons.Outlined.GridView, "Tools", "tools_list"),
-    CALCULATOR(Icons.Outlined.Calculate, "Calculators", "calculator"),
+    CALCULATOR(Icons.Outlined.Calculate, "Calculator", "calculator"),
     SETTINGS(Icons.Outlined.Settings, "Settings", "settings")
 }
 
 /**
- * Flagship floating capsule dock with precise ergonomics:
- * - Constrained max width of 380dp for perfect symmetry across all screen form factors
- * - 64dp standard capsule height with dual ambient/spot elevation shadows
- * - Equal weight distribution across tabs with spring-animated icon scaling and active indicator bars
- * - Tactile press feedback with haptic response
+ * Flagship floating capsule dock with precise ergonomics & minimalist refinement:
+ * - Constrained max width of 340dp for symmetrical optical balance on all mobile screens
+ * - 62dp streamlined capsule height with subtle frosted glass surface & dual-layer depth
+ * - Active pill indicator with spring dampening and tactile click feedback
+ * - Balanced typography and unified semantic Electric Indigo accent
  */
 @Composable
 fun FloatingDock(
@@ -52,20 +52,30 @@ fun FloatingDock(
     onTabSelected: (NavigationTab) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isDark = AppTheme.colors.isDark
+    val dockSurface = if (isDark) Color(0xF2141622) else Color(0xF7FFFFFF)
+    val dockBorder = if (isDark) Color(0x28FFFFFF) else Color(0x12000000)
+
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 20.dp),
         contentAlignment = Alignment.Center
     ) {
-        FrostedGlassBox(
-            shape = CircleShape,
-            elevation = 12.dp,
-            borderWidth = 1.dp,
+        Box(
             modifier = Modifier
-                .widthIn(max = 380.dp)
+                .widthIn(max = 348.dp)
                 .fillMaxWidth()
                 .height(64.dp)
+                .shadow(
+                    elevation = 10.dp,
+                    shape = CircleShape,
+                    spotColor = if (isDark) Color(0x66000000) else Color(0x18000000),
+                    ambientColor = if (isDark) Color(0x33000000) else Color(0x0A000000)
+                )
+                .clip(CircleShape)
+                .background(dockSurface)
+                .border(0.75.dp, dockBorder, CircleShape)
         ) {
             Row(
                 modifier = Modifier
@@ -74,15 +84,14 @@ fun FloatingDock(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                NavigationTab.values().forEach { tab ->
+                NavigationTab.entries.forEach { tab ->
                     val isSelected = tab == selectedTab
-                    val isDark = AppTheme.colors.isDark
-
                     val activeAccent = MaterialTheme.colorScheme.primary
+
                     val iconColor by animateColorAsState(
                         targetValue = when {
                             isSelected -> activeAccent
-                            else -> if (isDark) Color(0xFF888B9E) else Color(0xFF717588)
+                            else -> if (isDark) Color(0xFF8E92A4) else Color(0xFF6B7280)
                         },
                         animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
                         label = "dockIconColor"
@@ -91,7 +100,7 @@ fun FloatingDock(
                     val labelColor by animateColorAsState(
                         targetValue = when {
                             isSelected -> activeAccent
-                            else -> if (isDark) Color(0xFF888B9E) else Color(0xFF717588)
+                            else -> if (isDark) Color(0xFF8E92A4) else Color(0xFF6B7280)
                         },
                         animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
                         label = "dockLabelColor"
@@ -99,68 +108,65 @@ fun FloatingDock(
 
                     val pillBg by animateColorAsState(
                         targetValue = when {
-                            isSelected -> if (isDark) activeAccent.copy(alpha = 0.18f) else activeAccent.copy(alpha = 0.10f)
+                            isSelected -> if (isDark) activeAccent.copy(alpha = 0.16f) else activeAccent.copy(alpha = 0.10f)
                             else -> Color.Transparent
                         },
                         animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
                         label = "dockPillBg"
                     )
 
-                    val indicatorWidth by animateDpAsState(
-                        targetValue = if (isSelected) 14.dp else 0.dp,
-                        animationSpec = spring(
-                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                            stiffness = Spring.StiffnessLow
-                        ),
-                        label = "indicatorWidth"
+                    val pillBorderColor by animateColorAsState(
+                        targetValue = when {
+                            isSelected -> activeAccent.copy(alpha = if (isDark) 0.28f else 0.16f)
+                            else -> Color.Transparent
+                        },
+                        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+                        label = "dockPillBorder"
                     )
 
                     val iconScale by animateFloatAsState(
-                        targetValue = if (isSelected) 1.10f else 1.0f,
+                        targetValue = if (isSelected) 1.05f else 1.0f,
                         animationSpec = spring(
-                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                            stiffness = Spring.StiffnessLow
+                            dampingRatio = Spring.DampingRatioNoBouncy,
+                            stiffness = Spring.StiffnessMediumLow
                         ),
                         label = "dockIconScale"
                     )
+
+                    val pillShape = RoundedCornerShape(24.dp)
 
                     Box(
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxHeight()
-                            .clip(CircleShape)
+                            .padding(horizontal = 2.dp)
+                            .clip(pillShape)
                             .background(pillBg)
-                            .pressFeedback { onTabSelected(tab) },
+                            .border(0.75.dp, pillBorderColor, pillShape)
+                            .pressFeedback(pressedScale = 0.94f) { onTabSelected(tab) },
                         contentAlignment = Alignment.Center
                     ) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center,
-                            modifier = Modifier.padding(vertical = 2.dp)
+                            modifier = Modifier.padding(vertical = 4.dp)
                         ) {
                             Icon(
                                 imageVector = tab.icon,
                                 contentDescription = tab.label,
                                 tint = iconColor,
                                 modifier = Modifier
-                                    .size(22.dp)
+                                    .size(21.dp)
                                     .graphicsLayer(scaleX = iconScale, scaleY = iconScale)
                             )
-                            Spacer(Modifier.height(2.dp))
+                            Spacer(Modifier.height(3.dp))
                             Text(
                                 text = tab.label,
-                                fontSize = 10.sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                fontSize = 11.sp,
+                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
                                 color = labelColor,
-                                maxLines = 1
-                            )
-                            Spacer(Modifier.height(2.dp))
-                            Box(
-                                modifier = Modifier
-                                    .height(2.5.dp)
-                                    .width(indicatorWidth)
-                                    .clip(CircleShape)
-                                    .background(activeAccent)
+                                maxLines = 1,
+                                letterSpacing = (-0.1).sp
                             )
                         }
                     }

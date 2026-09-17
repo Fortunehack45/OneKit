@@ -8,7 +8,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -86,7 +86,7 @@ fun BatchRenameScreen(
                 .padding(padding)
                 .padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(bottom = 140.dp)
+            contentPadding = PaddingValues(bottom = 28.dp)
         ) {
             // 1. Rename Configuration Box
             item {
@@ -161,7 +161,7 @@ fun BatchRenameScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(p.originalName, fontFamily = FontFamily.Monospace, fontSize = 13.sp, color = AppTheme.colors.textSecondary)
-                        Icon(Icons.Default.ArrowForward, contentDescription = null, tint = BentoHoney, modifier = Modifier.size(16.dp))
+                        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = BentoHoney, modifier = Modifier.size(16.dp))
                         Text(p.newName, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = AppTheme.colors.textPrimary)
                     }
                 }

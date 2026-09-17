@@ -27,11 +27,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.one.utility.core.designsystem.*
 import com.one.utility.core.processing.ComprehensiveUnitsEngine
 import com.one.utility.core.processing.UniversalCalculatorEngine
+import com.one.utility.core.processing.parseFlexibleDouble
+import com.one.utility.core.processing.parseFlexibleInt
 
 enum class CalculatorMode(val title: String) {
     NATURAL("Smart Math"),
@@ -80,8 +84,8 @@ fun CalculatorScreen(
             if (initialExpression.contains("% of")) {
                 val parts = initialExpression.split("% of")
                 if (parts.size == 2) {
-                    val p = parts[0].trim().toDoubleOrNull() ?: 0.0
-                    val t = parts[1].trim().toDoubleOrNull() ?: 0.0
+                    val p = parts[0].trim().parseFlexibleDouble() ?: 0.0
+                    val t = parts[1].trim().parseFlexibleDouble() ?: 0.0
                     percentInput = p.toString()
                     totalInput = t.toString()
                     selectedMode = CalculatorMode.PERCENTAGE
@@ -117,7 +121,7 @@ fun CalculatorScreen(
                 .padding(padding)
                 .padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(bottom = 140.dp)
+            contentPadding = PaddingValues(bottom = 28.dp)
         ) {
             // 1. Horizontally Scrollable Calculator Mode Selector Chips
             item {
@@ -126,7 +130,7 @@ fun CalculatorScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     contentPadding = PaddingValues(vertical = 4.dp)
                 ) {
-                    items(CalculatorMode.values()) { mode ->
+                    items(CalculatorMode.entries) { mode ->
                         val isSelected = selectedMode == mode
                         Box(
                             modifier = Modifier
@@ -246,6 +250,7 @@ fun CalculatorScreen(
                                         label = { Text("Percentage (%)") },
                                         modifier = Modifier.weight(1f),
                                         shape = RoundedCornerShape(14.dp),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                                         colors = OutlinedTextFieldDefaults.colors(
                                             focusedBorderColor = MaterialTheme.colorScheme.primary,
                                             unfocusedBorderColor = AppTheme.colors.borderSubtle,
@@ -259,6 +264,7 @@ fun CalculatorScreen(
                                         label = { Text("Total Amount") },
                                         modifier = Modifier.weight(1f),
                                         shape = RoundedCornerShape(14.dp),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                                         colors = OutlinedTextFieldDefaults.colors(
                                             focusedBorderColor = MaterialTheme.colorScheme.primary,
                                             unfocusedBorderColor = AppTheme.colors.borderSubtle,
@@ -270,8 +276,8 @@ fun CalculatorScreen(
 
                                 Button(
                                     onClick = {
-                                        val p = percentInput.toDoubleOrNull() ?: 0.0
-                                        val t = totalInput.toDoubleOrNull() ?: 0.0
+                                        val p = percentInput.parseFlexibleDouble() ?: 0.0
+                                        val t = totalInput.parseFlexibleDouble() ?: 0.0
                                         val res = engine.calculatePercentage(p, t)
                                         percentResult = "%,.2f".format(res)
                                     },
@@ -326,6 +332,7 @@ fun CalculatorScreen(
                                     label = { Text("Bill Amount ($)") },
                                     modifier = Modifier.fillMaxWidth(),
                                     shape = RoundedCornerShape(14.dp),
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                                     colors = OutlinedTextFieldDefaults.colors(
                                         focusedBorderColor = MaterialTheme.colorScheme.primary,
                                         unfocusedBorderColor = AppTheme.colors.borderSubtle,
@@ -341,6 +348,7 @@ fun CalculatorScreen(
                                         label = { Text("Tip %") },
                                         modifier = Modifier.weight(1f),
                                         shape = RoundedCornerShape(14.dp),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                                         colors = OutlinedTextFieldDefaults.colors(
                                             focusedBorderColor = MaterialTheme.colorScheme.primary,
                                             unfocusedBorderColor = AppTheme.colors.borderSubtle,
@@ -354,6 +362,7 @@ fun CalculatorScreen(
                                         label = { Text("People") },
                                         modifier = Modifier.weight(1f),
                                         shape = RoundedCornerShape(14.dp),
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                         colors = OutlinedTextFieldDefaults.colors(
                                             focusedBorderColor = MaterialTheme.colorScheme.primary,
                                             unfocusedBorderColor = AppTheme.colors.borderSubtle,
@@ -363,9 +372,9 @@ fun CalculatorScreen(
                                     )
                                 }
 
-                                val b = billAmountInput.toDoubleOrNull() ?: 0.0
-                                val t = tipPercentInput.toDoubleOrNull() ?: 0.0
-                                val p = peopleCountInput.toIntOrNull() ?: 1
+                                val b = billAmountInput.parseFlexibleDouble() ?: 0.0
+                                val t = tipPercentInput.parseFlexibleDouble() ?: 0.0
+                                val p = (peopleCountInput.parseFlexibleInt() ?: 1).coerceAtLeast(1)
                                 val splitRes = engine.calculateSplitBill(b, t, p)
 
                                 Box(
@@ -439,6 +448,7 @@ fun CalculatorScreen(
                                     onValueChange = { unitValueInput = it },
                                     label = { Text("Input Value") },
                                     modifier = Modifier.fillMaxWidth(),
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                                     shape = RoundedCornerShape(14.dp),
                                     colors = OutlinedTextFieldDefaults.colors(
                                         focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -518,7 +528,7 @@ fun CalculatorScreen(
                                     }
                                 }
 
-                                val v = unitValueInput.toDoubleOrNull() ?: 0.0
+                                val v = unitValueInput.parseFlexibleDouble() ?: 0.0
                                 val converted = unitsEngine.convert(v, fromUnit.id, toUnit.id, selectedCategory.id)
 
                                 Box(

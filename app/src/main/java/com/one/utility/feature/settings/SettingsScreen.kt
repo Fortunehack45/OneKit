@@ -63,7 +63,7 @@ fun SettingsScreen(
                 .padding(padding)
                 .padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(bottom = 140.dp)
+            contentPadding = PaddingValues(bottom = 104.dp)
         ) {
             // 1. Privacy Banner Card
             item {

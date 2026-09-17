@@ -5,9 +5,10 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -16,10 +17,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.one.utility.core.designsystem.*
 import com.one.utility.core.processing.CurrencyAndTimeEngine
+import com.one.utility.core.processing.parseFlexibleDouble
 import java.time.LocalTime
 
 enum class CurrencyTimeTab(val label: String) {
@@ -66,12 +69,12 @@ fun CurrencyAndTimeScreen(
                 .padding(padding)
                 .padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(bottom = 140.dp)
+            contentPadding = PaddingValues(bottom = 28.dp)
         ) {
             // Tab Selector Chips
             item {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    CurrencyTimeTab.values().forEach { tab ->
+                    CurrencyTimeTab.entries.forEach { tab ->
                         val isSelected = selectedTab == tab
                         FilterChip(
                             selected = isSelected,
@@ -114,6 +117,7 @@ fun CurrencyAndTimeScreen(
                                         value = sourceAmount,
                                         onValueChange = { sourceAmount = it },
                                         label = { Text("Amount ($fromCurrencyName)") },
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                                         modifier = Modifier.weight(1.2f),
                                         shape = RoundedCornerShape(14.dp)
                                     )
@@ -121,13 +125,14 @@ fun CurrencyAndTimeScreen(
                                         value = customRate,
                                         onValueChange = { customRate = it },
                                         label = { Text("Exchange Rate") },
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                                         modifier = Modifier.weight(1f),
                                         shape = RoundedCornerShape(14.dp)
                                     )
                                 }
 
-                                val amount = sourceAmount.toDoubleOrNull() ?: 0.0
-                                val rate = customRate.toDoubleOrNull() ?: 1.0
+                                val amount = sourceAmount.parseFlexibleDouble() ?: 0.0
+                                val rate = customRate.parseFlexibleDouble() ?: 1.0
                                 val converted = engine.convertCurrency(amount, rate)
 
                                 Box(
@@ -168,7 +173,7 @@ fun CurrencyAndTimeScreen(
                                         Text("From Zone", fontSize = 11.sp, color = AppTheme.colors.textSecondary)
                                         Text(fromTz, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = AppTheme.colors.textPrimary)
                                     }
-                                    Icon(Icons.Default.ArrowForward, contentDescription = null, tint = BentoHoney)
+                                    Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = BentoHoney)
                                     Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
                                         Text("To Zone", fontSize = 11.sp, color = AppTheme.colors.textSecondary)
                                         Text(toTz, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = AppTheme.colors.textPrimary)

@@ -11,6 +11,10 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.BrandingWatermark
+import androidx.compose.material.icons.automirrored.filled.CallSplit
+import androidx.compose.material.icons.automirrored.filled.MergeType
+import androidx.compose.material.icons.automirrored.filled.RotateRight
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -200,7 +204,7 @@ fun DedicatedPdfRotateView() {
             shape = RoundedCornerShape(14.dp),
             colors = obsidianButtonColors()
         ) {
-            Icon(Icons.Default.RotateRight, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
+            Icon(Icons.AutoMirrored.Filled.RotateRight, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(8.dp))
             Text(if (selectedUri != null) "Change PDF ($fileName)" else "Select PDF to Rotate", color = Color.White, fontWeight = FontWeight.Bold)
         }
@@ -450,7 +454,7 @@ fun DedicatedPdfWatermarkView() {
             shape = RoundedCornerShape(14.dp),
             colors = obsidianButtonColors()
         ) {
-            Icon(Icons.Default.BrandingWatermark, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
+            Icon(Icons.AutoMirrored.Filled.BrandingWatermark, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(8.dp))
             Text(if (selectedUri != null) "Change PDF ($fileName)" else "Select PDF to Watermark", color = Color.White, fontWeight = FontWeight.Bold)
         }
@@ -676,7 +680,7 @@ fun DedicatedPdfSplitView() {
             shape = RoundedCornerShape(14.dp),
             colors = obsidianButtonColors()
         ) {
-            Icon(Icons.Default.CallSplit, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
+            Icon(Icons.AutoMirrored.Filled.CallSplit, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(8.dp))
             Text(if (selectedUri != null) "Change PDF ($fileName)" else "Select PDF to Split", color = Color.White, fontWeight = FontWeight.Bold)
         }
@@ -743,7 +747,7 @@ fun DedicatedPdfSplitView() {
                     ) {
                         if (isProcessing) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
                         else {
-                            Icon(Icons.Default.CallSplit, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                            Icon(Icons.AutoMirrored.Filled.CallSplit, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(6.dp))
                             Text("Split & Extract Pages", color = Color.White, fontWeight = FontWeight.Bold)
                         }
@@ -905,7 +909,7 @@ fun DedicatedPdfMergeView() {
             shape = RoundedCornerShape(14.dp),
             colors = obsidianButtonColors()
         ) {
-            Icon(Icons.Default.MergeType, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
+            Icon(Icons.AutoMirrored.Filled.MergeType, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(8.dp))
             Text(if (selectedUris.isNotEmpty()) "Selected ${selectedUris.size} PDFs" else "Select Multiple PDFs to Merge", color = Color.White, fontWeight = FontWeight.Bold)
         }
@@ -944,7 +948,7 @@ fun DedicatedPdfMergeView() {
                     ) {
                         if (isProcessing) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
                         else {
-                            Icon(Icons.Default.MergeType, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                            Icon(Icons.AutoMirrored.Filled.MergeType, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(6.dp))
                             Text("Merge All Into Single PDF", color = Color.White, fontWeight = FontWeight.Bold)
                         }

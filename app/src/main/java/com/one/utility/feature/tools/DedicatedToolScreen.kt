@@ -20,8 +20,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.RotateRight
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -35,6 +37,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
@@ -160,7 +163,7 @@ fun DedicatedToolScreen(
                 .padding(padding)
                 .padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(bottom = 80.dp)
+            contentPadding = PaddingValues(bottom = 28.dp)
         ) {
             // Header Description Card
             item {
@@ -417,7 +420,7 @@ fun DedicatedToolBody(
                             shape = RoundedCornerShape(12.dp),
                             colors = obsidianButtonColors()
                         ) {
-                            Icon(Icons.Default.RotateRight, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                            Icon(Icons.AutoMirrored.Filled.RotateRight, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(6.dp))
                             Text("Rotate 90°", color = Color.White, fontWeight = FontWeight.Bold)
                         }
@@ -849,8 +852,8 @@ fun DedicatedToolBody(
             var percentInput by remember { mutableStateOf("15") }
             var totalInput by remember { mutableStateOf("850000") }
 
-            val p = percentInput.toDoubleOrNull() ?: 0.0
-            val tot = totalInput.toDoubleOrNull() ?: 0.0
+            val p = percentInput.parseFlexibleDouble() ?: 0.0
+            val tot = totalInput.parseFlexibleDouble() ?: 0.0
             val result = (p / 100.0) * tot
             val plusResult = tot + result
             val minusResult = (tot - result).coerceAtLeast(0.0)
@@ -861,6 +864,7 @@ fun DedicatedToolBody(
                         value = percentInput,
                         onValueChange = { percentInput = it },
                         label = { Text("Percentage (%)") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(14.dp)
                     )
@@ -868,6 +872,7 @@ fun DedicatedToolBody(
                         value = totalInput,
                         onValueChange = { totalInput = it },
                         label = { Text("Total Amount") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         modifier = Modifier.weight(1.5f),
                         shape = RoundedCornerShape(14.dp)
                     )
@@ -904,8 +909,8 @@ fun DedicatedToolBody(
             var priceInput by remember { mutableStateOf("120") }
             var discountInput by remember { mutableStateOf("25") }
 
-            val price = priceInput.toDoubleOrNull() ?: 0.0
-            val disc = discountInput.toDoubleOrNull() ?: 0.0
+            val price = priceInput.parseFlexibleDouble() ?: 0.0
+            val disc = discountInput.parseFlexibleDouble() ?: 0.0
             val res = calcEngine.calculateDiscount(price, disc)
 
             Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -914,6 +919,7 @@ fun DedicatedToolBody(
                         value = priceInput,
                         onValueChange = { priceInput = it },
                         label = { Text("Original Price") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(14.dp)
                     )
@@ -921,6 +927,7 @@ fun DedicatedToolBody(
                         value = discountInput,
                         onValueChange = { discountInput = it },
                         label = { Text("Discount (%)") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(14.dp)
                     )
@@ -953,8 +960,8 @@ fun DedicatedToolBody(
             var amountInput by remember { mutableStateOf("500") }
             var rateInput by remember { mutableStateOf("7.5") }
 
-            val amount = amountInput.toDoubleOrNull() ?: 0.0
-            val rate = rateInput.toDoubleOrNull() ?: 0.0
+            val amount = amountInput.parseFlexibleDouble() ?: 0.0
+            val rate = rateInput.parseFlexibleDouble() ?: 0.0
             val (tax, total) = calcEngine.calculateTax(amount, rate)
 
             Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -963,6 +970,7 @@ fun DedicatedToolBody(
                         value = amountInput,
                         onValueChange = { amountInput = it },
                         label = { Text("Base Amount") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(14.dp)
                     )
@@ -970,6 +978,7 @@ fun DedicatedToolBody(
                         value = rateInput,
                         onValueChange = { rateInput = it },
                         label = { Text("Tax Rate (%)") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(14.dp)
                     )
@@ -1003,9 +1012,9 @@ fun DedicatedToolBody(
             var tipPercent by remember { mutableStateOf("15") }
             var peopleCount by remember { mutableStateOf("3") }
 
-            val bill = billInput.toDoubleOrNull() ?: 0.0
-            val tipP = tipPercent.toDoubleOrNull() ?: 0.0
-            val people = peopleCount.toIntOrNull() ?: 1
+            val bill = billInput.parseFlexibleDouble() ?: 0.0
+            val tipP = tipPercent.parseFlexibleDouble() ?: 0.0
+            val people = peopleCount.parseFlexibleInt() ?: 1
             val res = calcEngine.calculateTipAndSplit(bill, tipP, people)
 
             Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -1013,6 +1022,7 @@ fun DedicatedToolBody(
                     value = billInput,
                     onValueChange = { billInput = it },
                     label = { Text("Bill Total ($)") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(14.dp)
                 )
@@ -1022,6 +1032,7 @@ fun DedicatedToolBody(
                         value = tipPercent,
                         onValueChange = { tipPercent = it },
                         label = { Text("Tip (%)") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(14.dp)
                     )
@@ -1029,6 +1040,7 @@ fun DedicatedToolBody(
                         value = peopleCount,
                         onValueChange = { peopleCount = it },
                         label = { Text("Number of People") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(14.dp)
                     )
@@ -1065,8 +1077,8 @@ fun DedicatedToolBody(
             var weightInput by remember { mutableStateOf("70") }
             var heightInput by remember { mutableStateOf("175") }
 
-            val weight = weightInput.toDoubleOrNull() ?: 0.0
-            val height = heightInput.toDoubleOrNull() ?: 0.0
+            val weight = weightInput.parseFlexibleDouble() ?: 0.0
+            val height = heightInput.parseFlexibleDouble() ?: 0.0
             val res = calcEngine.calculateBmi(weight, height)
 
             Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -1075,6 +1087,7 @@ fun DedicatedToolBody(
                         value = weightInput,
                         onValueChange = { weightInput = it },
                         label = { Text("Weight (kg)") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(14.dp)
                     )
@@ -1082,6 +1095,7 @@ fun DedicatedToolBody(
                         value = heightInput,
                         onValueChange = { heightInput = it },
                         label = { Text("Height (cm)") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(14.dp)
                     )

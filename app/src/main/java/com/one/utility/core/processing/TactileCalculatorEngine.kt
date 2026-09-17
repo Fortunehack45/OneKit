@@ -17,7 +17,8 @@ class TactileCalculatorEngine {
                 .replace("−", "-")
                 .replace("π", Math.PI.toString())
                 .replace("e", Math.E.toString())
-                .replace(",", "")
+                .replace(Regex("""(?<=\d),(?=\d{3}(?!\d))"""), "")
+                .replace(',', '.')
 
             // Handle percentage patterns: e.g. "15% of 850000", "15% * 850000", "50%"
             expr = expr.replace(Regex("""(?i)(\d+(?:\.\d+)?)\s*%\s*(?:of|\*)\s*(\d+(?:\.\d+)?)""")) {

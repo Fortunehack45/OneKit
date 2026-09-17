@@ -140,7 +140,13 @@ class UniversalCalculatorEngine {
 
     // 7. Lightweight Math Expression Evaluator
     fun evaluateExpression(expr: String): Double {
-        val sanitized = expr.replace("×", "*").replace("÷", "/").replace(" ", "")
+        val sanitized = expr
+            .replace("×", "*")
+            .replace("÷", "/")
+            .replace("−", "-")
+            .replace(" ", "")
+            .replace(Regex("""(?<=\d),(?=\d{3}(?!\d))"""), "")
+            .replace(',', '.')
         return MathParser(sanitized).parse()
     }
 
@@ -235,4 +241,41 @@ class UniversalCalculatorEngine {
             return x
         }
     }
+}
+
+/**
+ * Robustly parses numbers from user input across diverse locales (e.g. "12.5" vs "12,5" vs "1,250.00").
+ * Converts decimal commas to periods while safely honoring thousands grouping.
+ */
+fun String.parseFlexibleDouble(): Double? {
+    val clean = this.trim()
+    if (clean.isEmpty()) return null
+    return if (clean.contains(',') && clean.contains('.')) {
+        if (clean.lastIndexOf('.') > clean.lastIndexOf(',')) {
+            // e.g. "1,234.56"
+            clean.replace(",", "").toDoubleOrNull()
+        } else {
+            // e.g. "1.234,56"
+            clean.replace(".", "").replace(',', '.').toDoubleOrNull()
+        }
+    } else if (clean.contains(',')) {
+        if (clean.matches(Regex("""^-?\d{1,3}(,\d{3})+$"""))) {
+            // e.g. "1,000" or "850,000"
+            clean.replace(",", "").toDoubleOrNull()
+        } else {
+            // e.g. "12,5" or "0,75"
+            clean.replace(',', '.').toDoubleOrNull()
+        }
+    } else {
+        clean.toDoubleOrNull()
+    }
+}
+
+/**
+ * Robustly parses integers from user input, tolerating fractional representations like "2.0".
+ */
+fun String.parseFlexibleInt(): Int? {
+    val clean = this.trim()
+    if (clean.isEmpty()) return null
+    return clean.toIntOrNull() ?: clean.parseFlexibleDouble()?.toInt()
 }

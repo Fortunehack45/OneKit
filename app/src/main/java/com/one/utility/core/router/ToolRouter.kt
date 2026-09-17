@@ -2,6 +2,7 @@ package com.one.utility.core.router
 
 import com.one.utility.core.processing.ComprehensiveUnitsEngine
 import com.one.utility.core.processing.UniversalCalculatorEngine
+import com.one.utility.core.processing.parseFlexibleDouble
 import java.util.Locale
 
 class ToolRouter {
@@ -9,10 +10,10 @@ class ToolRouter {
     private val unitsEngine = ComprehensiveUnitsEngine()
 
     // Regex to match "What's 15% of ₦850,000?", "15% of 850,000", "15 % of $400", "20% tip on $85", "15 percent of 850000 naira"
-    private val percentageRegex = Regex("""(?i)(?:what(?:'s|\s+is)\s+)?(\d+(?:\.\d+)?)\s*(?:%|percent)\s*(?:of|on|off)\s*([₦$€£¥₹]?)\s*([\d,]+(?:\.\d+)?)\s*(?:naira|usd|eur|gbp|dollar|dollars|pounds)?\s*\??""")
+    private val percentageRegex = Regex("""(?i)(?:what(?:'s|\s+is)\s+)?(\d+(?:[.,]\d+)?)\s*(?:%|percent)\s*(?:of|on|off)\s*([₦$€£¥₹]?)\s*([\d,.]+(?:[.,]\d+)?)\s*(?:naira|usd|eur|gbp|dollar|dollars|pounds)?\s*\??""")
 
     // Regex to match "Convert 25 GB to MB", "25 gb to mb", "10 kg into lbs", "72 f to c"
-    private val unitRegex = Regex("""(?i)(?:convert\s+)?([\d,]+(?:\.\d+)?)\s*([a-zA-Z°]+)\s*(?:to|in|into)\s*([a-zA-Z°]+)\s*\??""")
+    private val unitRegex = Regex("""(?i)(?:convert\s+)?([\d,.]+(?:[.,]\d+)?)\s*([a-zA-Z°]+)\s*(?:to|in|into)\s*([a-zA-Z°]+)\s*\??""")
 
     // Regex to match arithmetic expressions e.g. "25 * 40 + 150", "850000 / 12", "(50 + 20) * 3"
     private val mathExpressionRegex = Regex("""^(?:what(?:'s|\s+is)\s+)?([\d\s+\-*/().%^]+)\??$""", RegexOption.IGNORE_CASE)
@@ -23,10 +24,9 @@ class ToolRouter {
 
         // 1. Percentage check: e.g. "What's 15% of ₦850,000?", "15% of 850000"
         percentageRegex.find(trimmed)?.let { match ->
-            val percent = match.groupValues[1].toDoubleOrNull()
+            val percent = match.groupValues[1].parseFlexibleDouble()
             var currencySymbol = match.groupValues[2]
-            val totalRaw = match.groupValues[3].replace(",", "")
-            val total = totalRaw.toDoubleOrNull()
+            val total = match.groupValues[3].parseFlexibleDouble()
             if (percent != null && total != null) {
                 if (currencySymbol.isEmpty()) {
                     val fullMatch = match.value.lowercase()
@@ -46,8 +46,7 @@ class ToolRouter {
 
         // 2. Unit conversion check: e.g. "Convert 25 GB to MB", "25 miles to km", "10 kg into lbs", "72 f to c"
         unitRegex.find(trimmed)?.let { match ->
-            val valueRaw = match.groupValues[1].replace(",", "")
-            val value = valueRaw.toDoubleOrNull() ?: 0.0
+            val value = match.groupValues[1].parseFlexibleDouble() ?: 0.0
             val fromUnit = match.groupValues[2].lowercase()
             val toUnit = match.groupValues[3].lowercase()
 

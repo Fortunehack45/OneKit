@@ -67,4 +67,27 @@ class EverydayCalculatorsTest {
         assertEquals(1, res.years)
         assertEquals(365L, res.totalDays)
     }
+
+    @Test
+    fun testLoanCalculation() {
+        // Zero interest test
+        val resZero = engine.calculateLoan(principal = 1200.0, annualRatePercent = 0.0, termMonths = 12)
+        assertEquals(100.0, resZero.monthlyPayment, 0.001)
+        assertEquals(1200.0, resZero.totalPayment, 0.001)
+        assertEquals(0.0, resZero.totalInterest, 0.001)
+
+        // Standard test: $10,000 at 5% for 36 months
+        val res = engine.calculateLoan(principal = 10000.0, annualRatePercent = 5.0, termMonths = 36)
+        assertEquals(299.71, res.monthlyPayment, 0.1)
+        assertEquals(10789.5, res.totalPayment, 1.0)
+    }
+
+    @Test
+    fun testSavingsGoal() {
+        // Zero interest: $1,200 goal in 1 year = $100/mo
+        val resZero = engine.calculateSavingsGoal(targetAmount = 1200.0, annualRatePercent = 0.0, years = 1.0)
+        assertEquals(100.0, resZero.monthlyDepositNeeded, 0.001)
+        assertEquals(1200.0, resZero.totalDeposited, 0.001)
+        assertEquals(0.0, resZero.totalInterestEarned, 0.001)
+    }
 }
