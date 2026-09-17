@@ -27,6 +27,8 @@ import com.one.utility.feature.backgroundremover.BackgroundRemoverScreen
 import com.one.utility.feature.calculator.CalculatorMode
 import com.one.utility.feature.calculator.CalculatorScreen
 import com.one.utility.feature.calculator.EverydayCalculatorsScreen
+import com.one.utility.feature.calculator.TactileCalculatorScreen
+import com.one.utility.feature.calculator.UnitConverterScreen
 import com.one.utility.feature.compressor.CompressorScreen
 import com.one.utility.feature.converter.ImageConverterScreen
 import com.one.utility.feature.cropper.ImageCropperScreen
@@ -126,7 +128,7 @@ fun OneAppNavigation(
                 val exprParam = backStackEntry.arguments?.getString("expr")?.let {
                     URLDecoder.decode(it, StandardCharsets.UTF_8.toString())
                 }
-                CalculatorScreen(
+                TactileCalculatorScreen(
                     initialExpression = exprParam,
                     onNavigateBack = {
                         if (navController.previousBackStackEntry != null) {
@@ -139,7 +141,7 @@ fun OneAppNavigation(
             }
 
             composable("calculator") {
-                CalculatorScreen(
+                TactileCalculatorScreen(
                     onNavigateBack = {
                         if (navController.previousBackStackEntry != null) {
                             navController.popBackStack()
@@ -151,8 +153,7 @@ fun OneAppNavigation(
             }
 
             composable("unit_converter") {
-                CalculatorScreen(
-                    initialMode = CalculatorMode.UNITS,
+                UnitConverterScreen(
                     onNavigateBack = { navController.popBackStack() }
                 )
             }

@@ -23,7 +23,10 @@ data class AppColors(
     val dockBackground: Color,
     val primaryButton: Color,
     val onPrimaryButton: Color
-)
+) {
+    val surfaceCard: Color get() = cardSurface
+    val textTertiary: Color get() = textMuted
+}
 
 private val LightAppColors = AppColors(
     isDark = false,
@@ -62,6 +65,11 @@ object AppTheme {
         @Composable
         @ReadOnlyComposable
         get() = LocalAppColors.current
+
+    val typography: androidx.compose.material3.Typography
+        @Composable
+        @ReadOnlyComposable
+        get() = MaterialTheme.typography
 }
 
 private val LightColorScheme = lightColorScheme(

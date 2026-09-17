@@ -59,19 +59,19 @@ object ToolRegistry {
         ),
         ToolDefinition(
             id = "calculator",
-            title = "Universal Calculator",
-            description = "Perform arithmetic, percentages (e.g. 17% of 850k), tips, and loans",
+            title = "Keypad & Scientific Calculator",
+            description = "Tactile keypad arithmetic, trig, log, powers, and 1-tap scientific switch",
             category = ToolCategory.CALCULATOR,
             route = "calculator",
-            keywords = listOf("calc", "calculate", "percentage", "tip", "tax", "loan", "math", "discount")
+            keywords = listOf("calc", "calculate", "scientific", "trig", "sin", "cos", "keypad", "math")
         ),
         ToolDefinition(
             id = "unit_converter",
-            title = "Unit Converter",
-            description = "Miles to km, kg to lbs, Celsius to Fahrenheit, data storage",
+            title = "Scientific Unit Converter",
+            description = "200+ units across Astronomy, Physics, CS, Chemistry, Mechanics, Energy",
             category = ToolCategory.CALCULATOR,
             route = "unit_converter",
-            keywords = listOf("convert", "miles to km", "kg to lbs", "temperature", "converter", "units")
+            keywords = listOf("convert", "miles to km", "light year", "astronomy", "physics", "units", "converter")
         ),
         ToolDefinition(
             id = "qr_generator",

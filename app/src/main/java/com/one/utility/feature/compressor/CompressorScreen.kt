@@ -64,16 +64,16 @@ fun CompressorScreen(
     }
 
     Scaffold(
-        containerColor = CanvasBackground,
+        containerColor = AppTheme.colors.canvasBackground,
         topBar = {
             TopAppBar(
-                title = { Text("Image Compressor", fontWeight = FontWeight.Bold, color = TextPrimary) },
+                title = { Text("Image Compressor", fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = TextPrimary)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = AppTheme.colors.textPrimary)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = CanvasBackground)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = AppTheme.colors.canvasBackground)
             )
         }
     ) { padding ->
@@ -82,7 +82,8 @@ fun CompressorScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(18.dp)
+            verticalArrangement = Arrangement.spacedBy(18.dp),
+            contentPadding = PaddingValues(bottom = 140.dp)
         ) {
             // 1. Image Selector Card
             item {
@@ -91,8 +92,8 @@ fun CompressorScreen(
                         .fillMaxWidth()
                         .height(200.dp)
                         .clip(RoundedCornerShape(24.dp))
-                        .background(Color.White)
-                        .border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                        .background(AppTheme.colors.surfaceCard)
+                        .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(24.dp))
                         .clickable {
                             photoPickerLauncher.launch(
                                 PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
@@ -108,11 +109,11 @@ fun CompressorScreen(
                             Icon(
                                 Icons.Default.AddPhotoAlternate,
                                 contentDescription = null,
-                                tint = BentoSky,
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(48.dp)
                             )
-                            Text("Select an Image to Compress", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
-                            Text("Tap to browse gallery", fontSize = 12.sp, color = TextSecondary)
+                            Text("Select an Image to Compress", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
+                            Text("Tap to browse gallery", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
                         }
                     } else {
                         AsyncImage(
@@ -128,18 +129,19 @@ fun CompressorScreen(
             item {
                 Surface(
                     shape = RoundedCornerShape(24.dp),
-                    color = Color.White,
-                    modifier = Modifier.fillMaxWidth().border(1.dp, BorderSubtle, RoundedCornerShape(24.dp))
+                    color = AppTheme.colors.surfaceCard,
+                    modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(24.dp))
                 ) {
                     Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                        Text("Compression Level", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                        Text("Compression Level", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
 
                         CompressionPreset.values().forEach { preset ->
+                            val isSelected = !useCustomQuality && selectedPreset == preset
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(14.dp))
-                                    .background(if (!useCustomQuality && selectedPreset == preset) BentoSkyLight else Color.Transparent)
+                                    .background(if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f) else Color.Transparent)
                                     .clickable {
                                         useCustomQuality = false
                                         selectedPreset = preset
@@ -149,20 +151,23 @@ fun CompressorScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column {
-                                    Text(preset.displayName, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = TextPrimary)
-                                    Text("Quality: ${preset.quality}% • Max: ${preset.maxDimension}px", fontSize = 12.sp, color = TextSecondary)
+                                    Text(preset.displayName, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = AppTheme.colors.textPrimary)
+                                    Text("Quality: ${preset.quality}% • Max: ${preset.maxDimension}px", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
                                 }
                                 RadioButton(
-                                    selected = !useCustomQuality && selectedPreset == preset,
+                                    selected = isSelected,
                                     onClick = {
                                         useCustomQuality = false
                                         selectedPreset = preset
-                                    }
+                                    },
+                                    colors = RadioButtonDefaults.colors(
+                                        selectedColor = MaterialTheme.colorScheme.primary
+                                    )
                                 )
                             }
                         }
 
-                        Divider(color = BorderSubtle)
+                        HorizontalDivider(color = AppTheme.colors.borderSubtle)
 
                         // Custom Quality Slider
                         Row(
@@ -170,18 +175,29 @@ fun CompressorScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Custom Quality Slider", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = TextPrimary)
-                            Switch(checked = useCustomQuality, onCheckedChange = { useCustomQuality = it })
+                            Text("Custom Quality Slider", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = AppTheme.colors.textPrimary)
+                            Switch(
+                                checked = useCustomQuality,
+                                onCheckedChange = { useCustomQuality = it },
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                                    checkedTrackColor = MaterialTheme.colorScheme.primary
+                                )
+                            )
                         }
 
                         if (useCustomQuality) {
                             Column {
-                                Text("Quality: ${customQuality.toInt()}%", fontSize = 13.sp, color = TextSecondary)
+                                Text("Quality: ${customQuality.toInt()}%", fontSize = 13.sp, color = AppTheme.colors.textSecondary)
                                 Slider(
                                     value = customQuality,
                                     onValueChange = { customQuality = it },
                                     valueRange = 10f..100f,
-                                    steps = 18
+                                    steps = 18,
+                                    colors = SliderDefaults.colors(
+                                        thumbColor = MaterialTheme.colorScheme.primary,
+                                        activeTrackColor = MaterialTheme.colorScheme.primary
+                                    )
                                 )
                             }
                         }
@@ -194,13 +210,23 @@ fun CompressorScreen(
                 resultData?.let { res ->
                     Surface(
                         shape = RoundedCornerShape(24.dp),
-                        color = BentoSkyLight,
+                        color = AppTheme.colors.surfaceCard,
+                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                Icon(Icons.Outlined.CheckCircle, contentDescription = null, tint = DockObsidian)
-                                Text("Compression Complete!", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                                Icon(
+                                    Icons.Outlined.CheckCircle,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    "Compression Complete!",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp,
+                                    color = AppTheme.colors.textPrimary
+                                )
                             }
 
                             Row(
@@ -208,20 +234,20 @@ fun CompressorScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Column {
-                                    Text("Original", fontSize = 12.sp, color = TextSecondary)
-                                    Text("${res.originalSizeBytes / 1024} KB", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                                    Text("Original", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
+                                    Text("${res.originalSizeBytes / 1024} KB", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
                                 }
                                 Column {
-                                    Text("Compressed", fontSize = 12.sp, color = TextSecondary)
-                                    Text("${res.compressedSizeBytes / 1024} KB", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                                    Text("Compressed", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
+                                    Text("${res.compressedSizeBytes / 1024} KB", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
                                 }
                                 Column {
-                                    Text("Space Saved", fontSize = 12.sp, color = TextSecondary)
+                                    Text("Space Saved", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
                                     Text(
                                         "${"%.1f".format(res.savedPercentage)}%",
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 16.sp,
-                                        color = DockObsidian
+                                        color = MaterialTheme.colorScheme.primary
                                     )
                                 }
                             }
@@ -240,13 +266,25 @@ fun CompressorScreen(
                                     }
                                     context.startActivity(Intent.createChooser(shareIntent, "Share Compressed Image"))
                                 },
-                                colors = ButtonDefaults.buttonColors(containerColor = DockObsidian),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    contentColor = MaterialTheme.colorScheme.onPrimary
+                                ),
                                 shape = RoundedCornerShape(14.dp),
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth().height(48.dp)
                             ) {
-                                Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Icon(
+                                    Icons.Default.Share,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp),
+                                    tint = MaterialTheme.colorScheme.onPrimary
+                                )
                                 Spacer(Modifier.width(8.dp))
-                                Text("Share Compressed Image")
+                                Text(
+                                    "Share Compressed Image",
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onPrimary
+                                )
                             }
                         }
                     }
@@ -277,16 +315,20 @@ fun CompressorScreen(
                     enabled = selectedUri != null && !isProcessing,
                     modifier = Modifier.fillMaxWidth().height(56.dp),
                     shape = RoundedCornerShape(20.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = DockObsidian)
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                        disabledContainerColor = AppTheme.colors.surfaceVariant,
+                        disabledContentColor = AppTheme.colors.textTertiary
+                    )
                 ) {
                     Text(
                         text = if (isProcessing) "Compressing..." else "Compress Image",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = if (selectedUri != null && !isProcessing) MaterialTheme.colorScheme.onPrimary else AppTheme.colors.textTertiary
                     )
                 }
-                Spacer(Modifier.height(20.dp))
             }
         }
     }

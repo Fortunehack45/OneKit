@@ -15,10 +15,10 @@ on:
         type: boolean
         default: true
       release_tag:
-        description: 'Release tag (e.g. v1.0.3)'
+        description: 'Release tag (e.g. v1.0.4)'
         required: false
         type: string
-        default: 'v1.0.3'
+        default: 'v1.0.4'
 
 permissions:
   contents: write
@@ -56,29 +56,11 @@ jobs:
       - name: Prepare Keystore for Release Signing
         id: setup_keystore
         run: |
-          if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ] && [ -n "${{ secrets.KEY_ALIAS }}" ]; then
-            echo "Using custom release signing secrets from repository..."
-            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > release.keystore
-            echo "KEYSTORE_PATH=release.keystore" >> $GITHUB_ENV
-            echo "KEY_ALIAS=${{ secrets.KEY_ALIAS }}" >> $GITHUB_ENV
-            echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" >> $GITHUB_ENV
-            echo "KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
-          else
-            echo "No custom keystore secret found. Generating CI upload keystore..."
-            keytool -genkeypair -v \
-              -keystore release.keystore \
-              -alias one_upload_key \
-              -keyalg RSA \
-              -keysize 2048 \
-              -validity 10000 \
-              -storepass android \
-              -keypass android \
-              -dname "CN=ONE Utility, OU=Mobile, O=ONE, L=Global, S=Global, C=US"
-            echo "KEYSTORE_PATH=release.keystore" >> $GITHUB_ENV
-            echo "KEY_ALIAS=one_upload_key" >> $GITHUB_ENV
-            echo "KEY_PASSWORD=android" >> $GITHUB_ENV
-            echo "KEYSTORE_PASSWORD=android" >> $GITHUB_ENV
-          fi
+          echo "Using permanent repository release keystore..."
+          echo "KEYSTORE_PATH=release.keystore" >> $GITHUB_ENV
+          echo "KEY_ALIAS=one_release_key" >> $GITHUB_ENV
+          echo "KEY_PASSWORD=one_keystore_secure" >> $GITHUB_ENV
+          echo "KEYSTORE_PASSWORD=one_keystore_secure" >> $GITHUB_ENV
 
       - name: Run Unit Tests
         run: ./gradlew testDebugUnitTest --stacktrace
@@ -144,8 +126,8 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.publish_release) || (github.event_name == 'push' && github.ref == 'refs/heads/main')
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || (inputs.release_tag || 'v1.0.3') }}
-          name: "ONE Release ${{ github.ref_type == 'tag' && github.ref_name || (inputs.release_tag || 'v1.0.3') }}"
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || (inputs.release_tag || 'v1.0.4') }}
+          name: "ONE Release ${{ github.ref_type == 'tag' && github.ref_name || (inputs.release_tag || 'v1.0.4') }}"
           body: |
             ## 🎉 ONE — All-in-One Offline Utility App
 

@@ -48,7 +48,7 @@ fun CoolFontsScreen(
     var selectedCategory by remember { mutableStateOf("All") }
     var copiedId by remember { mutableStateOf<String?>(null) }
 
-    val categories = listOf("All", "Decorative", "Clean", "Symbols", "Stylized")
+    val categories = listOf("All", "Japanese & Anime", "Kaomoji", "Decorative", "Clean", "Symbols", "Stylized")
     val allStyles = remember(inputText) { engine.generateStyles(inputText) }
     val filteredStyles = remember(allStyles, selectedCategory) {
         if (selectedCategory == "All") allStyles else allStyles.filter { it.category == selectedCategory }
@@ -101,7 +101,7 @@ fun CoolFontsScreen(
                 .padding(padding)
                 .padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
-            contentPadding = PaddingValues(bottom = 90.dp)
+            contentPadding = PaddingValues(bottom = 140.dp)
         ) {
             // 1. Hero Input Card
             item {

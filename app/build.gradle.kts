@@ -12,8 +12,8 @@ android {
         applicationId = "com.one.utility"
         minSdk = 24
         targetSdk = 35
-        versionCode = 3
-        versionName = "1.0.3"
+        versionCode = 4
+        versionName = "1.0.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -27,9 +27,9 @@ android {
             val keystoreFile = rootProject.file(keystorePath)
             if (keystoreFile.exists()) {
                 storeFile = keystoreFile
-                storePassword = System.getenv("KEYSTORE_PASSWORD") ?: "android"
-                keyAlias = System.getenv("KEY_ALIAS") ?: "one_upload_key"
-                keyPassword = System.getenv("KEY_PASSWORD") ?: "android"
+                storePassword = System.getenv("KEYSTORE_PASSWORD") ?: "one_keystore_secure"
+                keyAlias = System.getenv("KEY_ALIAS") ?: "one_release_key"
+                keyPassword = System.getenv("KEY_PASSWORD") ?: "one_keystore_secure"
             } else {
                 val debugConfig = getByName("debug")
                 storeFile = debugConfig.storeFile
@@ -99,6 +99,9 @@ dependencies {
 
     // Image loading (Local Bitmaps / Uris)
     implementation("io.coil-kt:coil-compose:2.7.0")
+
+    // On-device AI Selfie & Portrait Segmentation
+    implementation("com.google.mlkit:segmentation-selfie:16.0.0-beta6")
 
     // On-device QR generation
     implementation("com.google.zxing:core:3.5.3")

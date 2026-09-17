@@ -62,10 +62,11 @@ fun HomeScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
+                .statusBarsPadding()
                 .padding(paddingValues)
                 .padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(bottom = 120.dp)
+            contentPadding = PaddingValues(bottom = 140.dp)
         ) {
             // 1. Top Bar: Clean ONE Brand Identity (No avatar profile circle!)
             item {
