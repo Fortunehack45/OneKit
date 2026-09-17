@@ -72,6 +72,7 @@ enum class BgOption(val label: String, val color: Color?) {
 
 enum class EditToolMode {
     VIEW,
+    MAGIC_WAND,
     ERASE_BRUSH,
     RESTORE_BRUSH
 }
@@ -104,6 +105,24 @@ fun BackgroundRemoverScreen(
         }
     }
 
+    fun applyMagicWand(screenX: Float, screenY: Float, viewWidth: Float, viewHeight: Float) {
+        val current = transparentBitmap ?: originalBitmap ?: return
+        val scaleX = current.width.toFloat() / viewWidth
+        val scaleY = current.height.toFloat() / viewHeight
+        val bmpX = (screenX * scaleX).toInt().coerceIn(0, current.width - 1)
+        val bmpY = (screenY * scaleY).toInt().coerceIn(0, current.height - 1)
+
+        coroutineScope.launch {
+            isProcessing = true
+            val result = engine.removeBackground(current, tolerance = tolerance.toDouble(), seedPoint = Pair(bmpX, bmpY))
+            result.getOrNull()?.let {
+                pushHistory()
+                transparentBitmap = it
+            }
+            isProcessing = false
+        }
+    }
+
     fun undo() {
         if (!historyStack.isEmpty()) {
             transparentBitmap = historyStack.removeLast()
@@ -133,24 +152,55 @@ fun BackgroundRemoverScreen(
         }
     }
 
+    var showSourceSheet by remember { mutableStateOf(false) }
+    var tempCameraUri by remember { mutableStateOf<Uri?>(null) }
+
+    fun processImageUri(uri: Uri) {
+        selectedUri = uri
+        transparentBitmap = null
+        historyStack.clear()
+        coroutineScope.launch {
+            isProcessing = true
+            val loaded = withContext(Dispatchers.IO) { loadSafeBitmap(uri) }
+            originalBitmap = loaded
+            if (loaded != null) {
+                val result = engine.removeBackground(loaded, tolerance = tolerance.toDouble())
+                transparentBitmap = result.getOrNull() ?: loaded.copy(Bitmap.Config.ARGB_8888, true)
+            }
+            isProcessing = false
+        }
+    }
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success && tempCameraUri != null) {
+            processImageUri(tempCameraUri!!)
+        }
+    }
+
     val photoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
         if (uri != null) {
-            selectedUri = uri
-            transparentBitmap = null
-            historyStack.clear()
-            coroutineScope.launch {
-                isProcessing = true
-                val loaded = withContext(Dispatchers.IO) { loadSafeBitmap(uri) }
-                originalBitmap = loaded
-                if (loaded != null) {
-                    val result = engine.removeBackground(loaded, tolerance = tolerance.toDouble())
-                    transparentBitmap = result.getOrNull()
-                }
-                isProcessing = false
-            }
+            processImageUri(uri)
         }
+    }
+
+    if (showSourceSheet) {
+        com.one.utility.core.designsystem.components.MediaPickerModalSheet(
+            onDismissRequest = { showSourceSheet = false },
+            onTakePhoto = {
+                val uri = com.one.utility.core.designsystem.components.createTempCameraUri(context)
+                tempCameraUri = uri
+                cameraLauncher.launch(uri)
+            },
+            onChooseGallery = {
+                photoPicker.launch(
+                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                )
+            }
+        )
     }
 
     fun reprocess(newTolerance: Float) {
@@ -306,6 +356,15 @@ fun BackgroundRemoverScreen(
                     }
                 },
                 actions = {
+                    if (originalBitmap != null) {
+                        IconButton(onClick = { showSourceSheet = true }) {
+                            Icon(
+                                Icons.Default.AddPhotoAlternate,
+                                contentDescription = "Change Image",
+                                tint = AppTheme.colors.textPrimary
+                            )
+                        }
+                    }
                     if (historyStack.isNotEmpty()) {
                         IconButton(onClick = { undo() }) {
                             Icon(
@@ -367,14 +426,24 @@ fun BackgroundRemoverScreen(
                         Box(modifier = Modifier.fillMaxSize().background(color))
                     }
 
-                    if (transparentBitmap != null) {
+                    val displayBmp = transparentBitmap ?: originalBitmap
+                    if (displayBmp != null) {
                         Image(
-                            bitmap = transparentBitmap!!.asImageBitmap(),
+                            bitmap = displayBmp.asImageBitmap(),
                             contentDescription = "Cutout Result",
                             modifier = Modifier
                                 .fillMaxSize()
                                 .pointerInput(activeTool) {
-                                    if (activeTool != EditToolMode.VIEW) {
+                                    if (activeTool == EditToolMode.MAGIC_WAND) {
+                                        detectTapGestures { offset ->
+                                            applyMagicWand(
+                                                offset.x,
+                                                offset.y,
+                                                boxWidthPx,
+                                                boxHeightPx
+                                            )
+                                        }
+                                    } else if (activeTool != EditToolMode.VIEW) {
                                         detectDragGestures(
                                             onDragStart = { pushHistory() },
                                             onDrag = { change, _ ->
@@ -408,11 +477,7 @@ fun BackgroundRemoverScreen(
                         Column(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .clickable {
-                                    photoPicker.launch(
-                                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                                    )
-                                }
+                                .clickable { showSourceSheet = true }
                                 .padding(24.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center
@@ -472,18 +537,40 @@ fun BackgroundRemoverScreen(
 
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
                                 // View / Normal Mode
                                 FilterChip(
                                     selected = activeTool == EditToolMode.VIEW,
                                     onClick = { activeTool = EditToolMode.VIEW },
-                                    label = { Text("Auto AI", fontSize = 12.sp) },
+                                    label = { Text("Auto AI", fontSize = 11.sp) },
                                     leadingIcon = {
                                         Icon(
                                             Icons.Outlined.AutoFixHigh,
                                             contentDescription = null,
-                                            modifier = Modifier.size(16.dp)
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                    },
+                                    modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(12.dp),
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                                        containerColor = AppTheme.colors.canvasBackground,
+                                        labelColor = AppTheme.colors.textSecondary
+                                    )
+                                )
+
+                                // Magic Wand Mode (Tap to cut)
+                                FilterChip(
+                                    selected = activeTool == EditToolMode.MAGIC_WAND,
+                                    onClick = { activeTool = EditToolMode.MAGIC_WAND },
+                                    label = { Text("Tap Cut", fontSize = 11.sp) },
+                                    leadingIcon = {
+                                        Icon(
+                                            Icons.Outlined.Colorize,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(14.dp)
                                         )
                                     },
                                     modifier = Modifier.weight(1f),
@@ -500,12 +587,12 @@ fun BackgroundRemoverScreen(
                                 FilterChip(
                                     selected = activeTool == EditToolMode.ERASE_BRUSH,
                                     onClick = { activeTool = EditToolMode.ERASE_BRUSH },
-                                    label = { Text("Erase", fontSize = 12.sp) },
+                                    label = { Text("Erase", fontSize = 11.sp) },
                                     leadingIcon = {
                                         Icon(
                                             Icons.Outlined.CleaningServices,
                                             contentDescription = null,
-                                            modifier = Modifier.size(16.dp)
+                                            modifier = Modifier.size(14.dp)
                                         )
                                     },
                                     modifier = Modifier.weight(1f),
@@ -522,12 +609,12 @@ fun BackgroundRemoverScreen(
                                 FilterChip(
                                     selected = activeTool == EditToolMode.RESTORE_BRUSH,
                                     onClick = { activeTool = EditToolMode.RESTORE_BRUSH },
-                                    label = { Text("Restore", fontSize = 12.sp) },
+                                    label = { Text("Restore", fontSize = 11.sp) },
                                     leadingIcon = {
                                         Icon(
                                             Icons.Outlined.Brush,
                                             contentDescription = null,
-                                            modifier = Modifier.size(16.dp)
+                                            modifier = Modifier.size(14.dp)
                                         )
                                     },
                                     modifier = Modifier.weight(1f),
@@ -541,7 +628,14 @@ fun BackgroundRemoverScreen(
                                 )
                             }
 
-                            if (activeTool != EditToolMode.VIEW) {
+                            if (activeTool == EditToolMode.MAGIC_WAND) {
+                                Text(
+                                    text = "Tap on any background area in the photo to instantly clear it.",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            } else if (activeTool != EditToolMode.VIEW) {
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween,

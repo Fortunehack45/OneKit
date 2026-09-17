@@ -384,8 +384,8 @@ class LocalBackgroundRemovalEngine : BackgroundRemovalEngine {
                             val neighborColor = pixels[nIdx]
                             val distToCurr = colorDistance(neighborColor, currColor)
                             val isMatchSeed = isBgCandidate(neighborColor, adaptiveTol)
-
-                            if (distToCurr <= adaptiveTol * 0.85 || isMatchSeed) {
+                            // Must match background cluster AND gradient barrier check
+                            if (isMatchSeed && distToCurr <= adaptiveTol * 1.2) {
                                 visited[nIdx] = true
                                 queue.add(nIdx)
                             }
@@ -396,21 +396,21 @@ class LocalBackgroundRemovalEngine : BackgroundRemovalEngine {
 
             // Morphological Hole Closing: Close interior holes that were erroneously matched
             val tempMask = mask.clone()
-            for (y in 2 until height - 2) {
-                for (x in 2 until width - 2) {
+            for (y in 1 until height - 1) {
+                for (x in 1 until width - 1) {
                     val idx = y * width + x
                     if (tempMask[idx] == 0.toByte()) {
-                        // If completely surrounded by foreground in 4 cardinal directions at radius 3, close hole
+                        // If completely surrounded by foreground in 4 cardinal directions, close hole
                         var topFg = false
                         var botFg = false
                         var leftFg = false
                         var rightFg = false
 
                         for (r in 1..4) {
-                            if (tempMask[(y - r) * width + x] != 0.toByte()) topFg = true
-                            if (tempMask[(y + r) * width + x] != 0.toByte()) botFg = true
-                            if (tempMask[y * width + (x - r)] != 0.toByte()) leftFg = true
-                            if (tempMask[y * width + (x + r)] != 0.toByte()) rightFg = true
+                            if (y - r >= 0 && tempMask[(y - r) * width + x] != 0.toByte()) topFg = true
+                            if (y + r < height && tempMask[(y + r) * width + x] != 0.toByte()) botFg = true
+                            if (x - r >= 0 && tempMask[y * width + (x - r)] != 0.toByte()) leftFg = true
+                            if (x + r < width && tempMask[y * width + (x + r)] != 0.toByte()) rightFg = true
                         }
                         if (topFg && botFg && leftFg && rightFg) {
                             mask[idx] = 255.toByte()

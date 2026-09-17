@@ -24,7 +24,12 @@ class PreferencesManager(context: Context) {
         private const val KEY_AUTOSAVE = "autosave_outputs"
         private const val KEY_HOME_LAYOUT = "home_layout_mode" // BENTO, GRID, COMPACT, COMFORT
         private const val KEY_HOME_DENSITY = "home_card_density" // COMPACT, NORMAL, SPACIOUS
+        private const val KEY_ONBOARDING_COMPLETED = "onboarding_completed"
     }
+
+    var isOnboardingCompleted: Boolean
+        get() = prefs.getBoolean(KEY_ONBOARDING_COMPLETED, false)
+        set(value) = prefs.edit().putBoolean(KEY_ONBOARDING_COMPLETED, value).apply()
 
     var homeLayout: String
         get() = prefs.getString(KEY_HOME_LAYOUT, "BENTO") ?: "BENTO"

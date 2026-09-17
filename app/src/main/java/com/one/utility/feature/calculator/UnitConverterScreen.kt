@@ -283,10 +283,18 @@ fun UnitConverterScreen(
                             }
 
                             // Input Value Field
+                            Text(
+                                text = "Input Value (${fromUnit.symbol})",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = AppTheme.colors.textSecondary,
+                                modifier = Modifier.padding(top = 2.dp)
+                            )
+
                             OutlinedTextField(
                                 value = inputValue,
                                 onValueChange = { inputValue = it },
-                                label = { Text("Input Value (${fromUnit.symbol})") },
+                                placeholder = { Text("Enter value (e.g. 100)", color = AppTheme.colors.textTertiary) },
                                 singleLine = true,
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Number,
@@ -298,12 +306,10 @@ fun UnitConverterScreen(
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                                     unfocusedBorderColor = AppTheme.colors.borderSubtle,
-                                    focusedContainerColor = AppTheme.colors.canvasBackground,
-                                    unfocusedContainerColor = AppTheme.colors.canvasBackground,
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedContainerColor = Color.Transparent,
                                     focusedTextColor = AppTheme.colors.textPrimary,
-                                    unfocusedTextColor = AppTheme.colors.textPrimary,
-                                    focusedLabelColor = MaterialTheme.colorScheme.primary,
-                                    unfocusedLabelColor = AppTheme.colors.textSecondary
+                                    unfocusedTextColor = AppTheme.colors.textPrimary
                                 ),
                                 trailingIcon = {
                                     if (inputValue.isNotEmpty()) {

@@ -208,3 +208,14 @@ fun ONETheme(
         )
     }
 }
+
+@Composable
+fun transparentTextFieldColors() = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+    focusedContainerColor = Color.Transparent,
+    unfocusedContainerColor = Color.Transparent,
+    focusedTextColor = AppTheme.colors.textPrimary,
+    unfocusedTextColor = AppTheme.colors.textPrimary,
+    focusedBorderColor = MaterialTheme.colorScheme.primary,
+    unfocusedBorderColor = AppTheme.colors.borderSubtle
+)
+

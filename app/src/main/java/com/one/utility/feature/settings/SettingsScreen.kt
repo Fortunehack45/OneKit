@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.CleaningServices
 import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.*
@@ -29,6 +30,7 @@ import com.one.utility.core.designsystem.*
 @Composable
 fun SettingsScreen(
     onNavigateBack: () -> Unit,
+    onNavigateToOnboarding: () -> Unit = {},
     onThemeChanged: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -250,7 +252,39 @@ fun SettingsScreen(
                 }
             }
 
-            // 5. Temporary Cache Management
+            // 5. App Tour & Onboarding Guide
+            item {
+                Surface(
+                    shape = RoundedCornerShape(24.dp),
+                    color = AppTheme.colors.cardSurface,
+                    modifier = Modifier.fillMaxWidth().border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(24.dp))
+                ) {
+                    Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Icon(Icons.Outlined.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                            Text("App Tour & Feature Guide", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
+                        }
+
+                        Text(
+                            text = "Revisit the native onboarding tour to explore all 25+ tools, camera features, reverse codecs, and on-device privacy architecture.",
+                            fontSize = 12.sp,
+                            lineHeight = 18.sp,
+                            color = AppTheme.colors.textSecondary
+                        )
+
+                        OutlinedButton(
+                            onClick = onNavigateToOnboarding,
+                            shape = RoundedCornerShape(14.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Launch App Onboarding Tour", fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary)
+                        }
+                    }
+                }
+            }
+
+            // 6. Temporary Cache Management
             item {
                 Surface(
                     shape = RoundedCornerShape(24.dp),

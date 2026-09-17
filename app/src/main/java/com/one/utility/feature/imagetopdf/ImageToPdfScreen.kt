@@ -42,6 +42,10 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
+import com.one.utility.core.designsystem.components.MediaPickerModalSheet
+import com.one.utility.core.designsystem.components.createTempCameraUri
+import androidx.compose.material.icons.filled.CameraAlt
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ImageToPdfScreen(
@@ -64,6 +68,18 @@ fun ImageToPdfScreen(
     var generatedPdfFile by remember { mutableStateOf<File?>(null) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
+    var showSourceSheet by remember { mutableStateOf(false) }
+    var tempCameraUri by remember { mutableStateOf<Uri?>(null) }
+
+    // Camera launcher
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success && tempCameraUri != null) {
+            selectedUris = selectedUris + tempCameraUri!!
+        }
+    }
+
     // Photo picker for selecting multiple images
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia()
@@ -71,6 +87,22 @@ fun ImageToPdfScreen(
         if (uris.isNotEmpty()) {
             selectedUris = selectedUris + uris
         }
+    }
+
+    if (showSourceSheet) {
+        MediaPickerModalSheet(
+            onDismissRequest = { showSourceSheet = false },
+            onTakePhoto = {
+                val uri = createTempCameraUri(context)
+                tempCameraUri = uri
+                cameraLauncher.launch(uri)
+            },
+            onChooseGallery = {
+                photoPickerLauncher.launch(
+                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                )
+            }
+        )
     }
 
     Scaffold(
@@ -105,25 +137,29 @@ fun ImageToPdfScreen(
                             .clip(RoundedCornerShape(24.dp))
                             .background(AppTheme.colors.cardSurface)
                             .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(24.dp))
-                            .clickable {
-                                photoPickerLauncher.launch(
-                                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                                )
-                            },
+                            .clickable { showSourceSheet = true },
                         contentAlignment = Alignment.Center
                     ) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Icon(
-                                Icons.Default.AddPhotoAlternate,
-                                contentDescription = null,
-                                tint = BentoHoney,
-                                modifier = Modifier.size(48.dp)
-                            )
-                            Text("Select Photos", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
-                            Text("Supports JPG, PNG, WEBP", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
+                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                Icon(
+                                    Icons.Default.CameraAlt,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(36.dp)
+                                )
+                                Icon(
+                                    Icons.Default.AddPhotoAlternate,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(36.dp)
+                                )
+                            }
+                            Text("Take Photo or Upload Images", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
+                            Text("Camera capture & Gallery (JPG, PNG, WEBP)", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
                         }
                     }
                 } else {
@@ -138,12 +174,8 @@ fun ImageToPdfScreen(
                                 fontWeight = FontWeight.Bold,
                                 color = AppTheme.colors.textPrimary
                             )
-                            TextButton(onClick = {
-                                photoPickerLauncher.launch(
-                                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                                )
-                            }) {
-                                Text("+ Add More", color = BentoHoney, fontWeight = FontWeight.Bold)
+                            TextButton(onClick = { showSourceSheet = true }) {
+                                Text("+ Add More", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                             }
                         }
 

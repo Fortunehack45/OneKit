@@ -142,8 +142,8 @@ fun TextToolsScreen(
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedTextColor = AppTheme.colors.textPrimary,
                                 unfocusedTextColor = AppTheme.colors.textPrimary,
-                                focusedContainerColor = AppTheme.colors.canvasBackground,
-                                unfocusedContainerColor = AppTheme.colors.canvasBackground,
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent,
                                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                                 unfocusedBorderColor = AppTheme.colors.borderSubtle
                             )

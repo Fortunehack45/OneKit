@@ -42,6 +42,10 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 
+import com.one.utility.core.designsystem.components.MediaPickerModalSheet
+import com.one.utility.core.designsystem.components.createTempCameraUri
+import androidx.compose.material.icons.filled.CameraAlt
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DocumentScannerScreen(
@@ -58,18 +62,47 @@ fun DocumentScannerScreen(
     var selectedFilter by remember { mutableStateOf(DocumentFilterMode.BW_DOCUMENT) }
     var isProcessing by remember { mutableStateOf(false) }
 
+    var showSourceSheet by remember { mutableStateOf(false) }
+    var tempCameraUri by remember { mutableStateOf<Uri?>(null) }
+
+    fun processUri(uri: Uri) {
+        selectedUri = uri
+        val stream = context.contentResolver.openInputStream(uri)
+        val bmp = BitmapFactory.decodeStream(stream)
+        rawBitmap = bmp
+        coroutineScope.launch {
+            filteredBitmap = scannerEngine.applyDocumentFilter(bmp, selectedFilter)
+        }
+    }
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success && tempCameraUri != null) {
+            processUri(tempCameraUri!!)
+        }
+    }
+
     val photoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
         if (uri != null) {
-            selectedUri = uri
-            val stream = context.contentResolver.openInputStream(uri)
-            val bmp = BitmapFactory.decodeStream(stream)
-            rawBitmap = bmp
-            coroutineScope.launch {
-                filteredBitmap = scannerEngine.applyDocumentFilter(bmp, selectedFilter)
-            }
+            processUri(uri)
         }
+    }
+
+    if (showSourceSheet) {
+        MediaPickerModalSheet(
+            onDismissRequest = { showSourceSheet = false },
+            onTakePhoto = {
+                val uri = createTempCameraUri(context)
+                tempCameraUri = uri
+                cameraLauncher.launch(uri)
+            },
+            onChooseGallery = {
+                photoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            }
+        )
     }
 
     fun applyFilter(filter: DocumentFilterMode) {
@@ -110,11 +143,9 @@ fun DocumentScannerScreen(
                         .fillMaxWidth()
                         .height(300.dp)
                         .clip(RoundedCornerShape(24.dp))
-                        .background(AppTheme.colors.cardSurface)
+                        .background(AppTheme.colors.surfaceCard)
                         .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(24.dp))
-                        .clickable {
-                            photoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-                        },
+                        .clickable { showSourceSheet = true },
                     contentAlignment = Alignment.Center
                 ) {
                     if (filteredBitmap != null) {
@@ -128,9 +159,12 @@ fun DocumentScannerScreen(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Icon(Icons.Default.AddPhotoAlternate, contentDescription = null, tint = BentoHoney, modifier = Modifier.size(48.dp))
+                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                Icon(Icons.Default.CameraAlt, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(36.dp))
+                                Icon(Icons.Default.AddPhotoAlternate, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(36.dp))
+                            }
                             Text("Capture or Select Document", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
-                            Text("Transforms paper photos into clean scans", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
+                            Text("Snap paper photo or choose from gallery", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
                         }
                     }
                 }

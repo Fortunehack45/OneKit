@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddPhotoAlternate
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Flip
 import androidx.compose.material.icons.filled.RotateRight
 import androidx.compose.material.icons.filled.Share
@@ -36,6 +37,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import com.one.utility.core.designsystem.*
+import com.one.utility.core.designsystem.components.MediaPickerModalSheet
+import com.one.utility.core.designsystem.components.createTempCameraUri
 import com.one.utility.core.processing.CropAspectRatio
 import com.one.utility.core.processing.ImageCropperEngine
 import kotlinx.coroutines.launch
@@ -58,27 +61,56 @@ fun ImageCropperScreen(
     var isFlippedH by remember { mutableStateOf(false) }
     var selectedRatio by remember { mutableStateOf(CropAspectRatio.FREE) }
 
+    var showSourceSheet by remember { mutableStateOf(false) }
+    var tempCameraUri by remember { mutableStateOf<Uri?>(null) }
+
+    fun processUri(uri: Uri) {
+        selectedUri = uri
+        currentRotation = 0f
+        isFlippedH = false
+        selectedRatio = CropAspectRatio.FREE
+        runCatching {
+            val bmp = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                ImageDecoder.decodeBitmap(ImageDecoder.createSource(context.contentResolver, uri)) { decoder, _, _ ->
+                    decoder.isMutableRequired = true
+                }
+            } else {
+                @Suppress("DEPRECATION")
+                MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+            }
+            originalBitmap = bmp
+            displayedBitmap = bmp
+        }
+    }
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success && tempCameraUri != null) {
+            processUri(tempCameraUri!!)
+        }
+    }
+
     val photoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
         if (uri != null) {
-            selectedUri = uri
-            currentRotation = 0f
-            isFlippedH = false
-            selectedRatio = CropAspectRatio.FREE
-            runCatching {
-                val bmp = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                    ImageDecoder.decodeBitmap(ImageDecoder.createSource(context.contentResolver, uri)) { decoder, _, _ ->
-                        decoder.isMutableRequired = true
-                    }
-                } else {
-                    @Suppress("DEPRECATION")
-                    MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
-                }
-                originalBitmap = bmp
-                displayedBitmap = bmp
-            }
+            processUri(uri)
         }
+    }
+
+    if (showSourceSheet) {
+        MediaPickerModalSheet(
+            onDismissRequest = { showSourceSheet = false },
+            onTakePhoto = {
+                val uri = createTempCameraUri(context)
+                tempCameraUri = uri
+                cameraLauncher.launch(uri)
+            },
+            onChooseGallery = {
+                photoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            }
+        )
     }
 
     fun applyTransforms() {
@@ -97,7 +129,7 @@ fun ImageCropperScreen(
         containerColor = AppTheme.colors.canvasBackground,
         topBar = {
             TopAppBar(
-                title = { Text("Crop & Rotate", fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary) },
+                title = { Text("Image Cropper & Rotate", fontWeight = FontWeight.Bold, color = AppTheme.colors.textPrimary) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = AppTheme.colors.textPrimary)
@@ -125,9 +157,7 @@ fun ImageCropperScreen(
                         .clip(RoundedCornerShape(24.dp))
                         .background(AppTheme.colors.cardSurface)
                         .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(24.dp))
-                        .clickable {
-                            photoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-                        },
+                        .clickable { showSourceSheet = true },
                     contentAlignment = Alignment.Center
                 ) {
                     if (displayedBitmap != null) {
@@ -141,9 +171,12 @@ fun ImageCropperScreen(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Icon(Icons.Default.AddPhotoAlternate, contentDescription = null, tint = BentoHoney, modifier = Modifier.size(48.dp))
-                            Text("Select an Image", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
-                            Text("Tap to pick from gallery", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
+                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                Icon(Icons.Default.CameraAlt, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(36.dp))
+                                Icon(Icons.Default.AddPhotoAlternate, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(36.dp))
+                            }
+                            Text("Take Photo or Choose Image", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
+                            Text("Camera capture & Gallery supported", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
                         }
                     }
                 }

@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddPhotoAlternate
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.*
@@ -29,6 +30,8 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import coil.compose.AsyncImage
 import com.one.utility.core.designsystem.*
+import com.one.utility.core.designsystem.components.MediaPickerModalSheet
+import com.one.utility.core.designsystem.components.createTempCameraUri
 import com.one.utility.core.processing.CompressionPreset
 import com.one.utility.core.processing.CompressionResult
 import com.one.utility.core.processing.ImageCompressorEngine
@@ -54,6 +57,18 @@ fun CompressorScreen(
     var resultData by remember { mutableStateOf<CompressionResult?>(null) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
+    var showSourceSheet by remember { mutableStateOf(false) }
+    var tempCameraUri by remember { mutableStateOf<Uri?>(null) }
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success && tempCameraUri != null) {
+            selectedUri = tempCameraUri
+            resultData = null
+        }
+    }
+
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
@@ -61,6 +76,22 @@ fun CompressorScreen(
             selectedUri = uri
             resultData = null
         }
+    }
+
+    if (showSourceSheet) {
+        MediaPickerModalSheet(
+            onDismissRequest = { showSourceSheet = false },
+            onTakePhoto = {
+                val uri = createTempCameraUri(context)
+                tempCameraUri = uri
+                cameraLauncher.launch(uri)
+            },
+            onChooseGallery = {
+                photoPickerLauncher.launch(
+                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                )
+            }
+        )
     }
 
     Scaffold(
@@ -94,11 +125,7 @@ fun CompressorScreen(
                         .clip(RoundedCornerShape(24.dp))
                         .background(AppTheme.colors.surfaceCard)
                         .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(24.dp))
-                        .clickable {
-                            photoPickerLauncher.launch(
-                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                            )
-                        },
+                        .clickable { showSourceSheet = true },
                     contentAlignment = Alignment.Center
                 ) {
                     if (selectedUri == null) {
@@ -106,14 +133,22 @@ fun CompressorScreen(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Icon(
-                                Icons.Default.AddPhotoAlternate,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(48.dp)
-                            )
-                            Text("Select an Image to Compress", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
-                            Text("Tap to browse gallery", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
+                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                Icon(
+                                    Icons.Default.CameraAlt,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(36.dp)
+                                )
+                                Icon(
+                                    Icons.Default.AddPhotoAlternate,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(36.dp)
+                                )
+                            }
+                            Text("Take Photo or Choose Image", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
+                            Text("Camera capture & Gallery supported", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
                         }
                     } else {
                         AsyncImage(

@@ -53,6 +53,8 @@ import java.net.URLDecoder
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
+import com.one.utility.feature.onboarding.OnboardingScreen
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,6 +79,8 @@ class MainActivity : ComponentActivity() {
 fun OneAppNavigation(
     onThemeChanged: (String) -> Unit
 ) {
+    val context = LocalContext.current
+    val prefs = remember { PreferencesManager(context) }
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: "home"
@@ -87,16 +91,29 @@ fun OneAppNavigation(
             currentRoute.startsWith("calculator") ||
             currentRoute == "settings"
 
+    val startRoute = if (prefs.isOnboardingCompleted) "home" else "onboarding"
+
     Box(modifier = Modifier.fillMaxSize()) {
         NavHost(
             navController = navController,
-            startDestination = "home",
+            startDestination = startRoute,
             modifier = Modifier.fillMaxSize(),
             enterTransition = { ScreenTransitions.enterTransition },
             exitTransition = { ScreenTransitions.exitTransition },
             popEnterTransition = { ScreenTransitions.popEnterTransition },
             popExitTransition = { ScreenTransitions.popExitTransition }
         ) {
+            composable("onboarding") {
+                OnboardingScreen(
+                    onFinish = {
+                        prefs.isOnboardingCompleted = true
+                        navController.navigate("home") {
+                            popUpTo("onboarding") { inclusive = true }
+                        }
+                    }
+                )
+            }
+
             composable("home") {
                 HomeScreen(
                     onNavigateToTool = { route -> navController.navigate(route) },
@@ -195,6 +212,9 @@ fun OneAppNavigation(
                         } else {
                             navController.navigate("home")
                         }
+                    },
+                    onNavigateToOnboarding = {
+                        navController.navigate("onboarding")
                     },
                     onThemeChanged = onThemeChanged
                 )

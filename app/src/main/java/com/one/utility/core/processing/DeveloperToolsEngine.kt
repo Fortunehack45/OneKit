@@ -22,6 +22,14 @@ data class HashReverseResult(
     val matchType: String
 )
 
+data class AutoDecodeResult(
+    val detectedType: String,
+    val isSuccess: Boolean,
+    val readableOutput: String,
+    val details: Map<String, String> = emptyMap(),
+    val rawPayload: String? = null
+)
+
 data class UuidDetails(
     val rawUuid: String,
     val version: Int,
@@ -571,6 +579,222 @@ class DeveloperToolsEngine {
             nodeId = nodeMac,
             decimalValue = decimalBigInt,
             hexNoDashes = clean
+        )
+    }
+
+    // 19. Hex to Text & Text to Hex
+    fun hexToText(hex: String): String {
+        val clean = hex.trim().replace("\\s+".toRegex(), "").removePrefix("0x").removePrefix("0X")
+        if (clean.length % 2 != 0) throw IllegalArgumentException("Hex string must have an even number of digits")
+        if (!clean.all { it in "0123456789abcdefABCDEF" }) throw IllegalArgumentException("Contains invalid hexadecimal characters")
+        val bytes = ByteArray(clean.length / 2)
+        for (i in clean.indices step 2) {
+            bytes[i / 2] = clean.substring(i, i + 2).toInt(16).toByte()
+        }
+        return String(bytes, StandardCharsets.UTF_8)
+    }
+
+    fun textToHex(text: String, spaced: Boolean = false): String {
+        val bytes = text.toByteArray(StandardCharsets.UTF_8)
+        return if (spaced) {
+            bytes.joinToString(" ") { "%02X".format(it) }
+        } else {
+            bytes.joinToString("") { "%02X".format(it) }
+        }
+    }
+
+    // 20. Binary to Text & Text to Binary
+    fun binaryToText(binary: String): String {
+        val clean = binary.trim().replace("\\s+".toRegex(), "")
+        if (clean.length % 8 != 0) throw IllegalArgumentException("Binary length must be a multiple of 8 bits")
+        if (!clean.all { it == '0' || it == '1' }) throw IllegalArgumentException("Contains non-binary characters")
+        val bytes = clean.chunked(8).map { it.toInt(2).toByte() }.toByteArray()
+        return String(bytes, StandardCharsets.UTF_8)
+    }
+
+    fun textToBinary(text: String, spaced: Boolean = true): String {
+        val bytes = text.toByteArray(StandardCharsets.UTF_8)
+        val delimiter = if (spaced) " " else ""
+        return bytes.joinToString(delimiter) {
+            String.format("%8s", Integer.toBinaryString(it.toInt() and 0xFF)).replace(' ', '0')
+        }
+    }
+
+    // 21. Universal Auto-Detector & Reverse Inverter
+    fun autoDetectAndDecode(input: String): AutoDecodeResult {
+        val trimmed = input.trim()
+        if (trimmed.isEmpty()) {
+            return AutoDecodeResult(
+                detectedType = "Empty",
+                isSuccess = false,
+                readableOutput = "Please enter or paste an encoded string, hash, or UUID."
+            )
+        }
+
+        // 1. Check UUID format
+        val uuidPattern = Regex("""^[0-9a-fA-F]{8}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{12}$""")
+        if (uuidPattern.matches(trimmed)) {
+            val details = parseUuid(trimmed)
+            if (details != null) {
+                val detailsMap = mutableMapOf(
+                    "Standard UUID" to details.rawUuid,
+                    "Version" to details.versionName,
+                    "Variant" to details.variant,
+                    "Node / MAC" to details.nodeId,
+                    "Clock Sequence" to details.clockSequence,
+                    "Integer (Dec)" to details.decimalValue
+                )
+                details.formattedTimestamp?.let { detailsMap["Created (UTC)"] = it }
+                val summary = buildString {
+                    appendLine("UUID ${details.versionName}")
+                    appendLine("Variant: ${details.variant}")
+                    details.formattedTimestamp?.let { appendLine("Timestamp: $it") }
+                    appendLine("MAC / Node: ${details.nodeId}")
+                    appendLine("Integer: ${details.decimalValue}")
+                }
+                return AutoDecodeResult(
+                    detectedType = "UUID (${details.versionName})",
+                    isSuccess = true,
+                    readableOutput = summary.trim(),
+                    details = detailsMap,
+                    rawPayload = details.rawUuid
+                )
+            }
+        }
+
+        // 2. Check JWT
+        if (trimmed.count { it == '.' } == 2 && trimmed.startsWith("ey")) {
+            runCatching {
+                val jwt = decodeJwt(trimmed)
+                return AutoDecodeResult(
+                    detectedType = "JWT (JSON Web Token)",
+                    isSuccess = true,
+                    readableOutput = "=== HEADER ===\n${jwt.headerJson}\n\n=== PAYLOAD ===\n${jwt.bodyJson}",
+                    details = mapOf("Format" to "RFC 7519 JSON Web Token"),
+                    rawPayload = jwt.bodyJson
+                )
+            }
+        }
+
+        // 3. Check Hashes (MD5: 32, SHA-1: 40, SHA-256: 64, SHA-512: 128 hex chars)
+        val hexCharsOnly = trimmed.all { it in "0123456789abcdefABCDEF" }
+        if (hexCharsOnly && trimmed.length in listOf(32, 40, 64, 128)) {
+            val algo = when (trimmed.length) {
+                32 -> "MD5"
+                40 -> "SHA-1"
+                64 -> "SHA-256"
+                128 -> "SHA-512"
+                else -> "Hash"
+            }
+            val reverse = reverseHash(trimmed)
+            if (reverse != null) {
+                return AutoDecodeResult(
+                    detectedType = "$algo Cryptographic Hash",
+                    isSuccess = true,
+                    readableOutput = reverse.plainText,
+                    details = mapOf(
+                        "Algorithm" to reverse.algorithm,
+                        "Match Type" to reverse.matchType,
+                        "Plaintext" to reverse.plainText,
+                        "Original Hash" to trimmed
+                    ),
+                    rawPayload = reverse.plainText
+                )
+            } else {
+                return AutoDecodeResult(
+                    detectedType = "$algo Cryptographic Hash",
+                    isSuccess = false,
+                    readableOutput = "Valid $algo hash (${trimmed.length} hex digits).\nNot found in local offline dictionary (100k common passwords & PINs).",
+                    details = mapOf("Algorithm" to algo, "Length" to "${trimmed.length} hex chars")
+                )
+            }
+        }
+
+        // 4. Check Binary representation (e.g. 01001000 01100101)
+        val binaryClean = trimmed.replace("\\s+".toRegex(), "")
+        if (binaryClean.length >= 8 && binaryClean.length % 8 == 0 && binaryClean.all { it == '0' || it == '1' }) {
+            runCatching {
+                val decoded = binaryToText(trimmed)
+                if (decoded.all { it.code in 32..126 || it == '\n' || it == '\r' || it == '\t' }) {
+                    return AutoDecodeResult(
+                        detectedType = "Binary (8-bit ASCII)",
+                        isSuccess = true,
+                        readableOutput = decoded,
+                        details = mapOf("Decoded Bytes" to "${binaryClean.length / 8} characters"),
+                        rawPayload = decoded
+                    )
+                }
+            }
+        }
+
+        // 5. Check Hex representation (e.g. 48656c6c6f or 48 65 6c 6c 6f)
+        val hexClean = trimmed.replace("\\s+".toRegex(), "").removePrefix("0x").removePrefix("0X")
+        if (hexClean.length >= 4 && hexClean.length % 2 == 0 && hexClean.all { it in "0123456789abcdefABCDEF" }) {
+            runCatching {
+                val decoded = hexToText(trimmed)
+                if (decoded.length >= 2 && decoded.all { it.code in 32..126 || it == '\n' || it == '\r' || it == '\t' }) {
+                    return AutoDecodeResult(
+                        detectedType = "Hexadecimal String",
+                        isSuccess = true,
+                        readableOutput = decoded,
+                        details = mapOf("Decoded Length" to "${decoded.length} chars"),
+                        rawPayload = decoded
+                    )
+                }
+            }
+        }
+
+        // 6. Check URL encoded
+        if (trimmed.contains("%") && (trimmed.contains("%20") || trimmed.contains("%2F") || trimmed.contains("%3A") || trimmed.contains("%3D") || trimmed.contains("%26"))) {
+            runCatching {
+                val decoded = urlDecode(trimmed)
+                if (decoded != trimmed) {
+                    return AutoDecodeResult(
+                        detectedType = "URL Encoded String",
+                        isSuccess = true,
+                        readableOutput = decoded,
+                        details = mapOf("Original Length" to "${trimmed.length}", "Decoded Length" to "${decoded.length}"),
+                        rawPayload = decoded
+                    )
+                }
+            }
+        }
+
+        // 7. Check HTML Entities
+        if (trimmed.contains("&amp;") || trimmed.contains("&lt;") || trimmed.contains("&gt;") || trimmed.contains("&quot;") || trimmed.contains("&#39;")) {
+            val decoded = htmlUnescape(trimmed)
+            return AutoDecodeResult(
+                detectedType = "HTML Escaped String",
+                isSuccess = true,
+                readableOutput = decoded,
+                details = mapOf("Status" to "Entities restored"),
+                rawPayload = decoded
+            )
+        }
+
+        // 8. Check Base64
+        val base64Clean = trimmed.replace("\\s+".toRegex(), "")
+        if (base64Clean.length >= 4 && base64Clean.length % 4 == 0 && base64Clean.all { it.isLetterOrDigit() || it == '+' || it == '/' || it == '=' }) {
+            runCatching {
+                val decoded = base64Decode(base64Clean)
+                if (decoded.isNotEmpty() && decoded.all { it.code in 32..126 || it == '\n' || it == '\r' || it == '\t' || it.code in 128..65535 }) {
+                    return AutoDecodeResult(
+                        detectedType = "Base64 Encoded String",
+                        isSuccess = true,
+                        readableOutput = decoded,
+                        details = mapOf("Decoded Length" to "${decoded.length} chars"),
+                        rawPayload = decoded
+                    )
+                }
+            }
+        }
+
+        // Default fallback: Plain text
+        return AutoDecodeResult(
+            detectedType = "Plain Text",
+            isSuccess = true,
+            readableOutput = trimmed,
+            details = mapOf("Length" to "${trimmed.length} characters")
         )
     }
 }
