@@ -28,6 +28,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
@@ -278,15 +279,17 @@ fun ImageToPdfScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Row(
+                                modifier = Modifier.weight(1f),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
                                 Icon(Icons.Outlined.CheckCircle, contentDescription = null, tint = BentoHoney)
                                 Column {
                                     Text("PDF Created Successfully", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = AppTheme.colors.textPrimary)
-                                    Text("${pdfFile.name} • ${(pdfFile.length() / 1024)} KB", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
+                                    Text("${pdfFile.name} • ${(pdfFile.length() / 1024)} KB", fontSize = 12.sp, color = AppTheme.colors.textSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
                                 }
                             }
+                            Spacer(Modifier.width(8.dp))
 
                             Button(
                                 onClick = {
@@ -305,9 +308,9 @@ fun ImageToPdfScreen(
                                 colors = obsidianButtonColors(),
                                 shape = RoundedCornerShape(12.dp)
                             ) {
-                                Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
+                                Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
                                 Spacer(Modifier.width(6.dp))
-                                Text("Share", color = Color.White, fontWeight = FontWeight.Bold)
+                                Text("Share", fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -353,8 +356,7 @@ fun ImageToPdfScreen(
                     Text(
                         text = if (isProcessing) "Converting..." else "Create PDF",
                         fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        fontWeight = FontWeight.Bold
                     )
                 }
                 Spacer(Modifier.height(20.dp))

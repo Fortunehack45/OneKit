@@ -192,9 +192,9 @@ fun DocumentScannerScreen(
                             shape = RoundedCornerShape(16.dp),
                             colors = obsidianButtonColors()
                         ) {
-                            Icon(Icons.Default.PictureAsPdf, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
+                            Icon(Icons.Default.PictureAsPdf, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(6.dp))
-                            Text(if (isProcessing) "Exporting..." else "Save as PDF", fontWeight = FontWeight.Bold, color = Color.White)
+                            Text(if (isProcessing) "Exporting..." else "Save as PDF", fontWeight = FontWeight.Bold)
                         }
 
                         Button(
@@ -216,9 +216,9 @@ fun DocumentScannerScreen(
                             shape = RoundedCornerShape(16.dp),
                             colors = accentButtonColors(BentoHoney)
                         ) {
-                            Icon(Icons.Default.Share, contentDescription = null, tint = TextPrimary, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(6.dp))
-                            Text("Share Image", color = TextPrimary, fontWeight = FontWeight.Bold)
+                            Text("Share Image", fontWeight = FontWeight.Bold)
                         }
                     }
                 }

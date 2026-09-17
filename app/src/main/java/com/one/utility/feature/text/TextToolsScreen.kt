@@ -142,21 +142,21 @@ fun TextToolsScreen(
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
                             colors = obsidianButtonColors()
-                        ) { Text("UPPERCASE", fontSize = 12.sp, color = Color.White) }
+                        ) { Text("UPPERCASE", fontSize = 12.sp, fontWeight = FontWeight.SemiBold) }
 
                         Button(
                             onClick = { inputText = engine.toLowerCase(inputText) },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
                             colors = obsidianButtonColors()
-                        ) { Text("lowercase", fontSize = 12.sp, color = Color.White) }
+                        ) { Text("lowercase", fontSize = 12.sp, fontWeight = FontWeight.SemiBold) }
 
                         Button(
                             onClick = { inputText = engine.toTitleCase(inputText) },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
                             colors = obsidianButtonColors()
-                        ) { Text("Title Case", fontSize = 12.sp, color = Color.White) }
+                        ) { Text("Title Case", fontSize = 12.sp, fontWeight = FontWeight.SemiBold) }
                     }
 
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -197,9 +197,9 @@ fun TextToolsScreen(
                         shape = RoundedCornerShape(14.dp),
                         colors = obsidianButtonColors()
                     ) {
-                        Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
+                        Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(Modifier.width(8.dp))
-                        Text("Copy Transformed Text", fontWeight = FontWeight.Bold, color = Color.White)
+                        Text("Copy Transformed Text", fontWeight = FontWeight.Bold)
                     }
                 }
             }

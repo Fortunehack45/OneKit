@@ -190,12 +190,11 @@ fun StorageCleanerScreen(
                             enabled = cacheInfo.totalSizeBytes > 0 && !isScanning,
                             modifier = Modifier.fillMaxWidth().height(48.dp)
                         ) {
-                            Icon(Icons.Outlined.CleaningServices, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
+                            Icon(Icons.Outlined.CleaningServices, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(8.dp))
                             Text(
                                 if (cacheInfo.totalSizeBytes == 0L) "Cache is Completely Clean" else "Clean Cache (${cacheInfo.formattedSize})",
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
+                                fontWeight = FontWeight.Bold
                             )
                         }
                     }
@@ -282,7 +281,7 @@ fun StorageCleanerScreen(
                                     shape = RoundedCornerShape(10.dp),
                                     contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
                                 ) {
-                                    Text("Keep 1, Clean", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                    Text("Keep 1, Clean", fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
 

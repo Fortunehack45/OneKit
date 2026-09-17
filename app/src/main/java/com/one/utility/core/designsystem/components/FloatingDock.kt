@@ -50,8 +50,8 @@ fun FloatingDock(
     ) {
         FrostedGlassBox(
             shape = RoundedCornerShape(36.dp),
-            elevation = 24.dp,
-            borderWidth = 1.25.dp,
+            elevation = 10.dp,
+            borderWidth = 1.dp,
             modifier = Modifier.height(66.dp)
         ) {
             Row(

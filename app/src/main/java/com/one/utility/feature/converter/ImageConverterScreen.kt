@@ -24,6 +24,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
@@ -173,13 +174,15 @@ fun ImageConverterScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Column {
+                            Column(modifier = Modifier.weight(1f)) {
                                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                     Icon(Icons.Outlined.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                                    Text("Converted to ${res.format.extension.uppercase()}!", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = AppTheme.colors.textPrimary)
+                                    Text("Converted to ${res.format.extension.uppercase()}!", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = AppTheme.colors.textPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
                                 }
-                                Text("${res.outputFile.name} • ${res.sizeBytes / 1024} KB", fontSize = 12.sp, color = AppTheme.colors.textSecondary)
+                                Text("${res.outputFile.name} • ${res.sizeBytes / 1024} KB", fontSize = 12.sp, color = AppTheme.colors.textSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
                             }
+
+                            Spacer(Modifier.width(10.dp))
 
                             Button(
                                 onClick = {
@@ -194,9 +197,9 @@ fun ImageConverterScreen(
                                 colors = obsidianButtonColors(),
                                 shape = RoundedCornerShape(12.dp)
                             ) {
-                                Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
+                                Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
                                 Spacer(Modifier.width(6.dp))
-                                Text("Share", color = Color.White)
+                                Text("Share", fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -224,8 +227,7 @@ fun ImageConverterScreen(
                     Text(
                         text = if (isProcessing) "Converting..." else "Convert to ${targetFormat.extension.uppercase()}",
                         fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp,
-                        color = Color.White
+                        fontSize = 16.sp
                     )
                 }
             }

@@ -88,24 +88,24 @@ object AppTheme {
 fun obsidianButtonColors(): androidx.compose.material3.ButtonColors = androidx.compose.material3.ButtonDefaults.buttonColors(
     containerColor = if (AppTheme.colors.isDark) Color(0xFF2E313D) else DockObsidian,
     contentColor = Color.White,
-    disabledContainerColor = AppTheme.colors.surfaceVariant,
-    disabledContentColor = AppTheme.colors.textMuted
+    disabledContainerColor = if (AppTheme.colors.isDark) Color(0xFF252834) else Color(0xFFE4E6ED),
+    disabledContentColor = if (AppTheme.colors.isDark) Color(0xFF686D80) else Color(0xFF888D9E)
 )
 
 @Composable
 fun primaryButtonColors(): androidx.compose.material3.ButtonColors = androidx.compose.material3.ButtonDefaults.buttonColors(
     containerColor = AppTheme.colors.primaryButton,
     contentColor = AppTheme.colors.onPrimaryButton,
-    disabledContainerColor = AppTheme.colors.surfaceVariant,
-    disabledContentColor = AppTheme.colors.textMuted
+    disabledContainerColor = if (AppTheme.colors.isDark) Color(0xFF252834) else Color(0xFFE4E6ED),
+    disabledContentColor = if (AppTheme.colors.isDark) Color(0xFF686D80) else Color(0xFF888D9E)
 )
 
 @Composable
 fun accentButtonColors(accentColor: Color): androidx.compose.material3.ButtonColors = androidx.compose.material3.ButtonDefaults.buttonColors(
     containerColor = accentColor,
     contentColor = TextPrimary,
-    disabledContainerColor = AppTheme.colors.surfaceVariant,
-    disabledContentColor = AppTheme.colors.textMuted
+    disabledContainerColor = if (AppTheme.colors.isDark) Color(0xFF252834) else Color(0xFFE4E6ED),
+    disabledContentColor = if (AppTheme.colors.isDark) Color(0xFF686D80) else Color(0xFF888D9E)
 )
 
 private val LightColorScheme = lightColorScheme(

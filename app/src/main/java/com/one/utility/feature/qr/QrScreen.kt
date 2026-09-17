@@ -206,9 +206,9 @@ fun QrScreen(
                     shape = RoundedCornerShape(20.dp),
                     colors = obsidianButtonColors()
                 ) {
-                    Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(18.dp), tint = Color.White)
+                    Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("Share QR Code", fontWeight = FontWeight.Bold, color = Color.White)
+                    Text("Share QR Code", fontWeight = FontWeight.Bold)
                 }
             }
         }

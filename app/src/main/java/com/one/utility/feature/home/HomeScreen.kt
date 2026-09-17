@@ -3,6 +3,7 @@ package com.one.utility.feature.home
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -306,26 +307,24 @@ fun HomeScreen(
                 }
             }
 
-            // 2. High-End Frosted Search Bar & Action Hub
+            // 2. Spotlight Minimalist Search Bar & Action Hub
             item {
-                FrostedGlassBox(
-                    shape = RoundedCornerShape(24.dp),
-                    elevation = 10.dp,
-                    borderWidth = 1.dp,
+                Surface(
+                    shape = RoundedCornerShape(18.dp),
+                    color = AppTheme.colors.cardSurface,
+                    border = BorderStroke(1.dp, AppTheme.colors.borderSubtle),
+                    shadowElevation = 2.dp,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        modifier = Modifier.padding(if (searchQuery.isNotEmpty()) 12.dp else 4.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         // Search Text Field
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(AppTheme.colors.canvasBackground)
-                                .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(16.dp))
-                                .padding(horizontal = 14.dp, vertical = 4.dp),
+                                .padding(horizontal = 12.dp, vertical = 6.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {

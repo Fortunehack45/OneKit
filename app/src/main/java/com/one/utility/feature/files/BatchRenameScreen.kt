@@ -180,7 +180,7 @@ fun BatchRenameScreen(
                     shape = RoundedCornerShape(18.dp),
                     colors = obsidianButtonColors()
                 ) {
-                    Text("Apply Batch Rename", fontWeight = FontWeight.Bold, color = Color.White)
+                    Text("Apply Batch Rename", fontWeight = FontWeight.Bold)
                 }
 
                 renameStatus?.let { status ->

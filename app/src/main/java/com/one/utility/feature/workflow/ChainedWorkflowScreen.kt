@@ -148,9 +148,9 @@ fun ChainedWorkflowScreen(
                                 shape = RoundedCornerShape(16.dp),
                                 colors = obsidianButtonColors()
                             ) {
-                                Icon(Icons.Default.AddPhotoAlternate, contentDescription = null, modifier = Modifier.size(18.dp), tint = Color.White)
+                                Icon(Icons.Default.AddPhotoAlternate, contentDescription = null, modifier = Modifier.size(18.dp))
                                 Spacer(Modifier.width(8.dp))
-                                Text("Choose Photos", fontWeight = FontWeight.Bold, color = Color.White)
+                                Text("Choose Photos", fontWeight = FontWeight.Bold)
                             }
                         } else if (currentStepIndex == 1) {
                             Text("${selectedUris.size} photos ready for auto-compression and PDF assembly.", fontSize = 13.sp, color = AppTheme.colors.textPrimary)
@@ -161,11 +161,10 @@ fun ChainedWorkflowScreen(
                                     coroutineScope.launch {
                                         // 1. Compress
                                         progressStatus = "Compressing photos..."
-                                        val compressedFiles = mutableListOf<File>()
-                                        selectedUris.forEachIndexed { i, uri ->
-                                            val outFile = File(context.cacheDir, "temp_comp_$i.jpg")
+                                        val compressedFiles = selectedUris.mapIndexed { idx, uri ->
+                                            val outFile = File(context.cacheDir, "ONE_step1_${System.currentTimeMillis()}_$idx.jpg")
                                             compressor.compressImage(uri, outFile, CompressionPreset.HIGH)
-                                            compressedFiles.add(outFile)
+                                            outFile
                                         }
 
                                         // 2. Generate PDF
@@ -191,8 +190,7 @@ fun ChainedWorkflowScreen(
                             ) {
                                 Text(
                                     text = if (isProcessing) progressStatus else "Run Compress & PDF Pipeline",
-                                    fontWeight = FontWeight.Bold,
-                                    color = TextPrimary
+                                    fontWeight = FontWeight.Bold
                                 )
                             }
                         } else if (currentStepIndex >= 2 && finalPdfFile != null) {
@@ -208,17 +206,14 @@ fun ChainedWorkflowScreen(
                                         Icon(Icons.Outlined.CheckCircle, contentDescription = null, tint = BentoHoney)
                                         Text("Pipeline Complete!", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AppTheme.colors.textPrimary)
                                     }
-                                    Text("Photos were compressed and compiled into ${finalPdfFile!!.name}", fontSize = 13.sp, color = AppTheme.colors.textSecondary)
+                                    Text("Final File: ${finalPdfFile?.name} (${(finalPdfFile?.length() ?: 0) / 1024} KB)", fontSize = 13.sp, color = AppTheme.colors.textSecondary)
                                 }
                             }
 
                             Button(
                                 onClick = {
-                                    val uri = FileProvider.getUriForFile(
-                                        context,
-                                        "${context.packageName}.fileprovider",
-                                        finalPdfFile!!
-                                    )
+                                    val file = finalPdfFile ?: return@Button
+                                    val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
                                     val shareIntent = Intent(Intent.ACTION_SEND).apply {
                                         type = "application/pdf"
                                         putExtra(Intent.EXTRA_STREAM, uri)
@@ -230,9 +225,9 @@ fun ChainedWorkflowScreen(
                                 shape = RoundedCornerShape(16.dp),
                                 colors = obsidianButtonColors()
                             ) {
-                                Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(18.dp), tint = Color.White)
+                                Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(18.dp))
                                 Spacer(Modifier.width(8.dp))
-                                Text("Share Result PDF", fontWeight = FontWeight.Bold, color = Color.White)
+                                Text("Share Result PDF", fontWeight = FontWeight.Bold)
                             }
                         }
                     }

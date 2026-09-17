@@ -150,7 +150,7 @@ fun DeveloperToolsScreen(
                                         modifier = Modifier.weight(1f),
                                         colors = obsidianButtonColors(),
                                         shape = RoundedCornerShape(12.dp)
-                                    ) { Text("Format", color = Color.White, fontWeight = FontWeight.Bold) }
+                                    ) { Text("Format", fontWeight = FontWeight.Bold) }
 
                                     Button(
                                         onClick = {
@@ -214,7 +214,7 @@ fun DeveloperToolsScreen(
                                         modifier = Modifier.weight(1f),
                                         colors = obsidianButtonColors(),
                                         shape = RoundedCornerShape(12.dp)
-                                    ) { Text("Encode", color = Color.White, fontWeight = FontWeight.Bold) }
+                                    ) { Text("Encode", fontWeight = FontWeight.Bold) }
 
                                     Button(
                                         onClick = {
@@ -284,7 +284,7 @@ fun DeveloperToolsScreen(
                                     modifier = Modifier.fillMaxWidth(),
                                     colors = obsidianButtonColors(),
                                     shape = RoundedCornerShape(12.dp)
-                                ) { Text("Decode JWT", color = Color.White, fontWeight = FontWeight.Bold) }
+                                ) { Text("Decode JWT", fontWeight = FontWeight.Bold) }
 
                                 if (jwtOutput.isNotEmpty()) {
                                     Box(
@@ -325,14 +325,14 @@ fun DeveloperToolsScreen(
                                         modifier = Modifier.weight(1f),
                                         colors = obsidianButtonColors(),
                                         shape = RoundedCornerShape(12.dp)
-                                    ) { Text("SHA-256", color = Color.White, fontWeight = FontWeight.Bold) }
+                                    ) { Text("SHA-256", fontWeight = FontWeight.Bold) }
 
                                     Button(
                                         onClick = { hashOutput = "SHA-512:\n" + engine.hashString(hashInput, "SHA-512") },
                                         modifier = Modifier.weight(1f),
                                         colors = obsidianButtonColors(),
                                         shape = RoundedCornerShape(12.dp)
-                                    ) { Text("SHA-512", color = Color.White, fontWeight = FontWeight.Bold) }
+                                    ) { Text("SHA-512", fontWeight = FontWeight.Bold) }
                                 }
 
                                 if (hashOutput.isNotEmpty()) {
@@ -390,7 +390,7 @@ fun DeveloperToolsScreen(
                                     modifier = Modifier.fillMaxWidth(),
                                     colors = obsidianButtonColors(),
                                     shape = RoundedCornerShape(12.dp)
-                                ) { Text("Convert to Human Date", color = Color.White, fontWeight = FontWeight.Bold) }
+                                ) { Text("Convert to Human Date", fontWeight = FontWeight.Bold) }
 
                                 if (dateOutput.isNotEmpty()) {
                                     Box(

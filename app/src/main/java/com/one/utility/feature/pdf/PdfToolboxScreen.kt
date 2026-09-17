@@ -309,8 +309,7 @@ fun PdfToolboxScreen(
                                     ) {
                                         Text(
                                             if (isProcessing) progressStatus else if (selectedPdfUris.size < 2) "Add at least 2 PDFs" else "Merge ${selectedPdfUris.size} PDFs",
-                                            fontWeight = FontWeight.Bold,
-                                            color = Color.White
+                                            fontWeight = FontWeight.Bold
                                         )
                                     }
                                 }
@@ -399,7 +398,7 @@ fun PdfToolboxScreen(
                                         shape = RoundedCornerShape(14.dp),
                                         colors = obsidianButtonColors()
                                     ) {
-                                        Text(if (isProcessing) progressStatus else "Extract $singlePdfPageCount Pages to Images", fontWeight = FontWeight.Bold, color = Color.White)
+                                        Text(if (isProcessing) progressStatus else "Extract $singlePdfPageCount Pages to Images", fontWeight = FontWeight.Bold)
                                     }
                                 }
                             }
@@ -500,18 +499,13 @@ fun PdfToolboxScreen(
 
                                     Button(
                                         onClick = {
-                                            if (selectedPages.isEmpty()) {
-                                                errorMessage = "Please select at least 1 page to extract"
-                                                return@Button
-                                            }
+                                            val uri = singlePdfUri ?: return@Button
                                             isProcessing = true
-                                            errorMessage = null
                                             coroutineScope.launch {
                                                 val outFile = File(context.cacheDir, "ONE_split_${System.currentTimeMillis()}.pdf")
-                                                val res = engine.splitPdf(uri, selectedPages, outFile)
+                                                val res = engine.splitPdf(uri, selectedPages.toList().sorted(), outFile)
                                                 isProcessing = false
                                                 res.onSuccess { splitPdfFile = it }
-                                                    .onFailure { errorMessage = "Failed to split PDF: ${it.message}" }
                                             }
                                         },
                                         enabled = !isProcessing && selectedPages.isNotEmpty(),
@@ -521,8 +515,7 @@ fun PdfToolboxScreen(
                                     ) {
                                         Text(
                                             if (isProcessing) "Splitting..." else "Extract ${selectedPages.size} Pages into New PDF",
-                                            fontWeight = FontWeight.Bold,
-                                            color = Color.White
+                                            fontWeight = FontWeight.Bold
                                         )
                                     }
                                 }
@@ -573,9 +566,9 @@ fun PdfToolboxScreen(
                                     shape = RoundedCornerShape(12.dp),
                                     modifier = Modifier.weight(1f)
                                 ) {
-                                    Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
+                                    Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
                                     Spacer(Modifier.width(4.dp))
-                                    Text("Share", color = Color.White, fontWeight = FontWeight.Bold)
+                                    Text("Share", fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -624,9 +617,9 @@ fun PdfToolboxScreen(
                                     shape = RoundedCornerShape(12.dp),
                                     modifier = Modifier.weight(1f)
                                 ) {
-                                    Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
+                                    Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
                                     Spacer(Modifier.width(4.dp))
-                                    Text("Share", color = Color.White, fontWeight = FontWeight.Bold)
+                                    Text("Share", fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -667,9 +660,9 @@ fun PdfToolboxScreen(
                                     colors = obsidianButtonColors(),
                                     shape = RoundedCornerShape(12.dp)
                                 ) {
-                                    Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
+                                    Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
                                     Spacer(Modifier.width(4.dp))
-                                    Text("Share All", color = Color.White, fontWeight = FontWeight.Bold)
+                                    Text("Share All", fontWeight = FontWeight.Bold)
                                 }
                             }
 

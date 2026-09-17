@@ -26,6 +26,8 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -643,15 +645,15 @@ fun BackgroundRemoverScreen(
                             letterSpacing = 1.sp
                         )
 
-                        Row(
+                        LazyRow(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            contentPadding = PaddingValues(vertical = 4.dp)
                         ) {
-                            BgOption.values().forEach { opt ->
+                            items(BgOption.values()) { opt ->
                                 val isSelected = opt == selectedBgOption
                                 Surface(
                                     modifier = Modifier
-                                        .weight(1f)
                                         .clip(RoundedCornerShape(14.dp))
                                         .clickable { selectedBgOption = opt },
                                     shape = RoundedCornerShape(14.dp),
@@ -661,14 +663,40 @@ fun BackgroundRemoverScreen(
                                         if (isSelected) Color.Transparent else AppTheme.colors.borderSubtle
                                     )
                                 ) {
-                                    Text(
-                                        text = opt.label,
-                                        fontSize = 11.sp,
-                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                        color = if (isSelected) MaterialTheme.colorScheme.onPrimary else AppTheme.colors.textSecondary,
-                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                                        modifier = Modifier.padding(vertical = 10.dp)
-                                    )
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 9.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        if (opt.color != null) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(12.dp)
+                                                    .clip(CircleShape)
+                                                    .background(opt.color)
+                                                    .border(
+                                                        1.dp,
+                                                        if (isSelected) Color.White.copy(alpha = 0.7f) else AppTheme.colors.borderSubtle,
+                                                        CircleShape
+                                                    )
+                                            )
+                                        } else {
+                                            Icon(
+                                                Icons.Outlined.LayersClear,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(13.dp),
+                                                tint = if (isSelected) MaterialTheme.colorScheme.onPrimary else AppTheme.colors.textSecondary
+                                            )
+                                        }
+                                        Text(
+                                            text = opt.label,
+                                            fontSize = 12.sp,
+                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else AppTheme.colors.textSecondary,
+                                            maxLines = 1,
+                                            softWrap = false
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -687,10 +715,7 @@ fun BackgroundRemoverScreen(
                                 .weight(1f)
                                 .height(52.dp),
                             shape = RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.onPrimary
-                            )
+                            colors = obsidianButtonColors()
                         ) {
                             Icon(Icons.Outlined.Download, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(8.dp))
@@ -717,15 +742,24 @@ fun BackgroundRemoverScreen(
 
                 // Pick another photo button
                 item {
-                    TextButton(
+                    OutlinedButton(
                         onClick = {
                             photoPicker.launch(
                                 PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                             )
                         },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, AppTheme.colors.borderSubtle),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = AppTheme.colors.textPrimary
+                        )
                     ) {
-                        Text("Choose Different Image", color = AppTheme.colors.textSecondary)
+                        Icon(Icons.Default.AddPhotoAlternate, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("Choose Different Image", fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
                     }
                 }
             }

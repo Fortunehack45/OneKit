@@ -177,7 +177,7 @@ fun TactileCalculatorScreen(
         ) {
             // Mode Chips Row (Keypad, Smart Math, Percentage, Tip & Bill)
             LazyRow(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp),
+                modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(CalcNavMode.values()) { mode ->
@@ -208,19 +208,20 @@ fun TactileCalculatorScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
-                    .padding(vertical = 6.dp)
+                    .padding(vertical = 4.dp)
                     .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(24.dp))
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(20.dp),
+                        .padding(18.dp),
                     verticalArrangement = Arrangement.SpaceBetween,
                     horizontalAlignment = Alignment.End
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         if (isScientific) {
                             Box(
@@ -238,7 +239,7 @@ fun TactileCalculatorScreen(
 
                         Text(
                             text = displayExpression.ifEmpty { " " },
-                            fontSize = 20.sp,
+                            fontSize = 18.sp,
                             color = AppTheme.colors.textSecondary,
                             maxLines = 2,
                             textAlign = TextAlign.End
@@ -247,7 +248,7 @@ fun TactileCalculatorScreen(
 
                     Text(
                         text = currentResult,
-                        fontSize = if (currentResult.length > 9) 32.sp else 46.sp,
+                        fontSize = if (currentResult.length > 9) 30.sp else 42.sp,
                         fontWeight = FontWeight.Bold,
                         color = AppTheme.colors.textPrimary,
                         maxLines = 1,
@@ -256,14 +257,71 @@ fun TactileCalculatorScreen(
                 }
             }
 
-            // Scientific Row (Expandable)
+            // Prominent Standard / Scientific Mode Segmented Switch
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(AppTheme.colors.cardSurface)
+                    .border(1.dp, AppTheme.colors.borderSubtle, RoundedCornerShape(14.dp))
+                    .padding(3.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(11.dp))
+                        .background(if (!isScientific) MaterialTheme.colorScheme.primary else Color.Transparent)
+                        .clickable { isScientific = false }
+                        .padding(vertical = 8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Standard",
+                        fontWeight = if (!isScientific) FontWeight.Bold else FontWeight.Medium,
+                        fontSize = 13.sp,
+                        color = if (!isScientific) MaterialTheme.colorScheme.onPrimary else AppTheme.colors.textSecondary
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(11.dp))
+                        .background(if (isScientific) MaterialTheme.colorScheme.primary else Color.Transparent)
+                        .clickable { isScientific = true }
+                        .padding(vertical = 8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Icon(
+                            Icons.Outlined.Science,
+                            contentDescription = null,
+                            modifier = Modifier.size(15.dp),
+                            tint = if (isScientific) MaterialTheme.colorScheme.onPrimary else AppTheme.colors.textSecondary
+                        )
+                        Text(
+                            text = "Scientific",
+                            fontWeight = if (isScientific) FontWeight.Bold else FontWeight.Medium,
+                            fontSize = 13.sp,
+                            color = if (isScientific) MaterialTheme.colorScheme.onPrimary else AppTheme.colors.textSecondary
+                        )
+                    }
+                }
+            }
+
+            // Scientific Keypad Rows (Expandable)
             AnimatedVisibility(
                 visible = isScientific,
                 enter = expandVertically(),
                 exit = shrinkVertically()
             ) {
                 Column(
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp),
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     val sciRow1 = listOf("sin", "cos", "tan", "log", "ln")
@@ -273,10 +331,10 @@ fun TactileCalculatorScreen(
                         sciRow1.forEach { key ->
                             KeyButton(
                                 label = key,
-                                modifier = Modifier.weight(1f).height(42.dp),
+                                modifier = Modifier.weight(1f).height(38.dp),
                                 containerColor = AppTheme.colors.surfaceVariant,
                                 contentColor = AppTheme.colors.textPrimary,
-                                fontSize = 13.sp,
+                                fontSize = 12.sp,
                                 onClick = { onKeyPress(key) }
                             )
                         }
@@ -286,10 +344,10 @@ fun TactileCalculatorScreen(
                         sciRow2.forEach { key ->
                             KeyButton(
                                 label = key,
-                                modifier = Modifier.weight(1f).height(42.dp),
+                                modifier = Modifier.weight(1f).height(38.dp),
                                 containerColor = AppTheme.colors.surfaceVariant,
                                 contentColor = AppTheme.colors.textPrimary,
-                                fontSize = 13.sp,
+                                fontSize = 12.sp,
                                 onClick = { onKeyPress(key) }
                             )
                         }
@@ -298,11 +356,12 @@ fun TactileCalculatorScreen(
             }
 
             // Standard Tactile Keypad
+            val standardKeyHeight = if (isScientific) 48.dp else 56.dp
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 110.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 val row1 = listOf("C", "(", ")", "÷")
                 val row2 = listOf("7", "8", "9", "×")
@@ -336,10 +395,10 @@ fun TactileCalculatorScreen(
                                 label = key,
                                 modifier = Modifier
                                     .weight(1f)
-                                    .height(58.dp),
+                                    .height(standardKeyHeight),
                                 containerColor = containerColor,
                                 contentColor = contentColor,
-                                fontSize = 20.sp,
+                                fontSize = 19.sp,
                                 onClick = { onKeyPress(key) }
                             )
                         }
